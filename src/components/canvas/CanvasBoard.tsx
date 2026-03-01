@@ -1285,7 +1285,7 @@ export default function CanvasBoard({
   return (
     <div className="flex-1 w-full h-full flex relative overflow-hidden bg-transparent">
       {!hideHeader && (
-        <header className="absolute top-0 left-0 right-0 h-20 bg-card border-b border-border px-6 flex items-center justify-between z-40">
+        <header className="absolute top-0 left-0 right-0 h-20 bg-card border-b border-border px-6 flex items-center justify-between z-40 shadow-sm">
           <div className="flex items-center gap-4">
             {onBack && (
               <Button
@@ -1297,7 +1297,9 @@ export default function CanvasBoard({
                 <ArrowLeft size={18} />
               </Button>
             )}
-            <h1 className="font-bold text-lg text-foreground">{funnel.name}</h1>
+            <h1 className="font-bold text-2xl text-foreground">
+              {funnel.name}
+            </h1>
             <span className="bg-background text-primary px-2.5 py-1 rounded-[8px] text-[12px] font-bold border border-border">
               Publicado
             </span>
@@ -1325,9 +1327,7 @@ export default function CanvasBoard({
                 alt="Team 2"
               />
             </div>
-            <Button className="bg-brand-dark hover:bg-brand-dark/90 text-white rounded-[8px] font-bold shadow-sm">
-              Exportar
-            </Button>
+            <Button className="font-bold shadow-sm">Exportar</Button>
           </div>
         </header>
       )}
@@ -1505,10 +1505,10 @@ export default function CanvasBoard({
                     onChangeWithHistory({ ...funnel, edgeStyle: val as any })
                   }
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-background">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl">
                     <SelectItem value="curved">Curvo (Bezier)</SelectItem>
                     <SelectItem value="straight">Reto</SelectItem>
                     <SelectItem value="orthogonal">
@@ -1536,7 +1536,7 @@ export default function CanvasBoard({
                     'hsl(var(--muted-foreground))',
                     'hsl(var(--success))',
                     'hsl(var(--warning))',
-                    'hsl(var(--destructive))',
+                    'hsl(var(--danger))',
                   ].map((c) => (
                     <button
                       key={c}
@@ -1612,7 +1612,7 @@ export default function CanvasBoard({
                     'hsl(var(--muted-foreground))',
                     'hsl(var(--success))',
                     'hsl(var(--warning))',
-                    'hsl(var(--destructive))',
+                    'hsl(var(--danger))',
                   ].map((c) => (
                     <button
                       key={`stroke-${c}`}
@@ -1655,7 +1655,7 @@ export default function CanvasBoard({
                       selectedEdgeObj.style?.strokeDasharray === 'none' ||
                         !selectedEdgeObj.style?.strokeDasharray
                         ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-card hover:bg-background text-muted-foreground',
+                        : 'border-border bg-background hover:bg-muted text-muted-foreground',
                     )}
                     onClick={() => updateEdgeStyle({ strokeDasharray: 'none' })}
                   >
@@ -1675,7 +1675,7 @@ export default function CanvasBoard({
                       'flex-1 h-9 rounded-[8px] border-[1.5px] flex items-center justify-center transition-colors',
                       selectedEdgeObj.style?.strokeDasharray === '8 8'
                         ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-card hover:bg-background text-muted-foreground',
+                        : 'border-border bg-background hover:bg-muted text-muted-foreground',
                     )}
                     onClick={() => updateEdgeStyle({ strokeDasharray: '8 8' })}
                   >

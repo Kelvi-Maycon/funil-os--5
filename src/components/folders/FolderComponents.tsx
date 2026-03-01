@@ -40,19 +40,19 @@ export function ViewToggle({
       type="single"
       value={view}
       onValueChange={(v) => v && onChange(v as 'grid' | 'list')}
-      className="bg-card border border-border p-1 rounded-full shadow-sm h-10 gap-0 inline-flex items-center"
+      className="bg-card border border-border p-1 rounded-lg shadow-sm h-10 gap-0 inline-flex items-center"
     >
       <ToggleGroupItem
         value="grid"
         aria-label="Grid view"
-        className="rounded-full w-8 h-8 p-0 data-[state=on]:bg-foreground data-[state=on]:text-background text-muted-foreground hover:text-foreground transition-all"
+        className="rounded-md w-8 h-8 p-0 data-[state=on]:bg-background data-[state=on]:text-foreground text-muted-foreground hover:text-foreground transition-all"
       >
         <LayoutGrid size={16} />
       </ToggleGroupItem>
       <ToggleGroupItem
         value="list"
         aria-label="List view"
-        className="rounded-full w-8 h-8 p-0 data-[state=on]:bg-foreground data-[state=on]:text-background text-muted-foreground hover:text-foreground transition-all"
+        className="rounded-md w-8 h-8 p-0 data-[state=on]:bg-background data-[state=on]:text-foreground text-muted-foreground hover:text-foreground transition-all"
       >
         <List size={16} />
       </ToggleGroupItem>
@@ -192,7 +192,7 @@ export function MoveDialog({
         <Button
           variant="secondary"
           size="icon"
-          className="h-8 w-8 hover:bg-secondary/80"
+          className="h-8 w-8"
           onClick={(e) => e.stopPropagation()}
         >
           <Move size={14} className="text-foreground" />

@@ -231,13 +231,13 @@ export default function QuickActionModal() {
 
   return (
     <Dialog open={!!state} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-[640px] p-8 sm:rounded-[24px] border border-border shadow-2xl bg-card gap-0">
+      <DialogContent className="max-w-[640px] p-8 rounded-2xl border border-border shadow-2xl bg-card gap-0">
         <DialogHeader className="space-y-0 text-left">
-          <DialogTitle className="text-[28px] font-bold text-foreground leading-tight">
+          <DialogTitle className="text-2xl font-bold text-foreground leading-tight">
             {isCreate ? 'Ação Rápida' : `Editar ${currentTypeLabel}`}
           </DialogTitle>
           {isCreate ? (
-            <DialogDescription className="text-[15px] text-muted-foreground mt-1 font-medium">
+            <DialogDescription className="text-sm text-muted-foreground mt-1 font-medium">
               O que você deseja criar agora?
             </DialogDescription>
           ) : (
@@ -257,21 +257,21 @@ export default function QuickActionModal() {
                   type="button"
                   onClick={() => setSelectedType(type.id)}
                   className={cn(
-                    'flex flex-col items-center justify-center py-6 px-2 rounded-[16px] border-[1.5px] transition-all duration-200 outline-none hover-lift',
+                    'flex flex-col items-center justify-center py-6 px-2 rounded-xl border-2 transition-all duration-200 outline-none hover-lift',
                     isActive
                       ? 'border-primary bg-primary/5'
-                      : 'border-border bg-card hover:bg-background',
+                      : 'border-border bg-background hover:bg-muted',
                   )}
                 >
                   <div
                     className={cn(
-                      'w-[52px] h-[52px] rounded-[12px] flex items-center justify-center mb-3 shadow-sm transition-colors duration-200',
+                      'w-12 h-12 rounded-lg flex items-center justify-center mb-3 shadow-sm transition-colors duration-200',
                       isActive
-                        ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_rgba(192,120,72,0.2)]'
-                        : 'bg-background text-muted-foreground border border-border',
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-card text-muted-foreground border border-border',
                     )}
                   >
-                    <type.icon size={26} strokeWidth={isActive ? 2.5 : 2} />
+                    <type.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
                   </div>
                   <span
                     className={cn(
@@ -299,7 +299,6 @@ export default function QuickActionModal() {
                   <Input
                     required
                     placeholder="Ex: Revisar protótipo do dashboard"
-                    className="h-12"
                     value={formData.title || ''}
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
@@ -318,11 +317,11 @@ export default function QuickActionModal() {
                         <button
                           type="button"
                           className={cn(
-                            'w-full h-12 flex items-center justify-start text-left font-bold px-4 text-[14px] bg-card border-[1.5px] border-border rounded-[8px] transition-colors hover:border-primary outline-none',
+                            'w-full h-10 flex items-center justify-start text-left font-bold px-3 text-sm bg-background border border-input rounded-lg transition-colors hover:border-primary outline-none',
                             !formData.deadline && 'text-muted-foreground',
                           )}
                         >
-                          <CalendarIcon className="mr-3 h-4 w-4 text-muted-foreground" />
+                          <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                           {formData.deadline ? (
                             format(new Date(formData.deadline), 'dd/MM/yyyy', {
                               locale: ptBR,
@@ -333,7 +332,7 @@ export default function QuickActionModal() {
                         </button>
                       </PopoverTrigger>
                       <PopoverContent
-                        className="w-auto p-0 z-[100] border-border rounded-[12px]"
+                        className="w-auto p-0 z-[100] border-border rounded-xl"
                         align="start"
                       >
                         <Calendar
@@ -364,10 +363,10 @@ export default function QuickActionModal() {
                         setFormData({ ...formData, priority: val })
                       }
                     >
-                      <SelectTrigger className="h-12 border-border bg-card">
+                      <SelectTrigger className="h-10 bg-background">
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
-                      <SelectContent className="z-[100] border-border rounded-[8px]">
+                      <SelectContent className="z-[100] rounded-xl">
                         <SelectItem value="Baixa">Baixa</SelectItem>
                         <SelectItem value="Média">Média</SelectItem>
                         <SelectItem value="Alta">Alta</SelectItem>
@@ -382,7 +381,7 @@ export default function QuickActionModal() {
                   </Label>
                   <Textarea
                     placeholder="Adicione detalhes importantes sobre esta task..."
-                    className="min-h-[110px] resize-none py-3.5 px-4 text-[14px] font-medium bg-card border-[1.5px] border-border focus-visible:ring-0 focus-visible:border-primary rounded-[8px]"
+                    className="min-h-[110px] resize-none"
                     value={formData.description || ''}
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
@@ -402,7 +401,6 @@ export default function QuickActionModal() {
                   <Input
                     required
                     placeholder="Ex: Lançamento Alpha"
-                    className="h-12"
                     value={formData.title || formData.name || ''}
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
@@ -416,7 +414,7 @@ export default function QuickActionModal() {
                   </Label>
                   <Textarea
                     placeholder="Objetivo principal do projeto..."
-                    className="min-h-[110px] resize-none py-3.5 px-4 text-[14px] font-medium bg-card border-[1.5px] border-border focus-visible:ring-0 focus-visible:border-primary rounded-[8px]"
+                    className="min-h-[110px] resize-none"
                     value={formData.description || ''}
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
@@ -436,7 +434,6 @@ export default function QuickActionModal() {
                   <Input
                     required
                     placeholder="Ex: Funil de Captação VSL"
-                    className="h-12"
                     value={formData.title || formData.name || ''}
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
@@ -455,10 +452,10 @@ export default function QuickActionModal() {
                         setFormData({ ...formData, projectId: val })
                       }
                     >
-                      <SelectTrigger className="h-12 bg-card border-[1.5px] border-border">
+                      <SelectTrigger className="h-10 bg-background">
                         <SelectValue placeholder="Selecione um projeto" />
                       </SelectTrigger>
-                      <SelectContent className="z-[100] border-border rounded-[8px]">
+                      <SelectContent className="z-[100] rounded-xl">
                         <SelectItem value="none">Nenhum (Rascunho)</SelectItem>
                         {projects.map((p) => (
                           <SelectItem key={p.id} value={p.id}>
@@ -482,7 +479,6 @@ export default function QuickActionModal() {
                   <Input
                     required
                     placeholder="Ex: Script de Vendas - VSL"
-                    className="h-12"
                     value={formData.title || formData.name || ''}
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
@@ -496,7 +492,7 @@ export default function QuickActionModal() {
                   </Label>
                   <Textarea
                     placeholder="Comece a escrever aqui..."
-                    className="min-h-[160px] resize-none py-3.5 px-4 text-[14px] font-medium bg-card border-[1.5px] border-border focus-visible:ring-0 focus-visible:border-primary rounded-[8px]"
+                    className="min-h-[160px] resize-none"
                     value={formData.content || ''}
                     onChange={(e) =>
                       setFormData({ ...formData, content: e.target.value })
@@ -511,7 +507,7 @@ export default function QuickActionModal() {
             <button
               type="button"
               onClick={handleClose}
-              className="text-[14px] font-bold text-muted-foreground hover:text-foreground transition-colors outline-none px-2 py-1 rounded-[6px] focus-visible:ring-2 focus-visible:ring-primary/50"
+              className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors outline-none px-3 py-2 rounded-lg focus-visible:ring-2 focus-visible:ring-primary/50"
             >
               Cancelar
             </button>

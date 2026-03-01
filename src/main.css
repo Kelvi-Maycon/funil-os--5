@@ -12,18 +12,23 @@
 
     --bg-app: 36 33% 95%; /* #F6F2EC */
     --bg-sidebar: 36 30% 91%; /* #EEE9E1 */
-    --bg-card: 40 33% 97%; /* #FAF8F4 */
+    --bg-card: 0 0% 100%; /* White for cleaner look */
 
-    --text-primary: 15 22% 21%; /* #42332A */
+    --text-primary: 15 22% 15%; /* Darker for better contrast */
     --text-secondary: 29 13% 49%; /* #8C7D6E */
     --text-muted: 29 18% 66%; /* #B8A898 */
 
-    --border: 35 27% 88%; /* #E8E1D8 */
+    --border: 35 20% 88%; /* Adjusted for pure white cards */
     --border-light: 36 30% 91%; /* #EEE9E1 */
 
-    --green: 149 43% 42%; /* #3D9A6A */
-    --red: 7 54% 49%; /* #C0503A */
-    --yellow: 42 63% 55%; /* #D4A843 */
+    --success: 149 43% 42%; /* #3D9A6A */
+    --success-foreground: 0 0% 100%;
+    --warning: 42 63% 55%; /* #D4A843 */
+    --warning-foreground: 0 0% 100%;
+    --danger: 7 54% 49%; /* #C0503A */
+    --danger-foreground: 0 0% 100%;
+    --info: 221 83% 53%; /* #1d4ed8 */
+    --info-foreground: 0 0% 100%;
 
     /* Shadcn UI Mapping */
     --background: var(--bg-app);
@@ -47,7 +52,7 @@
     --accent: var(--bg-sidebar);
     --accent-foreground: var(--brand);
 
-    --destructive: var(--red);
+    --destructive: var(--danger);
     --destructive-foreground: 0 0% 100%;
 
     --input: var(--border);
@@ -63,13 +68,6 @@
     --sidebar-accent-foreground: var(--brand);
     --sidebar-border: var(--border-light);
     --sidebar-ring: var(--brand);
-
-    --success: var(--green);
-    --success-foreground: 0 0% 100%;
-    --warning: var(--yellow);
-    --warning-foreground: 0 0% 100%;
-    --danger: var(--red);
-    --danger-foreground: 0 0% 100%;
   }
 
   body {

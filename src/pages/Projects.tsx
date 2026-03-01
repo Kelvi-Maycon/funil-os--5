@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Plus, Search, Folder as FolderIcon, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { generateId } from '@/lib/generateId'
@@ -116,9 +117,9 @@ export default function Projects() {
 
   return (
     <div className="p-6 md:p-8 max-w-[1600px] w-full mx-auto space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 md:px-8 border-b border-border -mx-6 -mt-6 md:-mx-8 md:-mt-8 mb-8 min-h-[80px]">
-        <div className="space-y-0.5">
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Projetos
           </h1>
           <FolderBreadcrumbs
@@ -157,42 +158,40 @@ export default function Projects() {
         </div>
       </div>
 
-      <div className="relative max-w-md">
+      <div className="relative max-w-md mb-8">
         <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           size={18}
         />
         <Input
           placeholder="Buscar projetos..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-12 bg-card"
+          className="pl-10"
         />
       </div>
 
       {currentFolders.length === 0 && filteredProjects.length === 0 ? (
-        <div className="py-20 text-center flex flex-col items-center bg-card rounded-2xl border border-dashed border-border shadow-sm">
-          <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mb-4">
-            <FolderIcon size={32} className="text-muted-foreground" />
-          </div>
-          <h3 className="text-xl font-bold text-foreground">Vazio</h3>
-          <p className="text-base text-muted-foreground mt-2 mb-6">
-            Crie um projeto ou uma pasta para começar.
-          </p>
-          <Button onClick={() => setOpen(true)}>
-            <Plus size={16} className="mr-2" /> Criar Primeiro Projeto
-          </Button>
-        </div>
+        <EmptyState
+          icon={FolderIcon}
+          title="Vazio"
+          description="Crie um projeto ou uma pasta para começar a organizar seu trabalho."
+          action={
+            <Button onClick={() => setOpen(true)}>
+              <Plus size={16} className="mr-2" /> Criar Primeiro Projeto
+            </Button>
+          }
+        />
       ) : view === 'grid' ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {currentFolders.map((f) => (
             <Card
               key={f.id}
               onClick={() => setCurrentFolderId(f.id)}
-              className="hover:shadow-md transition-all cursor-pointer h-full group flex items-center p-6 gap-4"
+              className="hover-lift cursor-pointer h-full group flex items-center p-6 gap-4"
             >
               <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-primary shrink-0">
-                <FolderIcon size={24} className="fill-current opacity-20" />
+                <FolderIcon size={24} className="fill-current opacity-50" />
               </div>
               <span className="font-semibold text-lg group-hover:text-primary transition-colors">
                 {f.name}
@@ -203,7 +202,7 @@ export default function Projects() {
             <Card
               key={p.id}
               onClick={() => navigate(`/projetos/${p.id}`)}
-              className="hover:shadow-md transition-all cursor-pointer h-full group flex flex-col"
+              className="hover-lift cursor-pointer h-full group flex flex-col"
             >
               <CardHeader className="pb-4 flex-1">
                 <div className="flex justify-between items-start gap-2">
@@ -215,7 +214,7 @@ export default function Projects() {
                       variant="outline"
                       className={
                         p.status === 'Ativo'
-                          ? 'bg-success-bg text-success-foreground border-none'
+                          ? 'bg-success/10 text-success border-none'
                           : 'bg-muted text-muted-foreground border-none'
                       }
                     >
@@ -254,7 +253,7 @@ export default function Projects() {
           ))}
         </div>
       ) : (
-        <div className="bg-card border rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
           <Table>
             <TableHeader>
               <TableRow>
@@ -272,7 +271,7 @@ export default function Projects() {
                 >
                   <TableCell className="font-medium flex items-center gap-3 py-4 text-base">
                     <FolderIcon
-                      className="text-primary fill-primary/20 group-hover:text-primary transition-colors"
+                      className="text-primary opacity-50 group-hover:opacity-100 transition-colors"
                       size={20}
                     />
                     {f.name}
@@ -293,7 +292,7 @@ export default function Projects() {
                       variant="outline"
                       className={
                         p.status === 'Ativo'
-                          ? 'bg-success-bg text-success-foreground border-none'
+                          ? 'bg-success/10 text-success border-none'
                           : 'bg-muted text-muted-foreground border-none'
                       }
                     >

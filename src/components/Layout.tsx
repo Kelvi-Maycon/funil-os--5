@@ -60,10 +60,10 @@ function AppSidebar() {
         {/* Expanded View */}
         <div className="flex items-center w-full justify-between group-data-[collapsible=icon]:hidden">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-[8px] flex items-center justify-center text-primary-foreground shrink-0 shadow-sm">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0 shadow-sm">
               <Folder size={18} className="fill-current" />
             </div>
-            <span className="font-bold text-[18px] text-foreground truncate whitespace-nowrap">
+            <span className="font-bold text-lg text-foreground truncate whitespace-nowrap">
               Funil OS
             </span>
           </div>
@@ -71,11 +71,11 @@ function AppSidebar() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setQuickAction({ mode: 'create', type: 'task' })}
-              className="w-8 h-8 bg-background hover:bg-brand-dark text-primary hover:text-white rounded-[8px] flex items-center justify-center shrink-0 transition-colors duration-100 outline-none"
+              className="w-8 h-8 bg-background hover:bg-primary/10 text-primary hover:text-primary rounded-lg flex items-center justify-center shrink-0 transition-colors duration-100 outline-none"
             >
               <Plus size={18} />
             </button>
-            <div className="text-muted-foreground hover:text-brand-dark shrink-0 flex items-center justify-center w-8 h-8 transition-colors duration-100 cursor-pointer">
+            <div className="text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center w-8 h-8 transition-colors duration-100 cursor-pointer">
               <PanelLeftClose size={20} />
             </div>
           </div>
@@ -83,16 +83,16 @@ function AppSidebar() {
 
         {/* Collapsed View */}
         <div className="hidden group-data-[collapsible=icon]:flex flex-col items-center gap-3 w-full">
-          <div className="text-muted-foreground hover:text-brand-dark shrink-0 flex items-center justify-center w-8 h-8 transition-colors duration-100 cursor-pointer">
+          <div className="text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center w-8 h-8 transition-colors duration-100 cursor-pointer">
             <PanelLeft size={20} />
           </div>
           <button
             onClick={() => setQuickAction({ mode: 'create', type: 'task' })}
-            className="w-8 h-8 bg-background hover:bg-brand-dark text-primary hover:text-white rounded-[8px] flex items-center justify-center shrink-0 transition-colors duration-100 outline-none"
+            className="w-8 h-8 bg-background hover:bg-primary/10 text-primary hover:text-primary rounded-lg flex items-center justify-center shrink-0 transition-colors duration-100 outline-none"
           >
             <Plus size={18} />
           </button>
-          <div className="w-8 h-8 bg-primary rounded-[8px] flex items-center justify-center text-primary-foreground shrink-0 shadow-sm">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0 shadow-sm">
             <Folder size={18} className="fill-current" />
           </div>
         </div>
@@ -111,7 +111,7 @@ function AppSidebar() {
                     asChild
                     isActive={isActive}
                     tooltip={item.title}
-                    className="group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center"
+                    className="group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center rounded-lg"
                   >
                     <Link to={item.url}>
                       <item.icon
@@ -119,7 +119,7 @@ function AppSidebar() {
                         strokeWidth={isActive ? 2.5 : 2}
                         className="shrink-0 group-data-[collapsible=icon]:mx-auto"
                       />
-                      <span className="truncate whitespace-nowrap overflow-hidden transition-all duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden">
+                      <span className="truncate whitespace-nowrap overflow-hidden transition-all duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden font-semibold">
                         {item.title}
                       </span>
                     </Link>
@@ -143,12 +143,12 @@ function AppSidebar() {
               <span className="text-sm font-bold text-foreground truncate whitespace-nowrap">
                 Diego K.
               </span>
-              <span className="text-[11px] font-semibold text-muted-foreground truncate whitespace-nowrap">
+              <span className="text-xs font-semibold text-muted-foreground truncate whitespace-nowrap">
                 diego@funilos.com
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-1 overflow-hidden transition-colors duration-100 text-muted-foreground hover:text-brand-dark group-data-[collapsible=icon]:justify-center w-full">
+          <div className="flex items-center gap-1 overflow-hidden transition-colors duration-100 text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:justify-center w-full">
             <DataManager />
           </div>
         </div>
@@ -162,14 +162,14 @@ export default function Layout() {
     <SidebarProvider defaultOpen={false}>
       <AppSidebar />
       <SidebarInset className="bg-background relative flex flex-col h-screen overflow-hidden w-full transition-all duration-200 ease-in-out">
-        <header className="h-20 flex items-center justify-between px-6 border-b border-border bg-sidebar md:hidden shrink-0 z-10 shadow-sm">
+        <header className="h-20 flex items-center justify-between px-6 border-b border-border bg-card md:hidden shrink-0 z-10 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-[8px] flex items-center justify-center text-primary-foreground shrink-0">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0">
               <Folder size={18} className="fill-current" />
             </div>
             <span className="font-bold text-lg text-foreground">Funil OS</span>
           </div>
-          <SidebarTrigger className="text-muted-foreground" />
+          <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
         </header>
         <main className="flex-1 overflow-auto animate-fade-in relative flex flex-col no-scrollbar">
           <Outlet />

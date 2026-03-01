@@ -11,7 +11,7 @@ export const mockTasks: Task[] = [
     deadline: '2024-02-28',
     dateLabel: '28/02',
     iconType: 'clock',
-    assignees: [{ initials: 'DK', color: 'bg-[#C2714F]' }],
+    assignees: [{ initials: 'DK', color: 'bg-primary' }],
   },
   {
     id: 't2',
@@ -21,9 +21,9 @@ export const mockTasks: Task[] = [
     priority: 'Alta',
     deadline: new Date().toISOString(),
     dateLabel: 'HOJE',
-    dateColor: 'text-[#C2714F]',
+    dateColor: 'text-danger',
     iconType: 'alert',
-    assignees: [{ initials: 'JS', color: 'bg-[#E5B567]' }],
+    assignees: [{ initials: 'JS', color: 'bg-warning' }],
   },
   {
     id: 't3',
@@ -34,20 +34,20 @@ export const mockTasks: Task[] = [
     deadline: '2024-03-02',
     dateLabel: '02/03',
     iconType: 'clock',
-    assignees: [{ initials: 'MK', color: 'bg-[#3D2B1F]' }],
+    assignees: [{ initials: 'MK', color: 'bg-foreground' }],
   },
   {
     id: 't4',
     title: 'Setup Pipeline CI/CD',
     status: 'Em Progresso',
     category: 'Infra',
-    categoryColor: 'text-[#C2714F]',
+    categoryColor: 'text-primary',
     priority: 'Alta',
     deadline: '',
     dateLabel: '65%',
     progress: 65,
     iconType: 'dot',
-    assignees: [{ initials: 'DK', color: 'bg-[#C2714F]' }],
+    assignees: [{ initials: 'DK', color: 'bg-primary' }],
   },
   {
     id: 't5',
@@ -59,8 +59,8 @@ export const mockTasks: Task[] = [
     dateLabel: 'Amanhã',
     iconType: 'comment',
     assignees: [
-      { initials: 'DK', color: 'bg-[#C2714F]' },
-      { initials: 'JS', color: 'bg-[#E5B567]' },
+      { initials: 'DK', color: 'bg-primary' },
+      { initials: 'JS', color: 'bg-warning' },
     ],
   },
   {
@@ -72,7 +72,7 @@ export const mockTasks: Task[] = [
     deadline: '2024-02-23',
     dateLabel: '23/02',
     iconType: 'check',
-    assignees: [{ initials: 'MK', color: 'bg-[#3D2B1F]' }],
+    assignees: [{ initials: 'MK', color: 'bg-foreground' }],
   },
   {
     id: 't7',
@@ -83,7 +83,7 @@ export const mockTasks: Task[] = [
     deadline: '2024-02-24',
     dateLabel: '24/02',
     iconType: 'check',
-    assignees: [{ initials: 'DK', color: 'bg-[#C2714F]' }],
+    assignees: [{ initials: 'DK', color: 'bg-primary' }],
   },
 ]
 

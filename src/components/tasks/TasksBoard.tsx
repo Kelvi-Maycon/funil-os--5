@@ -18,20 +18,20 @@ const columnsConfig = [
   {
     id: 'Pendente',
     label: 'PENDENTE',
-    dot: 'bg-[#8C7B6C]',
-    countColor: 'bg-[#E8E2D9] text-[#8C7B6C]',
+    dot: 'bg-muted-foreground',
+    countColor: 'bg-muted text-muted-foreground',
   },
   {
     id: 'Em Progresso',
     label: 'EM PROGRESSO',
-    dot: 'bg-[#E5B567]',
-    countColor: 'bg-[#F3EEE7] text-[#C2714F]',
+    dot: 'bg-warning',
+    countColor: 'bg-warning/10 text-warning',
   },
   {
     id: 'Concluída',
     label: 'CONCLUÍDA',
-    dot: 'bg-[#A1C9A3]',
-    countColor: 'bg-[#E8F2E8] text-[#4CAF50]',
+    dot: 'bg-success',
+    countColor: 'bg-success/10 text-success',
   },
 ]
 
@@ -77,7 +77,7 @@ export default function TasksBoard({
             key={col.id}
             className={cn(
               'w-[340px] shrink-0 flex flex-col rounded-2xl transition-all duration-200 relative',
-              isDragOver && 'bg-black/5 ring-2 ring-primary/20',
+              isDragOver && 'bg-accent ring-2 ring-primary/20',
             )}
             onDragOver={(e) => {
               e.preventDefault()
@@ -90,7 +90,7 @@ export default function TasksBoard({
             <div className="flex justify-between items-center mb-4 px-1">
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${col.dot}`} />
-                <h3 className="font-bold text-[13px] text-[#3D2B1F] tracking-wide">
+                <h3 className="font-bold text-sm text-foreground tracking-wide">
                   {col.label}
                 </h3>
                 <span
@@ -102,7 +102,7 @@ export default function TasksBoard({
                   {colTasks.length}
                 </span>
               </div>
-              <button className="text-[#8C7B6C] hover:text-[#3D2B1F] transition-colors">
+              <button className="text-muted-foreground hover:text-foreground transition-colors">
                 <MoreHorizontal size={16} />
               </button>
             </div>
@@ -121,10 +121,10 @@ export default function TasksBoard({
                     onDragEnd={handleDragEnd}
                     onClick={() => onCardClick(t)}
                     className={cn(
-                      'cursor-grab active:cursor-grabbing border-[#E8E2D9] rounded-[14px] bg-white transition-all',
+                      'cursor-grab active:cursor-grabbing border-border bg-card transition-all',
                       isDragging
                         ? 'opacity-40 shadow-none'
-                        : 'shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#C2714F]/40',
+                        : 'shadow-sm hover:shadow-md hover:border-primary/40',
                     )}
                   >
                     <CardContent className="p-4 flex flex-col gap-3.5">
@@ -132,8 +132,8 @@ export default function TasksBoard({
                         <Badge
                           variant="outline"
                           className={cn(
-                            'px-2 py-0.5 text-[10px] font-bold border-[#E8E2D9] bg-white',
-                            t.categoryColor || 'text-[#8C7B6C]',
+                            'px-2 py-0.5 text-[10px] font-bold border-border bg-background',
+                            t.categoryColor || 'text-muted-foreground',
                             isCompleted && 'opacity-60',
                           )}
                         >
@@ -141,38 +141,35 @@ export default function TasksBoard({
                         </Badge>
                         <div
                           className={cn(
-                            'text-[#8C7B6C]',
+                            'text-muted-foreground',
                             isCompleted && 'opacity-60',
                           )}
                         >
                           {t.iconType === 'clock' && <Clock size={14} />}
                           {t.iconType === 'alert' && (
-                            <AlertCircle size={14} className="text-[#C2714F]" />
+                            <AlertCircle size={14} className="text-danger" />
                           )}
                           {t.iconType === 'dot' && (
                             <Circle
                               size={10}
-                              className="fill-[#E5B567] text-[#E5B567]"
+                              className="fill-warning text-warning"
                             />
                           )}
                           {t.iconType === 'comment' && (
                             <MessageSquare size={14} />
                           )}
                           {t.iconType === 'check' && (
-                            <CheckCircle2
-                              size={14}
-                              className="text-[#A1C9A3]"
-                            />
+                            <CheckCircle2 size={14} className="text-success" />
                           )}
                         </div>
                       </div>
 
                       <span
                         className={cn(
-                          'font-bold text-[14px] leading-snug',
+                          'font-bold text-sm leading-snug',
                           isCompleted
-                            ? 'line-through text-[#8C7B6C] opacity-70'
-                            : 'text-[#3D2B1F]',
+                            ? 'line-through text-muted-foreground opacity-70'
+                            : 'text-foreground',
                         )}
                       >
                         {t.title}
@@ -183,8 +180,8 @@ export default function TasksBoard({
                           <div className="w-full mt-1">
                             <Progress
                               value={t.progress}
-                              indicatorColor="bg-[#E5B567]"
-                              className="h-1 bg-[#F3EEE7]"
+                              indicatorColor="bg-warning"
+                              className="h-1 bg-muted"
                             />
                           </div>
                         )}
@@ -195,7 +192,7 @@ export default function TasksBoard({
                             <div
                               key={idx}
                               className={cn(
-                                'w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-[1.5px] border-white',
+                                'w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-[1.5px] border-card',
                                 assignee.color,
                                 isCompleted && 'opacity-70',
                               )}
@@ -208,11 +205,11 @@ export default function TasksBoard({
                           <span
                             className={cn(
                               'text-[10px] font-bold uppercase tracking-wider',
-                              t.dateColor || 'text-[#8C7B6C]',
+                              t.dateColor || 'text-muted-foreground',
                               isCompleted && 'opacity-60',
                               t.status === 'Em Progresso' &&
                                 t.progress !== undefined &&
-                                'text-[#3D2B1F]',
+                                'text-foreground',
                             )}
                           >
                             {t.dateLabel}
@@ -225,7 +222,7 @@ export default function TasksBoard({
               })}
 
               {col.id === 'Pendente' && (
-                <button className="w-full mt-1 py-3 rounded-[14px] border border-dashed border-[#E8E2D9] text-[#8C7B6C] text-xs font-bold hover:bg-[#F3EEE7] hover:text-[#3D2B1F] flex items-center justify-center gap-1.5 transition-colors">
+                <button className="w-full mt-1 py-3 rounded-xl border border-dashed border-border text-muted-foreground text-xs font-bold hover:bg-accent hover:text-foreground flex items-center justify-center gap-1.5 transition-colors">
                   <Plus size={14} className="stroke-[3]" /> Adicionar
                 </button>
               )}
@@ -235,7 +232,7 @@ export default function TasksBoard({
       })}
 
       {/* New Column Placeholder */}
-      <div className="w-[340px] shrink-0 flex flex-col rounded-2xl border border-dashed border-[#E8E2D9] h-[140px] items-center justify-center text-[#8C7B6C] hover:bg-[#F3EEE7] hover:text-[#3D2B1F] transition-colors cursor-pointer mt-10">
+      <div className="w-[340px] shrink-0 flex flex-col rounded-2xl border border-dashed border-border h-[140px] items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer mt-10">
         <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center mb-2">
           <Plus size={16} className="stroke-[3]" />
         </div>

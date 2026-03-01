@@ -19,6 +19,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import { EmptyState } from '@/components/ui/empty-state'
 
 import {
   Network,
@@ -111,14 +112,14 @@ export default function ProjectDetail() {
       defaultValue="funnels"
       className="flex flex-col h-full bg-background overflow-hidden animate-fade-in"
     >
-      <div className="flex flex-col gap-6 p-6 md:p-8 bg-card border-b border-border z-10 relative shrink-0">
-        <div className="max-w-[1600px] mx-auto w-full flex flex-col gap-6">
+      <div className="flex flex-col p-6 md:p-8 shrink-0 z-10 relative">
+        <div className="max-w-[1600px] w-full mx-auto flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to="/projetos" className="text-md">
+                    <Link to="/projetos" className="text-base font-medium">
                       Projetos
                     </Link>
                   </BreadcrumbLink>
@@ -130,7 +131,7 @@ export default function ProjectDetail() {
                       <Input
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="h-7 w-48 text-sm font-semibold"
+                        className="h-8 w-64 text-base font-bold"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') saveName()
@@ -140,29 +141,29 @@ export default function ProjectDetail() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-8 w-8"
                         onClick={saveName}
                       >
-                        <Check size={14} />
+                        <Check size={16} />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-8 w-8"
                         onClick={cancelEditName}
                       >
-                        <X size={14} />
+                        <X size={16} />
                       </Button>
                     </div>
                   ) : (
                     <BreadcrumbPage
-                      className="font-semibold text-md group cursor-pointer flex items-center gap-1.5"
+                      className="font-bold text-3xl group cursor-pointer flex items-center gap-2"
                       onClick={startEditName}
                     >
                       {project.name}
                       <Pencil
-                        size={12}
-                        className="opacity-0 group-hover:opacity-50 transition-opacity"
+                        size={16}
+                        className="opacity-0 group-hover:opacity-50 transition-opacity text-muted-foreground"
                       />
                     </BreadcrumbPage>
                   )}
@@ -172,49 +173,49 @@ export default function ProjectDetail() {
           </div>
 
           <div className="flex flex-col lg:flex-row justify-between gap-6 items-start lg:items-center">
-            <TabsList className="bg-background gap-2 p-1.5 rounded-full flex flex-wrap justify-start border border-border inline-flex h-auto">
+            <TabsList className="bg-card gap-1 p-1.5 rounded-xl flex flex-wrap justify-start border border-border inline-flex h-auto shadow-sm">
               <TabsTrigger
                 value="funnels"
-                className="rounded-full px-5 py-2 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground text-muted-foreground hover:text-foreground font-medium transition-all text-md"
+                className="rounded-lg px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
               >
                 <Network size={16} className="mr-2" /> Funnels
               </TabsTrigger>
               <TabsTrigger
                 value="tasks"
-                className="rounded-full px-5 py-2 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground text-muted-foreground hover:text-foreground font-medium transition-all text-md"
+                className="rounded-lg px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
               >
                 <CheckSquare size={16} className="mr-2" /> Tasks
               </TabsTrigger>
               <TabsTrigger
                 value="documents"
-                className="rounded-full px-5 py-2 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground text-muted-foreground hover:text-foreground font-medium transition-all text-md"
+                className="rounded-lg px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
               >
                 <FileText size={16} className="mr-2" /> Documents
               </TabsTrigger>
             </TabsList>
 
-            <div className="flex items-center gap-6 bg-background p-4 rounded-2xl border border-border">
-              <div className="flex flex-col px-4 border-r border-border last:border-0">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-6 bg-card py-3 px-6 rounded-xl border border-border shadow-sm">
+              <div className="flex flex-col pr-6 border-r border-border last:border-0">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
                   Funis
                 </span>
-                <span className="text-2xl font-bold text-foreground leading-none">
+                <span className="text-xl font-bold text-foreground leading-none">
                   {projectFunnels.length}
                 </span>
               </div>
-              <div className="flex flex-col px-4 border-r border-border last:border-0">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+              <div className="flex flex-col px-6 border-r border-border last:border-0">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
                   Tasks
                 </span>
-                <span className="text-2xl font-bold text-foreground leading-none">
+                <span className="text-xl font-bold text-foreground leading-none">
                   {completedTasks}/{totalTasks}
                 </span>
               </div>
-              <div className="flex flex-col px-4 border-r border-border last:border-0">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+              <div className="flex flex-col pl-6 border-r border-border last:border-0">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
                   Docs
                 </span>
-                <span className="text-2xl font-bold text-foreground leading-none">
+                <span className="text-xl font-bold text-foreground leading-none">
                   {projectDocs.length}
                 </span>
               </div>
@@ -223,7 +224,7 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 bg-background relative flex flex-col min-h-0">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 pt-0 md:p-8 md:pt-0 bg-background relative flex flex-col min-h-0">
         <TabsContent
           value="funnels"
           className="flex-1 m-0 data-[state=active]:flex flex-col border-none outline-none"
@@ -251,7 +252,7 @@ export default function ProjectDetail() {
                   {projectFunnels.map((f) => (
                     <Card
                       key={f.id}
-                      className="cursor-pointer hover:shadow-md transition-shadow group overflow-hidden flex flex-col"
+                      className="cursor-pointer hover-lift group overflow-hidden flex flex-col"
                       onClick={() => setSelectedFunnelId(f.id)}
                     >
                       <div
@@ -262,7 +263,7 @@ export default function ProjectDetail() {
                           backgroundSize: '16px 16px',
                         }}
                       >
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/40 backdrop-blur-[2px] z-10">
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background/60 backdrop-blur-sm z-10">
                           <Button
                             variant="dark"
                             className="pointer-events-none"
@@ -299,29 +300,24 @@ export default function ProjectDetail() {
                   ))}
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-2xl bg-card p-12 min-h-[400px]">
-                  <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mb-4 text-primary">
-                    <Network size={24} />
-                  </div>
-                  <h3 className="text-xl font-bold text-foreground">
-                    Nenhum funil encontrado
-                  </h3>
-                  <p className="text-muted-foreground mt-2 mb-6 text-center max-w-sm text-base">
-                    Comece mapeando a jornada do seu cliente. Crie o primeiro
-                    funil para este projeto.
-                  </p>
-                  <Button
-                    onClick={() =>
-                      setAction({
-                        type: 'canvas',
-                        mode: 'create',
-                        defaultProjectId: id,
-                      })
-                    }
-                  >
-                    <Plus size={16} className="mr-2" /> Novo Funil
-                  </Button>
-                </div>
+                <EmptyState
+                  icon={Network}
+                  title="Nenhum funil encontrado"
+                  description="Comece mapeando a jornada do seu cliente. Crie o primeiro funil para este projeto."
+                  action={
+                    <Button
+                      onClick={() =>
+                        setAction({
+                          type: 'canvas',
+                          mode: 'create',
+                          defaultProjectId: id,
+                        })
+                      }
+                    >
+                      <Plus size={16} className="mr-2" /> Novo Funil
+                    </Button>
+                  }
+                />
               )}
             </div>
           ) : (
@@ -364,29 +360,24 @@ export default function ProjectDetail() {
                 />
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-2xl bg-card p-12 min-h-[400px]">
-                <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mb-4 text-primary">
-                  <CheckSquare size={24} />
-                </div>
-                <h3 className="text-xl font-bold text-foreground">
-                  Nenhuma tarefa
-                </h3>
-                <p className="text-muted-foreground mt-2 mb-6 text-center max-w-sm text-base">
-                  Organize as entregas do projeto criando tarefas para sua
-                  equipe.
-                </p>
-                <Button
-                  onClick={() =>
-                    setAction({
-                      type: 'task',
-                      mode: 'create',
-                      defaultProjectId: id,
-                    })
-                  }
-                >
-                  <Plus size={16} className="mr-2" /> Nova Tarefa
-                </Button>
-              </div>
+              <EmptyState
+                icon={CheckSquare}
+                title="Nenhuma tarefa"
+                description="Organize as entregas do projeto criando tarefas para sua equipe."
+                action={
+                  <Button
+                    onClick={() =>
+                      setAction({
+                        type: 'task',
+                        mode: 'create',
+                        defaultProjectId: id,
+                      })
+                    }
+                  >
+                    <Plus size={16} className="mr-2" /> Nova Tarefa
+                  </Button>
+                }
+              />
             )}
           </div>
         </TabsContent>
@@ -415,11 +406,11 @@ export default function ProjectDetail() {
                 {projectDocs.map((d) => (
                   <Card
                     key={d.id}
-                    className="cursor-pointer hover:shadow-md transition-shadow group flex flex-col"
+                    className="cursor-pointer hover-lift group flex flex-col"
                     onClick={() => navigate('/documentos')}
                   >
                     <CardHeader className="p-6 pb-4 flex flex-row items-start justify-between space-y-0 shrink-0">
-                      <div className="w-12 h-12 rounded-lg bg-info-bg flex items-center justify-center text-info mb-2 group-hover:scale-105 transition-transform">
+                      <div className="w-12 h-12 rounded-lg bg-info/10 flex items-center justify-center text-info mb-2 group-hover:scale-105 transition-transform">
                         <FileText size={24} />
                       </div>
                       <span className="text-sm text-muted-foreground font-medium">
@@ -439,28 +430,24 @@ export default function ProjectDetail() {
                 ))}
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-2xl bg-card p-12 min-h-[400px]">
-                <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mb-4 text-primary">
-                  <FileText size={24} />
-                </div>
-                <h3 className="text-xl font-bold text-foreground">
-                  Nenhum documento
-                </h3>
-                <p className="text-muted-foreground mt-2 mb-6 text-center max-w-sm text-base">
-                  Crie briefings, roteiros e textos centralizados neste projeto.
-                </p>
-                <Button
-                  onClick={() =>
-                    setAction({
-                      type: 'document',
-                      mode: 'create',
-                      defaultProjectId: id,
-                    })
-                  }
-                >
-                  <Plus size={16} className="mr-2" /> Novo Documento
-                </Button>
-              </div>
+              <EmptyState
+                icon={FileText}
+                title="Nenhum documento"
+                description="Crie briefings, roteiros e textos centralizados neste projeto."
+                action={
+                  <Button
+                    onClick={() =>
+                      setAction({
+                        type: 'document',
+                        mode: 'create',
+                        defaultProjectId: id,
+                      })
+                    }
+                  >
+                    <Plus size={16} className="mr-2" /> Novo Documento
+                  </Button>
+                }
+              />
             )}
           </div>
         </TabsContent>
