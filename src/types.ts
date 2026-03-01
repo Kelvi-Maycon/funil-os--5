@@ -1,0 +1,162 @@
+export type Project = {
+  id: string
+  name: string
+  description: string
+  status: 'Ativo' | 'Pausado' | 'Concluído'
+  createdAt: string
+  folderId?: string | null
+}
+
+export type NodeData = {
+  name: string
+  status: string
+  notes?: string
+  subtitle?: string
+  description?: string
+  isTaskMode?: boolean
+  isCompleted?: boolean
+  retention?: string
+  linkedDocumentIds?: string[]
+  linkedAssetIds?: string[]
+  linkedTaskIds?: string[]
+  color?: string
+}
+
+export type Node = {
+  id: string
+  type: string
+  x: number
+  y: number
+  width?: number
+  height?: number
+  groupId?: string
+  data: NodeData
+  style?: {
+    fill?: string
+    stroke?: string
+    strokeWidth?: number
+    color?: string
+    opacity?: number
+    strokeDasharray?: string
+  }
+}
+
+export type Edge = {
+  id: string
+  source: string
+  target: string
+  style?: {
+    stroke?: string
+    strokeWidth?: number
+    strokeDasharray?: string
+  }
+}
+
+export type FunnelFolder = {
+  id: string
+  name: string
+  parentId: string | null
+  createdAt: string
+}
+
+export type Funnel = {
+  id: string
+  projectId?: string | null
+  folderId?: string | null
+  name: string
+  status: 'Rascunho' | 'Ativo' | 'Pausado' | 'Concluído'
+  createdAt: string
+  nodes: Node[]
+  edges: Edge[]
+  edgeStyle?: 'curved' | 'straight' | 'orthogonal'
+}
+
+export type Subtask = {
+  id: string
+  title: string
+  isCompleted: boolean
+}
+
+export type Comment = {
+  id: string
+  author: string
+  avatar?: string
+  content: string
+  createdAt: string
+}
+
+export type Task = {
+  id: string
+  title: string
+  projectId?: string | null
+  funnelId?: string
+  nodeId?: string
+  blockId?: string
+  priority: 'Baixa' | 'Média' | 'Alta'
+  status: 'Pendente' | 'Em Progresso' | 'Concluída' | 'A Fazer' | 'Concluído'
+  deadline?: string
+  description?: string
+  assignee?: string
+  avatar?: string
+  category?: string
+  categoryColor?: string
+  dateLabel?: string
+  dateColor?: string
+  iconType?: 'clock' | 'alert' | 'dot' | 'comment' | 'check'
+  progress?: number
+  assignees?: { initials: string; color: string }[]
+  subtasks?: Subtask[]
+  comments?: Comment[]
+  attachmentCount?: number
+}
+
+export type Folder = {
+  id: string
+  projectId?: string | null
+  module: 'project' | 'asset' | 'swipe' | 'insight' | 'funnel'
+  name: string
+  parentId: string | null
+  createdAt: string
+  isExpanded?: boolean
+}
+
+export type Document = {
+  id: string
+  projectId?: string | null
+  funnelId?: string
+  nodeId?: string
+  title: string
+  content: string
+  updatedAt: string
+  folderId?: string | null
+}
+
+export type Resource = {
+  id: string
+  projectId?: string | null
+  type: 'image' | 'link' | 'note' | 'file'
+  title: string
+  content: string
+  tags: string[]
+  folderId?: string | null
+  isPinned: boolean
+  createdAt: string
+  thumbnail?: string
+}
+
+export type ResourceFolder = {
+  id: string
+  name: string
+  parentId: string | null
+  createdAt: string
+}
+
+export type Asset = {
+  id: string
+  projectId?: string | null
+  name: string
+  url: string
+  type: string
+  category?: string
+  tags?: string[]
+}
