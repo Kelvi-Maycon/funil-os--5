@@ -364,14 +364,29 @@ export function NodeSettingsModal({
                     </Select>
                     <Input
                       type="date"
-                      value={t.deadline ? t.deadline.split('T')[0] : ''}
-                      onChange={(e) =>
+                      value={
+                        t.deadline
+                          ? (() => {
+                              const d = new Date(t.deadline)
+                              return isNaN(d.getTime())
+                                ? ''
+                                : d.toISOString().split('T')[0]
+                            })()
+                          : ''
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value
+                        if (!val) {
+                          updateTask(t.id, { deadline: undefined })
+                          return
+                        }
+                        const parsedDate = new Date(val)
                         updateTask(t.id, {
-                          deadline: e.target.value
-                            ? new Date(e.target.value).toISOString()
+                          deadline: !isNaN(parsedDate.getTime())
+                            ? parsedDate.toISOString()
                             : undefined,
                         })
-                      }
+                      }}
                       className="h-8 rounded-[8px] text-[12px] bg-card border-border text-foreground font-bold flex-1 shadow-sm focus-visible:border-primary"
                     />
                   </div>
