@@ -31,6 +31,20 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
+function isValidDate(dateStr?: string): boolean {
+  if (!dateStr) return false
+  const d = new Date(dateStr)
+  return !isNaN(d.getTime())
+}
+
+function safeFormatDate(
+  dateStr?: string,
+  dateFormat: string = 'dd/MM',
+): string {
+  if (!isValidDate(dateStr)) return '---'
+  return format(new Date(dateStr as string), dateFormat)
+}
+
 export default function Index() {
   const [projects] = useProjectStore()
   const [tasks] = useTaskStore()
@@ -46,12 +60,17 @@ export default function Index() {
   const activeFunnels = funnels.filter((f) => f.status === 'Ativo').length
 
   const today = startOfToday()
-  const overdueTasks = pendingTasks.filter((t) =>
-    isBefore(new Date(t.deadline), today),
+  const overdueTasks = pendingTasks.filter(
+    (t) =>
+      isValidDate(t.deadline) &&
+      isBefore(new Date(t.deadline as string), today),
   )
-  const todayTasks = pendingTasks.filter((t) => isToday(new Date(t.deadline)))
+  const todayTasks = pendingTasks.filter(
+    (t) => isValidDate(t.deadline) && isToday(new Date(t.deadline as string)),
+  )
   const weekTasks = pendingTasks.filter((t) => {
-    const d = new Date(t.deadline)
+    if (!isValidDate(t.deadline)) return false
+    const d = new Date(t.deadline as string)
     return isThisWeek(d) && !isToday(d) && !isBefore(d, today)
   })
 
@@ -210,7 +229,7 @@ export default function Index() {
                     {t.title}
                   </span>
                   <span className="text-[10px] text-red-500 font-semibold shrink-0">
-                    {format(new Date(t.deadline), 'dd/MM')}
+                    {safeFormatDate(t.deadline, 'dd/MM')}
                   </span>
                 </div>
               ))}
@@ -282,7 +301,7 @@ export default function Index() {
                     {t.title}
                   </span>
                   <span className="text-[10px] text-muted-foreground font-semibold shrink-0">
-                    {format(new Date(t.deadline), 'dd/MM')}
+                    {safeFormatDate(t.deadline, 'dd/MM')}
                   </span>
                 </div>
               ))}
@@ -329,7 +348,7 @@ export default function Index() {
                       {t.title}
                     </span>
                     <span className="text-xs uppercase font-semibold text-white/60">
-                      {format(new Date(t.deadline), 'dd/MM/yyyy')}
+                      {safeFormatDate(t.deadline, 'dd/MM/yyyy')}
                     </span>
                   </div>
                   <Badge
