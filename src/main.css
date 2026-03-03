@@ -6,60 +6,76 @@
 
 @layer base {
   :root {
-    --brand: 24 49% 52%; /* #C07848 */
-    --brand-light: 30 54% 71%; /* #DEB48E */
-    --brand-dark: 15 22% 21%; /* #42332A */
+    /* === SPACING SCALE (4px base) === */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
 
-    --bg-app: 36 33% 95%; /* #F6F2EC */
-    --bg-sidebar: 36 30% 91%; /* #EEE9E1 */
-    --bg-card: 0 0% 100%; /* White for cleaner look */
+    /* === BRAND COLORS === */
+    --brand: 24 49% 52%;
+    --brand-light: 30 54% 71%;
+    --brand-dark: 15 22% 21%;
 
-    --text-primary: 15 22% 15%; /* Darker for better contrast */
-    --text-secondary: 29 13% 49%; /* #8C7D6E */
-    --text-muted: 29 18% 66%; /* #B8A898 */
+    /* === SURFACE COLORS (Light) === */
+    --bg-app: 36 33% 96%;
+    --bg-sidebar: 36 30% 92%;
+    --bg-card: 0 0% 100%;
+    --bg-elevated: 0 0% 100%;
 
-    --border: 35 20% 88%; /* Adjusted for pure white cards */
-    --border-light: 36 30% 91%; /* #EEE9E1 */
+    /* === TEXT COLORS === */
+    --text-primary: 15 22% 12%;
+    --text-secondary: 29 13% 45%;
+    --text-muted: 29 18% 62%;
+    --text-inverse: 0 0% 100%;
 
-    --success: 149 43% 42%; /* #3D9A6A */
+    /* === BORDER COLORS === */
+    --border: 35 20% 88%;
+    --border-light: 36 30% 92%;
+    --border-focus: var(--brand);
+
+    /* === SEMANTIC COLORS === */
+    --success: 149 43% 42%;
     --success-foreground: 0 0% 100%;
-    --warning: 42 63% 55%; /* #D4A843 */
+    --success-bg: 149 43% 95%;
+    --warning: 42 63% 55%;
     --warning-foreground: 0 0% 100%;
-    --danger: 7 54% 49%; /* #C0503A */
+    --warning-bg: 42 63% 95%;
+    --danger: 7 54% 49%;
     --danger-foreground: 0 0% 100%;
-    --info: 221 83% 53%; /* #1d4ed8 */
+    --danger-bg: 7 54% 95%;
+    --info: 221 83% 53%;
     --info-foreground: 0 0% 100%;
+    --info-bg: 221 83% 95%;
 
-    /* Shadcn UI Mapping */
+    /* === SHADCN MAPPING === */
     --background: var(--bg-app);
     --foreground: var(--text-primary);
-
     --card: var(--bg-card);
     --card-foreground: var(--text-primary);
-
     --popover: var(--bg-card);
     --popover-foreground: var(--text-primary);
-
     --primary: var(--brand);
     --primary-foreground: 0 0% 100%;
-
     --secondary: var(--bg-sidebar);
     --secondary-foreground: var(--text-primary);
-
     --muted: var(--bg-sidebar);
     --muted-foreground: var(--text-secondary);
-
     --accent: var(--bg-sidebar);
     --accent-foreground: var(--brand);
-
     --destructive: var(--danger);
     --destructive-foreground: 0 0% 100%;
-
     --input: var(--border);
     --ring: var(--brand);
+    --radius: 10px;
 
-    --radius: 8px;
-
+    /* === SIDEBAR === */
     --sidebar-background: var(--bg-sidebar);
     --sidebar-foreground: var(--text-secondary);
     --sidebar-primary: var(--brand);
@@ -68,12 +84,48 @@
     --sidebar-accent-foreground: var(--brand);
     --sidebar-border: var(--border-light);
     --sidebar-ring: var(--brand);
+
+    /* === SHADOWS === */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.06), 0 4px 6px -4px rgb(0 0 0 / 0.06);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.06);
+  }
+
+  /* === DARK MODE === */
+  .dark {
+    --brand: 24 55% 58%;
+    --brand-light: 30 40% 50%;
+    --brand-dark: 15 30% 70%;
+
+    --bg-app: 220 15% 10%;
+    --bg-sidebar: 220 15% 12%;
+    --bg-card: 220 15% 14%;
+    --bg-elevated: 220 15% 16%;
+
+    --text-primary: 0 0% 93%;
+    --text-secondary: 220 10% 60%;
+    --text-muted: 220 10% 45%;
+
+    --border: 220 15% 20%;
+    --border-light: 220 15% 18%;
+
+    --success-bg: 149 43% 15%;
+    --warning-bg: 42 63% 15%;
+    --danger-bg: 7 54% 15%;
+    --info-bg: 221 83% 15%;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.25), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.2);
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
@@ -86,42 +138,89 @@
     scrollbar-color: hsl(var(--border)) transparent;
   }
 
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary)); }
+}
+
+@layer components {
+  /* === EMPTY STATE === */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-16 px-8 text-center;
   }
-  ::-webkit-scrollbar-track {
-    background: transparent;
+  .empty-state-icon {
+    @apply w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4 text-muted-foreground;
   }
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 3px;
+  .empty-state-title {
+    @apply text-lg font-semibold text-foreground mb-1;
   }
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary));
+  .empty-state-description {
+    @apply text-sm text-muted-foreground max-w-sm mb-6;
+  }
+
+  /* === SKELETON LOADER === */
+  .skeleton {
+    @apply animate-pulse rounded-lg bg-muted;
+  }
+  .skeleton-text { @apply h-4 skeleton; }
+  .skeleton-title { @apply h-6 w-48 skeleton; }
+  .skeleton-avatar { @apply w-10 h-10 rounded-full skeleton; }
+  .skeleton-card { @apply h-32 skeleton; }
+  .skeleton-metric { @apply h-10 w-20 skeleton; }
+
+  /* === CARD VARIANTS === */
+  .card-interactive {
+    @apply bg-card rounded-xl border border-border shadow-sm transition-all duration-200;
+  }
+  .card-interactive:hover {
+    @apply shadow-md border-primary/20;
+    transform: translateY(-1px);
+  }
+  .card-highlight {
+    @apply bg-card rounded-xl border-2 border-primary/20 shadow-sm;
+  }
+  .card-dark {
+    @apply bg-foreground text-background rounded-xl border-none shadow-md relative overflow-hidden;
+  }
+
+  /* === METRIC CARD === */
+  .metric-hero {
+    @apply text-5xl font-bold tracking-tight;
+  }
+  .metric-value {
+    @apply text-3xl font-bold tracking-tight;
+  }
+  .metric-label {
+    @apply text-xs uppercase tracking-wider font-semibold text-muted-foreground;
+  }
+  .metric-delta-up {
+    @apply text-xs font-semibold text-success flex items-center gap-1;
+  }
+  .metric-delta-down {
+    @apply text-xs font-semibold text-danger flex items-center gap-1;
+  }
+
+  /* === NAV GROUP === */
+  .nav-group-label {
+    @apply text-[10px] uppercase tracking-[0.1em] font-bold text-muted-foreground/60 px-3 pt-4 pb-1;
   }
 }
 
 @layer utilities {
   .canvas-grid {
     background-color: hsl(var(--background));
-    background-image: radial-gradient(
-      circle,
-      rgba(180, 160, 135, 0.45) 1px,
-      transparent 1px
-    );
+    background-image: radial-gradient(circle, rgba(180, 160, 135, 0.45) 1px, transparent 1px);
     background-size: 28px 28px;
     will-change: background-position;
   }
 
   .hover-lift {
-    transition:
-      transform 0.15s ease,
-      box-shadow 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   .hover-lift:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-lg);
   }
 
   .section-label {
@@ -129,51 +228,46 @@
   }
 
   @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   @keyframes slide-left {
-    from {
-      transform: translateX(100%);
-    }
-    to {
-      transform: translateX(0);
-    }
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
   }
 
-  .animate-fade-in {
-    animation: fade-in 0.3s ease-out forwards;
+  .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+  .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
+  .animate-slide-left { animation: slide-left 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-scale-in { animation: scale-in 0.2s ease-out forwards; }
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent 25%, hsl(var(--muted)) 50%, transparent 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
   }
 
-  .animate-slide-left {
-    animation: slide-left 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
+  .stagger-1 { animation-delay: 50ms; }
+  .stagger-2 { animation-delay: 100ms; }
+  .stagger-3 { animation-delay: 150ms; }
+  .stagger-4 { animation-delay: 200ms; }
 
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  .task-scrollbar::-webkit-scrollbar {
-    display: block;
-    width: 6px;
-  }
-  .task-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .task-scrollbar::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 3px;
-  }
-  .task-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary));
-  }
+  .task-scrollbar::-webkit-scrollbar { display: block; width: 6px; }
+  .task-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .task-scrollbar::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+  .task-scrollbar::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary)); }
 }

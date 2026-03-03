@@ -23,19 +23,38 @@ import {
   PanelLeft,
   PanelLeftClose,
   Plus,
+  Settings,
+  BarChart3,
+  ImageIcon,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import QuickActionModal from '@/components/QuickActionModal'
 import { DataManager } from '@/components/DataManager'
 import useQuickActionStore from '@/stores/useQuickActionStore'
 
-const navItems = [
-  { title: 'Dashboard', icon: LayoutDashboard, url: '/' },
-  { title: 'Projetos', icon: Folder, url: '/projetos' },
-  { title: 'Canvas', icon: Network, url: '/canvas' },
-  { title: 'Tarefas', icon: CheckSquare, url: '/tarefas' },
-  { title: 'Documentos', icon: FileText, url: '/documentos' },
-  { title: 'Biblioteca', icon: BookOpen, url: '/biblioteca' },
+const navGroups = [
+  {
+    label: 'Principal',
+    items: [
+      { title: 'Dashboard', icon: LayoutDashboard, url: '/' },
+      { title: 'Projetos', icon: Folder, url: '/projetos' },
+    ],
+  },
+  {
+    label: 'Ferramentas',
+    items: [
+      { title: 'Canvas', icon: Network, url: '/canvas' },
+      { title: 'Tarefas', icon: CheckSquare, url: '/tarefas' },
+      { title: 'Documentos', icon: FileText, url: '/documentos' },
+    ],
+  },
+  {
+    label: 'Recursos',
+    items: [
+      { title: 'Biblioteca', icon: BookOpen, url: '/biblioteca' },
+    ],
+  },
 ]
 
 function AppSidebar() {
@@ -98,37 +117,43 @@ function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-6 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3 flex flex-col gap-2 overflow-y-auto overflow-x-hidden no-scrollbar group-data-[collapsible=icon]:items-center">
-        <SidebarGroup className="group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-auto">
-          <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center">
-            {navItems.map((item) => {
-              const isActive =
-                location.pathname === item.url ||
-                (item.url !== '/' && location.pathname.startsWith(item.url))
-              return (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    tooltip={item.title}
-                    className="group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center rounded-lg"
-                  >
-                    <Link to={item.url}>
-                      <item.icon
-                        size={20}
-                        strokeWidth={isActive ? 2.5 : 2}
-                        className="shrink-0 group-data-[collapsible=icon]:mx-auto"
-                      />
-                      <span className="truncate whitespace-nowrap overflow-hidden transition-all duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden font-semibold">
-                        {item.title}
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
+      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3 flex flex-col gap-1 overflow-y-auto overflow-x-hidden no-scrollbar group-data-[collapsible=icon]:items-center">
+        {navGroups.map((group) => (
+          <SidebarGroup key={group.label} className="group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-auto">
+            {/* Group label - hidden when collapsed */}
+            <span className="nav-group-label group-data-[collapsible=icon]:hidden">
+              {group.label}
+            </span>
+            <SidebarMenu className="gap-1 group-data-[collapsible=icon]:items-center">
+              {group.items.map((item) => {
+                const isActive =
+                  location.pathname === item.url ||
+                  (item.url !== '/' && location.pathname.startsWith(item.url))
+                return (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.title}
+                      className="group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center rounded-lg"
+                    >
+                      <Link to={item.url}>
+                        <item.icon
+                          size={20}
+                          strokeWidth={isActive ? 2.5 : 2}
+                          className="shrink-0 group-data-[collapsible=icon]:mx-auto"
+                        />
+                        <span className="truncate whitespace-nowrap overflow-hidden transition-all duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden font-semibold">
+                          {item.title}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:py-3 shrink-0 transition-all duration-200 border-t border-border">
@@ -162,15 +187,6 @@ export default function Layout() {
     <SidebarProvider defaultOpen={false}>
       <AppSidebar />
       <SidebarInset className="bg-background relative flex flex-col h-screen overflow-hidden w-full transition-all duration-200 ease-in-out">
-        <header className="h-20 flex items-center justify-between px-6 border-b border-border bg-card md:hidden shrink-0 z-10 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0">
-              <Folder size={18} className="fill-current" />
-            </div>
-            <span className="font-bold text-lg text-foreground">Funil OS</span>
-          </div>
-          <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
-        </header>
         <main className="flex-1 overflow-auto animate-fade-in relative flex flex-col no-scrollbar">
           <Outlet />
         </main>
