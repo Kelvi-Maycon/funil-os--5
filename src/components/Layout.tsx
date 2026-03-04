@@ -23,19 +23,35 @@ import {
   PanelLeft,
   PanelLeftClose,
   Plus,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import QuickActionModal from '@/components/QuickActionModal'
 import { DataManager } from '@/components/DataManager'
 import useQuickActionStore from '@/stores/useQuickActionStore'
 
-const navItems = [
-  { title: 'Dashboard', icon: LayoutDashboard, url: '/' },
-  { title: 'Projetos', icon: Folder, url: '/projetos' },
-  { title: 'Canvas', icon: Network, url: '/canvas' },
-  { title: 'Tarefas', icon: CheckSquare, url: '/tarefas' },
-  { title: 'Documentos', icon: FileText, url: '/documentos' },
-  { title: 'Biblioteca', icon: BookOpen, url: '/biblioteca' },
+const navGroups = [
+  {
+    label: 'Principal',
+    items: [
+      { title: 'Dashboard', icon: LayoutDashboard, url: '/' },
+      { title: 'Projetos', icon: Folder, url: '/projetos' },
+      { title: 'Canvas', icon: Network, url: '/canvas' },
+    ],
+  },
+  {
+    label: 'Ferramentas',
+    items: [
+      { title: 'Tarefas', icon: CheckSquare, url: '/tarefas' },
+      { title: 'Documentos', icon: FileText, url: '/documentos' },
+    ],
+  },
+  {
+    label: 'Recursos',
+    items: [
+      { title: 'Biblioteca', icon: BookOpen, url: '/biblioteca' },
+    ],
+  },
 ]
 
 function AppSidebar() {
@@ -53,103 +69,101 @@ function AppSidebar() {
       <SidebarHeader
         className={cn(
           'shrink-0 transition-all duration-200 ease-in-out border-b border-border',
-          'flex flex-row items-center justify-between p-4 px-6 h-20',
+          'flex flex-row items-center justify-between p-4 px-5 h-[60px]',
           'group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-3 group-data-[collapsible=icon]:py-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:h-auto',
         )}
       >
-        {/* Expanded View */}
         <div className="flex items-center w-full justify-between group-data-[collapsible=icon]:hidden">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0 shadow-sm">
-              <Folder size={18} className="fill-current" />
+            <div className="w-8 h-8 bg-gradient-to-br from-brand to-brand-dark rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm">
+              <Sparkles size={16} />
             </div>
-            <span className="font-bold text-lg text-foreground truncate whitespace-nowrap">
+            <span className="font-bold text-base tracking-tight text-foreground truncate whitespace-nowrap">
               Funil OS
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setQuickAction({ mode: 'create', type: 'task' })}
-              className="w-8 h-8 bg-background hover:bg-primary/10 text-primary hover:text-primary rounded-lg flex items-center justify-center shrink-0 transition-colors duration-100 outline-none"
+              className="w-7 h-7 bg-brand-subtle hover:bg-brand/10 text-brand rounded-md flex items-center justify-center shrink-0 transition-all duration-100 outline-none focus-ring"
+              title="Nova tarefa"
             >
-              <Plus size={18} />
+              <Plus size={15} />
             </button>
-            <div className="text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center w-8 h-8 transition-colors duration-100 cursor-pointer">
-              <PanelLeftClose size={20} />
+            <div className="text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center">
+              <SidebarTrigger>
+                <PanelLeftClose size={16} />
+              </SidebarTrigger>
             </div>
           </div>
         </div>
 
-        {/* Collapsed View */}
-        <div className="hidden group-data-[collapsible=icon]:flex flex-col items-center gap-3 w-full">
-          <div className="text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center w-8 h-8 transition-colors duration-100 cursor-pointer">
-            <PanelLeft size={20} />
+        <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-brand to-brand-dark rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm">
+            <Sparkles size={16} />
           </div>
-          <button
-            onClick={() => setQuickAction({ mode: 'create', type: 'task' })}
-            className="w-8 h-8 bg-background hover:bg-primary/10 text-primary hover:text-primary rounded-lg flex items-center justify-center shrink-0 transition-colors duration-100 outline-none"
-          >
-            <Plus size={18} />
-          </button>
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0 shadow-sm">
-            <Folder size={18} className="fill-current" />
-          </div>
+        </div>
+        <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center text-muted-foreground hover:text-foreground">
+          <SidebarTrigger>
+            <PanelLeft size={16} />
+          </SidebarTrigger>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-6 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3 flex flex-col gap-2 overflow-y-auto overflow-x-hidden no-scrollbar group-data-[collapsible=icon]:items-center">
-        <SidebarGroup className="group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-auto">
-          <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center">
-            {navItems.map((item) => {
-              const isActive =
-                location.pathname === item.url ||
-                (item.url !== '/' && location.pathname.startsWith(item.url))
-              return (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    tooltip={item.title}
-                    className="group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center rounded-lg"
-                  >
-                    <Link to={item.url}>
-                      <item.icon
-                        size={20}
-                        strokeWidth={isActive ? 2.5 : 2}
-                        className="shrink-0 group-data-[collapsible=icon]:mx-auto"
-                      />
-                      <span className="truncate whitespace-nowrap overflow-hidden transition-all duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden font-semibold">
-                        {item.title}
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
+      <SidebarContent className="p-2 gap-0">
+        {navGroups.map((group) => (
+          <SidebarGroup key={group.label} className="py-2">
+            <div className="section-header group-data-[collapsible=icon]:hidden mb-1">
+              {group.label}
+            </div>
+            <SidebarMenu className="space-y-0.5">
+              {group.items.map((item) => {
+                const isActive =
+                  item.url === '/'
+                    ? location.pathname === '/'
+                    : location.pathname.startsWith(item.url)
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.title}
+                      className={cn(
+                        'h-9 rounded-lg px-3 gap-3 font-medium text-[13px] transition-all duration-150',
+                        isActive
+                          ? 'bg-brand-subtle text-brand font-semibold shadow-none'
+                          : 'text-muted-foreground hover:bg-brand-ghost hover:text-foreground',
+                      )}
+                    >
+                      <Link to={item.url}>
+                        <item.icon
+                          size={17}
+                          className={cn(
+                            'shrink-0 transition-colors',
+                            isActive ? 'text-brand' : 'text-muted-foreground',
+                          )}
+                        />
+                        <span className="truncate">{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
-      <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:py-3 shrink-0 transition-all duration-200 border-t border-border">
-        <div className="flex items-center w-full justify-between group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-3">
-          <div className="flex items-center group-data-[collapsible=icon]:justify-center w-full">
-            <img
-              src="https://img.usecurling.com/ppl/thumbnail?gender=male&seed=8"
-              alt="Avatar"
-              className="w-10 h-10 rounded-full border border-border shrink-0 mr-3 group-data-[collapsible=icon]:mr-0 shadow-sm"
-            />
-            <div className="flex flex-col overflow-hidden transition-all duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden">
-              <span className="text-sm font-bold text-foreground truncate whitespace-nowrap">
-                Diego K.
-              </span>
-              <span className="text-xs font-semibold text-muted-foreground truncate whitespace-nowrap">
-                diego@funilos.com
-              </span>
-            </div>
+      <SidebarFooter className="border-t border-border p-3 group-data-[collapsible=icon]:p-2">
+        <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-light to-brand flex items-center justify-center text-white text-xs font-bold shrink-0">
+            DK
           </div>
-          <div className="flex items-center gap-1 overflow-hidden transition-colors duration-100 text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:justify-center w-full">
-            <DataManager />
+          <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
+            <span className="text-[13px] font-semibold text-foreground truncate">Diego K.</span>
+            <span className="text-[11px] text-muted-foreground truncate">Growth Lead</span>
           </div>
         </div>
       </SidebarFooter>
@@ -160,22 +174,16 @@ function AppSidebar() {
 export default function Layout() {
   return (
     <SidebarProvider defaultOpen={false}>
-      <AppSidebar />
-      <SidebarInset className="bg-background relative flex flex-col h-screen overflow-hidden w-full transition-all duration-200 ease-in-out">
-        <header className="h-20 flex items-center justify-between px-6 border-b border-border bg-card md:hidden shrink-0 z-10 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0">
-              <Folder size={18} className="fill-current" />
-            </div>
-            <span className="font-bold text-lg text-foreground">Funil OS</span>
-          </div>
-          <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
-        </header>
-        <main className="flex-1 overflow-auto animate-fade-in relative flex flex-col no-scrollbar">
-          <Outlet />
-        </main>
-      </SidebarInset>
-      <QuickActionModal />
+      <div className="flex min-h-screen w-full bg-background">
+        <AppSidebar />
+        <SidebarInset className="flex-1 flex flex-col min-w-0 transition-[margin] duration-200 ease-in-out">
+          <main className="flex-1 overflow-y-auto">
+            <Outlet />
+          </main>
+        </SidebarInset>
+        <QuickActionModal />
+        <DataManager />
+      </div>
     </SidebarProvider>
   )
 }
