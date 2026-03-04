@@ -31,7 +31,7 @@ const BLOCK_CATEGORIES = [
   {
     title: 'DELAYS',
     iconColor: 'text-primary',
-    blocks: [{ type: 'Wait', icon: Clock, label: 'Wait Until' }],
+    blocks: [{ type: 'WaitUntil', icon: Clock, label: 'Wait Until' }],
   },
   {
     title: 'PAGES',
@@ -41,7 +41,7 @@ const BLOCK_CATEGORIES = [
       { type: 'VSL', icon: PlayCircle, label: 'VSL Page' },
       { type: 'Checkout', icon: CreditCard, label: 'Checkout' },
       { type: 'Upsell', icon: ArrowUpCircle, label: 'Upsell' },
-      { type: 'ThankYou', icon: CheckCircle, label: 'Thank You' },
+      { type: 'Obrigado', icon: CheckCircle, label: 'Thank You' },
       { type: 'Form', icon: FileText, label: 'Form' },
       { type: 'Ad', icon: Megaphone, label: 'Ad Campaign' },
     ],
@@ -54,7 +54,7 @@ export default function BlockPalette({ funnel }: { funnel: Funnel }) {
   }
 
   return (
-    <div className="w-[260px] max-h-[calc(100vh-140px)] bg-card rounded-[16px] border border-border shadow-[0_4px_24px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden">
+    <div className="w-[260px] max-h-[calc(100vh-140px)] bg-card rounded-2xl border border-border shadow-[0_4px_24px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto p-5 no-scrollbar space-y-8">
         {BLOCK_CATEGORIES.map((cat, idx) => (
           <div key={idx} className="space-y-4">
@@ -70,14 +70,14 @@ export default function BlockPalette({ funnel }: { funnel: Funnel }) {
                   key={block.type}
                   draggable
                   onDragStart={(e) => onDragStart(e, block.type)}
-                  className="flex items-center gap-4 p-3 hover:bg-background rounded-[12px] cursor-grab active:cursor-grabbing transition-colors text-foreground border border-transparent hover:border-border"
+                  className="flex items-center gap-4 p-3 hover:bg-background rounded-xl cursor-grab active:cursor-grabbing transition-colors text-foreground border border-transparent hover:border-border"
                 >
                   <block.icon
                     size={18}
                     className="text-muted-foreground shrink-0"
                     strokeWidth={2}
                   />
-                  <span className="text-[13px] font-bold truncate">
+                  <span className="text-[14px] font-bold truncate">
                     {block.label}
                   </span>
                 </div>

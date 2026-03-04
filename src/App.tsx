@@ -21,22 +21,28 @@ const Library = lazy(() => import('./pages/Library'))
 function AppSkeleton() {
   return (
     <div className="flex h-screen w-screen bg-background">
-      <div className="w-64 border-r border-border bg-sidebar p-4 hidden md:flex flex-col gap-4 shrink-0">
-        <div className="h-8 w-32 bg-muted rounded-md animate-pulse" />
-        <div className="space-y-2 mt-8">
-          {[1,2,3,4,5,6].map(i => <div key={i} className="h-10 w-full bg-muted rounded-md animate-pulse" />)}
+      <div className="w-64 border-r border-border bg-sidebar p-4 hidden md:flex flex-col gap-6 shrink-0">
+        <div className="h-10 w-32 bg-muted rounded-md animate-pulse" />
+        <div className="space-y-3 mt-8">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="h-12 w-full bg-muted rounded-lg animate-pulse"
+            />
+          ))}
         </div>
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="h-20 border-b border-border flex items-center px-6 shrink-0 bg-background">
-          <div className="h-8 w-48 bg-muted rounded-md animate-pulse" />
+          <div className="h-10 w-48 bg-muted rounded-md animate-pulse" />
         </div>
-        <div className="p-8 flex-1 gap-6 flex flex-col overflow-auto bg-background">
-          <div className="h-32 w-full bg-muted rounded-xl animate-pulse shrink-0" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
-             <div className="h-48 bg-muted rounded-xl animate-pulse" />
-             <div className="h-48 bg-muted rounded-xl animate-pulse" />
-             <div className="h-48 bg-muted rounded-xl animate-pulse" />
+        <div className="p-8 flex-1 gap-8 flex flex-col overflow-auto bg-background">
+          <div className="h-48 w-full bg-muted rounded-xl animate-pulse shrink-0" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 shrink-0">
+            <div className="h-32 bg-muted rounded-xl animate-pulse" />
+            <div className="h-32 bg-muted rounded-xl animate-pulse" />
+            <div className="h-32 bg-muted rounded-xl animate-pulse" />
+            <div className="h-32 bg-muted rounded-xl animate-pulse" />
           </div>
         </div>
       </div>
@@ -74,4 +80,3 @@ const App = () => (
 )
 
 export default App
-

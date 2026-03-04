@@ -161,4 +161,3 @@ export type Asset = {
   category?: string
   tags?: string[]
 }
-

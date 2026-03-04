@@ -188,7 +188,7 @@ export default function RightPanel({
           </Button>
         </div>
         <input
-          className="w-full bg-transparent text-[24px] font-bold text-foreground outline-none placeholder:text-muted-foreground"
+          className="w-full bg-transparent text-[20px] font-bold text-foreground outline-none placeholder:text-muted-foreground"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Nome do Nó"
@@ -200,31 +200,31 @@ export default function RightPanel({
         onValueChange={setActiveTab}
         className="flex-1 flex flex-col min-h-0 overflow-hidden"
       >
-        <TabsList className="mx-6 mt-6 grid grid-cols-4 gap-1 bg-background p-1 rounded-[10px] border border-border">
+        <TabsList className="mx-6 mt-6 grid grid-cols-4 gap-1 bg-background p-1 rounded-lg border border-border">
           <TabsTrigger
             value="details"
-            className="text-[10px] sm:text-[11px] font-bold rounded-[8px] data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 py-1.5"
+            className="text-[12px] font-bold rounded-md data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 py-1.5"
           >
             <Settings size={14} />{' '}
             <span className="hidden sm:inline">Conf</span>
           </TabsTrigger>
           <TabsTrigger
             value="content"
-            className="text-[10px] sm:text-[11px] font-bold rounded-[8px] data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 py-1.5"
+            className="text-[12px] font-bold rounded-md data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 py-1.5"
           >
             <FileText size={14} />{' '}
             <span className="hidden sm:inline">Docs</span>
           </TabsTrigger>
           <TabsTrigger
             value="tasks"
-            className="text-[10px] sm:text-[11px] font-bold rounded-[8px] data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 py-1.5"
+            className="text-[12px] font-bold rounded-md data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 py-1.5"
           >
             <CheckSquare size={14} />{' '}
             <span className="hidden sm:inline">Tasks</span>
           </TabsTrigger>
           <TabsTrigger
             value="resources"
-            className="text-[10px] sm:text-[11px] font-bold rounded-[8px] data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 py-1.5"
+            className="text-[12px] font-bold rounded-md data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 py-1.5"
           >
             <ImageIcon size={14} />{' '}
             <span className="hidden sm:inline">Assets</span>
@@ -244,7 +244,7 @@ export default function RightPanel({
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-background border border-border rounded-[10px]">
+          <div className="flex items-center justify-between p-4 bg-background border border-border rounded-lg">
             <div className="flex flex-col space-y-0.5">
               <Label className="text-[14px] font-bold text-foreground">
                 Modo Tarefa
@@ -268,7 +268,7 @@ export default function RightPanel({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Adicione contexto aqui..."
-              className="min-h-[160px] bg-background border border-border shadow-none focus-visible:ring-primary/20 rounded-[10px] p-4 resize-none text-[14px] font-medium text-foreground"
+              className="min-h-[160px] bg-background border border-border shadow-none focus-visible:ring-primary/20 rounded-lg p-4 resize-none text-[14px] font-medium text-foreground"
             />
           </div>
         </TabsContent>
@@ -279,10 +279,10 @@ export default function RightPanel({
         >
           <div className="flex items-center gap-2">
             <Select onValueChange={(val) => linkResource('doc', val)}>
-              <SelectTrigger className="flex-1 bg-background border-border rounded-[10px] text-foreground font-bold h-11">
+              <SelectTrigger className="flex-1 bg-background border-border rounded-lg text-foreground font-bold h-11">
                 <SelectValue placeholder="Vincular Documento..." />
               </SelectTrigger>
-              <SelectContent className="rounded-[10px] border-border">
+              <SelectContent className="rounded-lg border-border">
                 {projDocs.map((d) => (
                   <SelectItem
                     key={d.id}
@@ -306,7 +306,7 @@ export default function RightPanel({
           {linkedDocs.map((doc) => (
             <div
               key={doc.id}
-              className="space-y-3 border border-border rounded-[10px] p-4 bg-card shadow-sm hover-lift"
+              className="space-y-3 border border-border rounded-lg p-4 bg-card shadow-sm hover-lift"
             >
               <div className="font-bold text-foreground flex items-center gap-2 border-b border-border pb-3">
                 <FileText size={16} className="text-primary" /> {doc.title}
@@ -335,10 +335,10 @@ export default function RightPanel({
         >
           <div className="flex items-center gap-2">
             <Select onValueChange={(val) => linkResource('task', val)}>
-              <SelectTrigger className="flex-1 bg-background border-border rounded-[10px] text-foreground font-bold h-11">
+              <SelectTrigger className="flex-1 bg-background border-border rounded-lg text-foreground font-bold h-11">
                 <SelectValue placeholder="Importar Tarefa..." />
               </SelectTrigger>
-              <SelectContent className="rounded-[10px] border-border">
+              <SelectContent className="rounded-lg border-border">
                 {projTasks.map((t) => (
                   <SelectItem
                     key={t.id}
@@ -357,7 +357,7 @@ export default function RightPanel({
               </SelectContent>
             </Select>
             <Button
-              className="bg-background text-foreground hover:bg-border border border-border rounded-[10px] w-11 h-11 p-0 shrink-0"
+              className="bg-background text-foreground hover:bg-border border border-border rounded-lg w-11 h-11 p-0 shrink-0"
               onClick={handleCreateTask}
             >
               <Plus size={16} />
@@ -367,7 +367,7 @@ export default function RightPanel({
             {linkedTasks.map((t) => (
               <div
                 key={t.id}
-                className="p-4 border border-border rounded-[10px] bg-background flex flex-col gap-3 hover-lift"
+                className="p-4 border border-border rounded-lg bg-background flex flex-col gap-3 hover-lift"
               >
                 <div className="flex justify-between items-start">
                   <span className="font-bold text-sm text-foreground leading-tight">
@@ -391,10 +391,10 @@ export default function RightPanel({
         >
           <div className="flex items-center gap-2">
             <Select onValueChange={(val) => linkResource('asset', val)}>
-              <SelectTrigger className="flex-1 bg-background border-border rounded-[10px] text-foreground font-bold h-11">
+              <SelectTrigger className="flex-1 bg-background border-border rounded-lg text-foreground font-bold h-11">
                 <SelectValue placeholder="Vincular Recurso..." />
               </SelectTrigger>
-              <SelectContent className="rounded-[10px] border-border">
+              <SelectContent className="rounded-lg border-border">
                 {projResources.map((a) => (
                   <SelectItem
                     key={a.id}
@@ -414,7 +414,7 @@ export default function RightPanel({
             {linkedResources.map((a) => (
               <div
                 key={a.id}
-                className="rounded-[12px] overflow-hidden border border-border bg-card cursor-pointer hover:border-primary transition-colors hover-lift"
+                className="rounded-lg overflow-hidden border border-border bg-card cursor-pointer hover:border-primary transition-colors hover-lift"
                 onClick={() => a.type === 'image' && setInspectResource(a)}
               >
                 {a.type === 'image' ? (
@@ -428,7 +428,7 @@ export default function RightPanel({
                     {a.content}
                   </div>
                 )}
-                <div className="p-3 text-[13px] font-bold text-foreground border-t border-border">
+                <div className="p-3 text-[14px] font-bold text-foreground border-t border-border">
                   {a.title}
                 </div>
               </div>
@@ -438,7 +438,7 @@ export default function RightPanel({
       </Tabs>
 
       <div className="p-6 border-t border-border shrink-0 bg-card">
-        <Button className="w-full h-12 text-[15px]" onClick={handleSave}>
+        <Button className="w-full h-12 text-[14px]" onClick={handleSave}>
           Salvar Alterações
         </Button>
       </div>

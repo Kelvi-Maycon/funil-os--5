@@ -52,6 +52,49 @@ const icons: Record<string, any> = {
   Goal: CheckCircle,
 }
 
+const getTypeTheme = (type: string) => {
+  const themes: Record<string, { color: string; border: string; bg: string }> =
+    {
+      Ad: {
+        color: 'hsl(var(--info))',
+        border: 'hsl(var(--info))',
+        bg: 'hsl(var(--info) / 0.1)',
+      },
+      LandingPage: {
+        color: 'hsl(var(--primary))',
+        border: 'hsl(var(--primary))',
+        bg: 'hsl(var(--primary) / 0.1)',
+      },
+      Email: {
+        color: 'hsl(var(--warning))',
+        border: 'hsl(var(--warning))',
+        bg: 'hsl(var(--warning) / 0.1)',
+      },
+      Checkout: {
+        color: 'hsl(var(--success))',
+        border: 'hsl(var(--success))',
+        bg: 'hsl(var(--success) / 0.1)',
+      },
+      WaitUntil: {
+        color: 'hsl(var(--muted-foreground))',
+        border: 'hsl(var(--border))',
+        bg: 'hsl(var(--muted))',
+      },
+      VSL: {
+        color: '#8b5cf6',
+        border: '#8b5cf6',
+        bg: 'rgba(139, 92, 246, 0.1)',
+      },
+    }
+  return (
+    themes[type] || {
+      color: 'hsl(var(--primary))',
+      border: 'hsl(var(--primary))',
+      bg: 'hsl(var(--primary) / 0.1)',
+    }
+  )
+}
+
 type NodeItemProps = {
   node: Node
   selected: boolean
@@ -234,9 +277,7 @@ export default function NodeItem({
     const handlePointerUp = (upEv: PointerEvent) => {
       try {
         target.releasePointerCapture(upEv.pointerId)
-      } catch (err) {
-        /* ignore */
-      }
+      } catch (err) {}
       document.body.style.userSelect = ''
       let dx = (upEv.clientX - startX) / scale
       let dy = (upEv.clientY - startY) / scale
@@ -312,9 +353,7 @@ export default function NodeItem({
     const handlePointerUp = (upEv: PointerEvent) => {
       try {
         target.releasePointerCapture(upEv.pointerId)
-      } catch (err) {
-        /* ignore */
-      }
+      } catch (err) {}
       setIsResizing(false)
       document.body.style.userSelect = ''
 
@@ -417,7 +456,7 @@ export default function NodeItem({
       >
         <div
           ref={textRef}
-          className="font-bold text-[15px] whitespace-pre-wrap outline-none min-h-[24px] min-w-[20px]"
+          className="font-bold text-[16px] whitespace-pre-wrap outline-none min-h-[24px] min-w-[20px]"
           contentEditable={isEditingText}
           suppressContentEditableWarning
           onPointerDown={(e) => {
@@ -653,7 +692,7 @@ export default function NodeItem({
       >
         <div
           ref={textRef}
-          className="font-bold text-[15px] whitespace-pre-wrap outline-none cursor-text"
+          className="font-bold text-[16px] whitespace-pre-wrap outline-none cursor-text"
           contentEditable={isEditingText}
           suppressContentEditableWarning
           onPointerDown={(e) => {
@@ -710,6 +749,7 @@ export default function NodeItem({
   const customFill = node.style?.fill || node.data.color
   const customStroke = node.style?.stroke
   const Icon = icons[node.type] || icons.Default
+  const theme = getTypeTheme(node.type)
 
   return (
     <div
@@ -748,6 +788,8 @@ export default function NodeItem({
             : undefined,
         borderStyle: 'solid',
         borderWidth: selected ? '2px' : '1px',
+        borderLeftWidth: '6px',
+        borderLeftColor: theme.border,
         willChange: 'transform',
       }}
       onPointerDown={handlePointerDown}
@@ -799,51 +841,52 @@ export default function NodeItem({
         )}
       </div>
 
-      <div className="absolute -top-3.5 right-4 flex items-center gap-1.5 z-20">
-        <div
-          className={cn(
-            'flex items-center gap-1.5 transition-opacity',
-            selected || isHovered
-              ? 'opacity-100'
-              : 'opacity-0 pointer-events-none',
-          )}
-        >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onOpenSettings()
-                }}
-                className="interactive-icon w-8 h-8 bg-white border border-border rounded-full flex items-center justify-center text-muted-foreground hover:text-primary shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-transform hover:scale-110"
-              >
-                <Settings size={14} strokeWidth={2.5} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>Configurações</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onDelete()
-                }}
-                className="interactive-icon w-8 h-8 bg-white border border-border rounded-full flex items-center justify-center text-red-500 hover:text-red-700 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-transform hover:scale-110"
-              >
-                <Trash2 size={14} strokeWidth={2.5} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>Excluir</TooltipContent>
-          </Tooltip>
-        </div>
+      <div
+        className={cn(
+          'absolute -top-3.5 right-4 flex items-center gap-1.5 z-20 transition-all duration-200',
+          selected || isHovered
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-2 pointer-events-none',
+        )}
+      >
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpenSettings()
+              }}
+              className="interactive-icon w-8 h-8 bg-white border border-border rounded-full flex items-center justify-center text-muted-foreground hover:text-primary shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-transform hover:scale-110"
+            >
+              <Settings size={14} strokeWidth={2.5} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>Configurações</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete()
+              }}
+              className="interactive-icon w-8 h-8 bg-white border border-border rounded-full flex items-center justify-center text-red-500 hover:text-red-700 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-transform hover:scale-110"
+            >
+              <Trash2 size={14} strokeWidth={2.5} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>Excluir</TooltipContent>
+        </Tooltip>
       </div>
 
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-[22px] h-[22px] rounded-[6px] bg-sidebar flex items-center justify-center">
-          <Icon size={14} strokeWidth={2.5} className="text-primary" />
+        <div
+          className="w-[24px] h-[24px] rounded-[6px] flex items-center justify-center"
+          style={{ backgroundColor: theme.bg, color: theme.color }}
+        >
+          <Icon size={14} strokeWidth={2.5} />
         </div>
-        <span className="text-[10px] uppercase tracking-[0.08em] font-bold text-primary">
+        <span className="text-[12px] uppercase tracking-[0.08em] font-bold text-muted-foreground">
           {node.type}
         </span>
       </div>
@@ -851,14 +894,14 @@ export default function NodeItem({
       <div className="flex flex-col mb-1">
         <h4
           className={cn(
-            'font-bold text-[15px] truncate leading-tight transition-all text-foreground',
+            'font-bold text-[16px] truncate leading-tight transition-all text-foreground',
             node.data.isCompleted && 'line-through opacity-70',
           )}
         >
           {node.data.name}
         </h4>
         {node.data.subtitle && (
-          <span className="text-[13px] mt-1 truncate font-medium text-muted-foreground">
+          <span className="text-[14px] mt-1 truncate font-medium text-muted-foreground">
             {node.data.subtitle}
           </span>
         )}
@@ -879,7 +922,7 @@ export default function NodeItem({
               />
               <span
                 className={cn(
-                  'text-[13px] leading-tight font-bold flex-1 transition-all break-words',
+                  'text-[14px] leading-tight font-bold flex-1 transition-all break-words',
                   task.status === 'Concluído'
                     ? 'text-muted-foreground line-through'
                     : 'text-foreground',
@@ -910,7 +953,7 @@ export default function NodeItem({
                   newTaskTitle.trim() ? handleAddTask() : setIsAddingTask(false)
                 }
                 placeholder="Nome da tarefa..."
-                className="flex-1 text-[13px] border rounded px-2 py-1 outline-none transition-all w-full font-bold bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
+                className="flex-1 text-[14px] border rounded px-2 py-1 outline-none transition-all w-full font-bold bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
               />
             </div>
           ) : (
@@ -919,7 +962,7 @@ export default function NodeItem({
                 e.stopPropagation()
                 setIsAddingTask(true)
               }}
-              className="flex items-center gap-1.5 mt-1 text-[13px] font-bold transition-colors w-full text-left py-0.5 rounded-sm interactive-icon text-muted-foreground hover:text-primary"
+              className="flex items-center gap-1.5 mt-1 text-[14px] font-bold transition-colors w-full text-left py-0.5 rounded-sm interactive-icon text-muted-foreground hover:text-primary"
             >
               <Plus size={14} strokeWidth={2.5} /> Adicionar tarefa
             </button>
@@ -939,7 +982,14 @@ export default function NodeItem({
         </div>
       )}
 
-      <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center interactive-icon opacity-0 group-hover:opacity-100 transition-opacity">
+      <div
+        className={cn(
+          'absolute -bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center interactive-icon transition-all duration-200',
+          selected || isHovered
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 -translate-y-2 pointer-events-none',
+        )}
+      >
         <button
           className="flex items-center gap-1.5 bg-white border border-border rounded-[8px] px-3 py-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.05)] text-muted-foreground hover:text-primary hover:border-primary transition-all hover:scale-[1.02]"
           onClick={(e) => {

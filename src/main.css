@@ -6,28 +6,31 @@
 
 @layer base {
   :root {
-    --brand: 24 49% 52%; 
-    --brand-light: 30 54% 71%;
-    --brand-dark: 15 22% 21%;
+    /* Brand Colors: #C2714F */
+    --brand: 18 49% 54%;
+    --brand-light: 18 49% 74%;
+    --brand-dark: 18 49% 34%;
 
-    --bg-app: 36 33% 95%;
-    --bg-sidebar: 36 30% 91%;
+    /* App Colors: #FAF7F2 */
+    --bg-app: 38 33% 96%;
+    --bg-sidebar: 0 0% 100%;
     --bg-card: 0 0% 100%;
 
-    --text-primary: 15 22% 15%;
-    --text-secondary: 29 13% 49%;
-    --text-muted: 29 18% 66%;
+    /* Text Colors: #3D2B1F */
+    --text-primary: 24 33% 18%;
+    --text-secondary: 24 15% 45%;
+    --text-muted: 24 10% 60%;
 
-    --border: 35 20% 88%;
-    --border-light: 36 30% 91%;
+    --border: 38 20% 88%;
+    --border-light: 38 20% 92%;
 
-    --success: 149 43% 42%;
+    --success: 142 60% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 42 63% 55%;
+    --warning: 35 90% 55%;
     --warning-foreground: 0 0% 100%;
-    --danger: 7 54% 49%;
+    --danger: 0 70% 55%;
     --danger-foreground: 0 0% 100%;
-    --info: 221 83% 53%;
+    --info: 210 90% 55%;
     --info-foreground: 0 0% 100%;
 
     /* Shadcn UI Mapping */
@@ -43,13 +46,13 @@
     --primary: var(--brand);
     --primary-foreground: 0 0% 100%;
 
-    --secondary: var(--bg-sidebar);
+    --secondary: var(--bg-app);
     --secondary-foreground: var(--text-primary);
 
-    --muted: var(--bg-sidebar);
+    --muted: var(--bg-app);
     --muted-foreground: var(--text-secondary);
 
-    --accent: var(--bg-sidebar);
+    --accent: var(--bg-app);
     --accent-foreground: var(--brand);
 
     --destructive: var(--danger);
@@ -66,7 +69,7 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: var(--bg-app);
     --sidebar-accent-foreground: var(--brand);
-    --sidebar-border: var(--border-light);
+    --sidebar-border: var(--border);
     --sidebar-ring: var(--brand);
   }
 
@@ -126,7 +129,7 @@
   }
 
   .section-label {
-    @apply text-xs uppercase tracking-[0.08em] font-bold text-muted-foreground;
+    @apply text-[12px] uppercase tracking-[0.08em] font-bold text-muted-foreground;
   }
 
   @keyframes fade-in {
@@ -150,4 +153,3 @@
     scrollbar-width: none;
   }
 }
-

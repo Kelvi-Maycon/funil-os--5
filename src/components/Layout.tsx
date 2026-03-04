@@ -48,9 +48,7 @@ const navGroups = {
     { title: 'Documentos', icon: FileText, url: '/documentos' },
     { title: 'Biblioteca', icon: BookOpen, url: '/biblioteca' },
   ],
-  config: [
-    { title: 'Configurações', icon: Settings, url: '/config' },
-  ],
+  config: [{ title: 'Configurações', icon: Settings, url: '/config' }],
 }
 
 function AppSidebar() {
@@ -59,7 +57,10 @@ function AppSidebar() {
   const [, setQuickAction] = useQuickActionStore()
 
   const checkIsActive = (url: string) => {
-    return location.pathname === url || (url !== '/' && location.pathname.startsWith(url))
+    return (
+      location.pathname === url ||
+      (url !== '/' && location.pathname.startsWith(url))
+    )
   }
 
   return (
@@ -115,19 +116,24 @@ function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3 flex flex-col gap-2 overflow-y-auto overflow-x-hidden no-scrollbar">
-        
+      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3 flex flex-col gap-6 overflow-y-auto overflow-x-hidden no-scrollbar">
         <SidebarGroup>
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">CORE</SidebarGroupLabel>
-          <SidebarMenu className="gap-1 group-data-[collapsible=icon]:items-center">
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden mb-2">
+            CORE
+          </SidebarGroupLabel>
+          <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center">
             {navGroups.core.map((item) => {
               const isActive = checkIsActive(item.url)
               return (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={item.title}
+                  >
                     <Link to={item.url}>
                       <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                      <span className="font-semibold">{item.title}</span>
+                      <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -138,22 +144,32 @@ function AppSidebar() {
 
         <Collapsible defaultOpen className="group/collapsible">
           <SidebarGroup>
-            <SidebarGroupLabel asChild className="group-data-[collapsible=icon]:hidden hover:bg-background/50 cursor-pointer rounded-md">
-              <CollapsibleTrigger className="w-full flex items-center justify-between outline-none">
+            <SidebarGroupLabel
+              asChild
+              className="group-data-[collapsible=icon]:hidden hover:bg-accent cursor-pointer rounded-md mb-2"
+            >
+              <CollapsibleTrigger className="w-full flex items-center justify-between outline-none px-2">
                 FERRAMENTAS
                 <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
               </CollapsibleTrigger>
             </SidebarGroupLabel>
             <CollapsibleContent>
-              <SidebarMenu className="gap-1 mt-1 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:mt-0">
+              <SidebarMenu className="gap-2 mt-1 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:mt-0">
                 {navGroups.tools.map((item) => {
                   const isActive = checkIsActive(item.url)
                   return (
                     <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={item.title}
+                      >
                         <Link to={item.url}>
-                          <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                          <span className="font-semibold">{item.title}</span>
+                          <item.icon
+                            size={20}
+                            strokeWidth={isActive ? 2.5 : 2}
+                          />
+                          <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -165,16 +181,22 @@ function AppSidebar() {
         </Collapsible>
 
         <SidebarGroup className="mt-auto">
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">CONFIG</SidebarGroupLabel>
-          <SidebarMenu className="gap-1 group-data-[collapsible=icon]:items-center">
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden mb-2">
+            CONFIG
+          </SidebarGroupLabel>
+          <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center">
             {navGroups.config.map((item) => {
               const isActive = checkIsActive(item.url)
               return (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={item.title}
+                  >
                     <Link to={item.url}>
                       <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                      <span className="font-semibold">{item.title}</span>
+                      <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -182,7 +204,6 @@ function AppSidebar() {
             })}
           </SidebarMenu>
         </SidebarGroup>
-
       </SidebarContent>
 
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:py-3 shrink-0 transition-all duration-200 border-t border-border">
@@ -233,4 +254,3 @@ export default function Layout() {
     </SidebarProvider>
   )
 }
-
