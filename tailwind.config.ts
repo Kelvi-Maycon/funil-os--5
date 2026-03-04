@@ -29,15 +29,14 @@ export default {
         sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        xs: ['11px', { lineHeight: '14px', fontWeight: '600' }],
-        sm: ['13px', { lineHeight: '18px', fontWeight: '500' }],
-        base: ['15px', { lineHeight: '24px', fontWeight: '400' }],
-        md: ['15px', { lineHeight: '22px', fontWeight: '500' }],
-        lg: ['18px', { lineHeight: '26px', fontWeight: '600' }],
-        xl: ['20px', { lineHeight: '28px', fontWeight: '600' }],
-        '2xl': ['24px', { lineHeight: '32px', fontWeight: '700' }],
-        '3xl': ['28px', { lineHeight: '36px', fontWeight: '700' }],
-        '4xl': ['36px', { lineHeight: '44px', fontWeight: '700' }],
+        xs: ['12px', { lineHeight: '16px', fontWeight: '500' }], // caption
+        sm: ['14px', { lineHeight: '20px', fontWeight: '500' }], // body-small
+        base: ['16px', { lineHeight: '24px', fontWeight: '400' }], // body-base
+        lg: ['20px', { lineHeight: '28px', fontWeight: '600' }], // h3
+        xl: ['24px', { lineHeight: '32px', fontWeight: '700' }], // h2
+        '2xl': ['32px', { lineHeight: '40px', fontWeight: '700' }], // h1
+        '3xl': ['40px', { lineHeight: '48px', fontWeight: '700' }], // Display small
+        '4xl': ['48px', { lineHeight: '56px', fontWeight: '700' }], // Display
       },
       colors: {
         brand: {
@@ -117,3 +116,4 @@ export default {
   },
   plugins: [animatePlugin, typographyPlugin, aspectRatioPlugin],
 } satisfies Config
+

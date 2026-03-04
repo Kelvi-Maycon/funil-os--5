@@ -11,8 +11,14 @@ import {
   SidebarInset,
   SidebarTrigger,
   SidebarGroup,
+  SidebarGroupLabel,
   useSidebar,
 } from '@/components/ui/sidebar'
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from '@/components/ui/collapsible'
 import {
   LayoutDashboard,
   Folder,
@@ -20,28 +26,41 @@ import {
   CheckSquare,
   FileText,
   BookOpen,
+  Settings,
   PanelLeft,
   PanelLeftClose,
   Plus,
+  ChevronDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import QuickActionModal from '@/components/QuickActionModal'
 import { DataManager } from '@/components/DataManager'
 import useQuickActionStore from '@/stores/useQuickActionStore'
 
-const navItems = [
-  { title: 'Dashboard', icon: LayoutDashboard, url: '/' },
-  { title: 'Projetos', icon: Folder, url: '/projetos' },
-  { title: 'Canvas', icon: Network, url: '/canvas' },
-  { title: 'Tarefas', icon: CheckSquare, url: '/tarefas' },
-  { title: 'Documentos', icon: FileText, url: '/documentos' },
-  { title: 'Biblioteca', icon: BookOpen, url: '/biblioteca' },
-]
+const navGroups = {
+  core: [
+    { title: 'Dashboard', icon: LayoutDashboard, url: '/' },
+    { title: 'Projetos', icon: Folder, url: '/projetos' },
+    { title: 'Funis / Canvas', icon: Network, url: '/canvas' },
+  ],
+  tools: [
+    { title: 'Tarefas', icon: CheckSquare, url: '/tarefas' },
+    { title: 'Documentos', icon: FileText, url: '/documentos' },
+    { title: 'Biblioteca', icon: BookOpen, url: '/biblioteca' },
+  ],
+  config: [
+    { title: 'Configurações', icon: Settings, url: '/config' },
+  ],
+}
 
 function AppSidebar() {
   const location = useLocation()
   const { setOpen, isMobile } = useSidebar()
   const [, setQuickAction] = useQuickActionStore()
+
+  const checkIsActive = (url: string) => {
+    return location.pathname === url || (url !== '/' && location.pathname.startsWith(url))
+  }
 
   return (
     <Sidebar
@@ -57,7 +76,6 @@ function AppSidebar() {
           'group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-3 group-data-[collapsible=icon]:py-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:h-auto',
         )}
       >
-        {/* Expanded View */}
         <div className="flex items-center w-full justify-between group-data-[collapsible=icon]:hidden">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0 shadow-sm">
@@ -81,7 +99,6 @@ function AppSidebar() {
           </div>
         </div>
 
-        {/* Collapsed View */}
         <div className="hidden group-data-[collapsible=icon]:flex flex-col items-center gap-3 w-full">
           <div className="text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center w-8 h-8 transition-colors duration-100 cursor-pointer">
             <PanelLeft size={20} />
@@ -98,30 +115,19 @@ function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-6 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3 flex flex-col gap-2 overflow-y-auto overflow-x-hidden no-scrollbar group-data-[collapsible=icon]:items-center">
-        <SidebarGroup className="group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-auto">
-          <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center">
-            {navItems.map((item) => {
-              const isActive =
-                location.pathname === item.url ||
-                (item.url !== '/' && location.pathname.startsWith(item.url))
+      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3 flex flex-col gap-2 overflow-y-auto overflow-x-hidden no-scrollbar">
+        
+        <SidebarGroup>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">CORE</SidebarGroupLabel>
+          <SidebarMenu className="gap-1 group-data-[collapsible=icon]:items-center">
+            {navGroups.core.map((item) => {
+              const isActive = checkIsActive(item.url)
               return (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    tooltip={item.title}
-                    className="group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center rounded-lg"
-                  >
+                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
                     <Link to={item.url}>
-                      <item.icon
-                        size={20}
-                        strokeWidth={isActive ? 2.5 : 2}
-                        className="shrink-0 group-data-[collapsible=icon]:mx-auto"
-                      />
-                      <span className="truncate whitespace-nowrap overflow-hidden transition-all duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden font-semibold">
-                        {item.title}
-                      </span>
+                      <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                      <span className="font-semibold">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -129,6 +135,54 @@ function AppSidebar() {
             })}
           </SidebarMenu>
         </SidebarGroup>
+
+        <Collapsible defaultOpen className="group/collapsible">
+          <SidebarGroup>
+            <SidebarGroupLabel asChild className="group-data-[collapsible=icon]:hidden hover:bg-background/50 cursor-pointer rounded-md">
+              <CollapsibleTrigger className="w-full flex items-center justify-between outline-none">
+                FERRAMENTAS
+                <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              <SidebarMenu className="gap-1 mt-1 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:mt-0">
+                {navGroups.tools.map((item) => {
+                  const isActive = checkIsActive(item.url)
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                        <Link to={item.url}>
+                          <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                          <span className="font-semibold">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
+
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">CONFIG</SidebarGroupLabel>
+          <SidebarMenu className="gap-1 group-data-[collapsible=icon]:items-center">
+            {navGroups.config.map((item) => {
+              const isActive = checkIsActive(item.url)
+              return (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                    <Link to={item.url}>
+                      <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                      <span className="font-semibold">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+
       </SidebarContent>
 
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:py-3 shrink-0 transition-all duration-200 border-t border-border">
@@ -179,3 +233,4 @@ export default function Layout() {
     </SidebarProvider>
   )
 }
+

@@ -6,28 +6,28 @@
 
 @layer base {
   :root {
-    --brand: 24 49% 52%; /* #C07848 */
-    --brand-light: 30 54% 71%; /* #DEB48E */
-    --brand-dark: 15 22% 21%; /* #42332A */
+    --brand: 24 49% 52%; 
+    --brand-light: 30 54% 71%;
+    --brand-dark: 15 22% 21%;
 
-    --bg-app: 36 33% 95%; /* #F6F2EC */
-    --bg-sidebar: 36 30% 91%; /* #EEE9E1 */
-    --bg-card: 0 0% 100%; /* White for cleaner look */
+    --bg-app: 36 33% 95%;
+    --bg-sidebar: 36 30% 91%;
+    --bg-card: 0 0% 100%;
 
-    --text-primary: 15 22% 15%; /* Darker for better contrast */
-    --text-secondary: 29 13% 49%; /* #8C7D6E */
-    --text-muted: 29 18% 66%; /* #B8A898 */
+    --text-primary: 15 22% 15%;
+    --text-secondary: 29 13% 49%;
+    --text-muted: 29 18% 66%;
 
-    --border: 35 20% 88%; /* Adjusted for pure white cards */
-    --border-light: 36 30% 91%; /* #EEE9E1 */
+    --border: 35 20% 88%;
+    --border-light: 36 30% 91%;
 
-    --success: 149 43% 42%; /* #3D9A6A */
+    --success: 149 43% 42%;
     --success-foreground: 0 0% 100%;
-    --warning: 42 63% 55%; /* #D4A843 */
+    --warning: 42 63% 55%;
     --warning-foreground: 0 0% 100%;
-    --danger: 7 54% 49%; /* #C0503A */
+    --danger: 7 54% 49%;
     --danger-foreground: 0 0% 100%;
-    --info: 221 83% 53%; /* #1d4ed8 */
+    --info: 221 83% 53%;
     --info-foreground: 0 0% 100%;
 
     /* Shadcn UI Mapping */
@@ -78,7 +78,7 @@
 
   ::selection {
     background-color: hsl(var(--primary));
-    color: #ffffff;
+    color: hsl(var(--primary-foreground));
   }
 
   * {
@@ -107,7 +107,7 @@
     background-color: hsl(var(--background));
     background-image: radial-gradient(
       circle,
-      rgba(180, 160, 135, 0.45) 1px,
+      hsl(var(--border)) 1px,
       transparent 1px
     );
     background-size: 28px 28px;
@@ -117,7 +117,8 @@
   .hover-lift {
     transition:
       transform 0.15s ease,
-      box-shadow 0.15s ease;
+      box-shadow 0.15s ease,
+      border-color 0.15s ease;
   }
   .hover-lift:hover {
     transform: translateY(-2px);
@@ -125,7 +126,7 @@
   }
 
   .section-label {
-    @apply text-[11px] uppercase tracking-[0.08em] font-bold text-muted-foreground;
+    @apply text-xs uppercase tracking-[0.08em] font-bold text-muted-foreground;
   }
 
   @keyframes fade-in {
@@ -137,21 +138,8 @@
     }
   }
 
-  @keyframes slide-left {
-    from {
-      transform: translateX(100%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-
   .animate-fade-in {
     animation: fade-in 0.3s ease-out forwards;
-  }
-
-  .animate-slide-left {
-    animation: slide-left 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -161,19 +149,5 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-
-  .task-scrollbar::-webkit-scrollbar {
-    display: block;
-    width: 6px;
-  }
-  .task-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .task-scrollbar::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 3px;
-  }
-  .task-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary));
-  }
 }
+

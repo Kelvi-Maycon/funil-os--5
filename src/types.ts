@@ -45,6 +45,7 @@ export type Edge = {
   id: string
   source: string
   target: string
+  label?: string
   style?: {
     stroke?: string
     strokeWidth?: number
@@ -160,3 +161,4 @@ export type Asset = {
   category?: string
   tags?: string[]
 }
+
