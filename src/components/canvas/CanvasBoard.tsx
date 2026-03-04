@@ -1590,9 +1590,11 @@ export default function CanvasBoard({
                 }}
                 onAddChild={() => handleAddChild(n.id)}
                 onDelete={() => {
-                  selectedNodes.includes(n.id)
-                    ? setNodeToDelete('selected')
-                    : setNodeToDelete(n.id)
+                  if (selectedNodes.includes(n.id)) {
+                    setNodeToDelete('selected')
+                  } else {
+                    setNodeToDelete(n.id)
+                  }
                 }}
                 onOpenRightPanel={(tab: string) =>
                   setRightPanelState({ nodeId: n.id, tab })
