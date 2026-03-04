@@ -1,206 +1,50 @@
-import { useState, useEffect } from 'react'
-import { generateId } from '@/lib/generateId'
-import { useNavigate } from 'react-router-dom'
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet'
-import { Task, Subtask } from '@/types'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import {
-  Check,
-  Share2,
-  MoreHorizontal,
-  AtSign,
-  Paperclip,
-  Send,
-  Network,
-} from 'lucide-react'
-import useProjectStore from '@/stores/useProjectStore'
+import { Task } from '@/types'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
-import { TaskMetadata } from './TaskMetadata'
-import { TaskSubtasks } from './TaskSubtasks'
-import { TaskActivity } from './TaskActivity'
+import useFunnelStore from '@/stores/useFunnelStore'
+import useDocumentStore from '@/stores/useDocumentStore'
+import useProjectStore from '@/stores/useProjectStore'
+import { Tag, FileText, MapPin, FolderOpen, Link2, CheckSquare, MessageSquare, ExternalLink } from 'lucide-react'
 
-export default function TaskDetailSheet({
-  task,
-  onClose,
-  onUpdate,
-}: {
-  task: Task | null
-  onClose: () => void
-  onUpdate: (id: string, updates: Partial<Task>) => void
-}) {
-  const [localTask, setLocalTask] = useState<Task | null>(null)
+export default function TaskDetailSheet({ task, onClose, onUpdate }: { task: Task | null; onClose: () => void; onUpdate: (id: string, updates: Partial<Task>) => void }) {
   const [projects] = useProjectStore()
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (task) setLocalTask(task)
-  }, [task])
-
-  if (!localTask) return null
-
-  const handleUpdate = (updates: Partial<Task>) => {
-    const updated = { ...localTask, ...updates }
-    setLocalTask(updated)
-    onUpdate(localTask.id, updates)
-  }
-
-  const addSubtask = () => {
-    const newSt: Subtask = {
-      id: generateId('st'),
-      title: '',
-      isCompleted: false,
-    }
-    handleUpdate({ subtasks: [...(localTask.subtasks || []), newSt] })
-  }
-
-  const project = projects.find((p) => p.id === localTask.projectId)
-  const projectName = project ? project.name : 'Sem Projeto'
-
+  const [funnels] = useFunnelStore()
+  const [documents] = useDocumentStore()
+  if (!task) return null
+  const project = projects.find(p => p.id === task.projectId)
+  const funnel = funnels.find(f => f.id === task.funnelId)
+  const node = funnel?.nodes.find(n => n.id === task.nodeId)
+  const linkedDocs = documents.filter(d => task.linkedDocumentIds?.includes(d.id) || d.linkedTaskIds?.includes(task.id) || (task.nodeId && d.nodeId === task.nodeId))
+  const priorityColors: Record<string, string> = { Alta: 'bg-danger/10 text-danger border-danger/20', Media: 'bg-warning/10 text-warning border-warning/20', Baixa: 'bg-success/10 text-success border-success/20' }
+  const statusColors: Record<string, string> = { Pendente: 'bg-muted text-muted-foreground', 'Em Progresso': 'bg-warning/10 text-warning', Concluida: 'bg-success/10 text-success' }
   return (
-    <Sheet open={!!task} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent
-        overlayClassName="bg-background/80 backdrop-blur-sm"
-        className="w-full sm:max-w-2xl p-0 flex flex-col border-l border-border bg-card gap-0 shadow-2xl"
-      >
-        <SheetTitle className="sr-only">Detalhes da Tarefa</SheetTitle>
-        <SheetDescription className="sr-only">
-          Visualize e edite as informações e subtarefas da tarefa selecionada.
-        </SheetDescription>
-
-        {/* Header */}
-        <div className="bg-card px-6 py-5 flex flex-col border-b border-border z-10">
-          <div className="flex justify-between items-center mb-4 pr-6">
-            <div className="flex items-center gap-2 text-muted-foreground text-xs font-semibold">
-              <span className="uppercase tracking-widest text-[10px]">
-                Projeto:
-              </span>
-              <span>{projectName}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              {localTask.funnelId && localTask.nodeId && (
-                <button
-                  onClick={() => {
-                    onClose()
-                    navigate(
-                      `/canvas/${localTask.funnelId}?nodeId=${localTask.nodeId}`,
-                    )
-                  }}
-                  className="h-8 px-3 mr-2 rounded-full bg-primary/10 text-primary text-xs font-bold hover:bg-primary hover:text-primary-foreground transition-colors flex items-center gap-1.5 shadow-sm hover:scale-105 transform"
-                >
-                  <Network size={14} /> Canvas
-                </button>
-              )}
-              <button className="w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
-                <Share2 size={16} />
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
-                <MoreHorizontal size={16} />
-              </button>
+    <Sheet open={!!task} onOpenChange={() => onClose()}>
+      <SheetContent className="w-[480px] sm:max-w-[480px] overflow-y-auto">
+        <SheetHeader className="pb-4 border-b border-border">
+          <div className="flex items-center gap-2 mb-2"><Badge className={cn('text-[10px] font-bold', statusColors[task.status] || '')}>{task.status}</Badge><Badge variant="outline" className={cn('text-[10px] font-bold', priorityColors[task.priority] || '')}>{task.priority}</Badge></div>
+          <SheetTitle className="text-xl font-bold">{task.title}</SheetTitle>
+        </SheetHeader>
+        <div className="space-y-6 py-6">
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Link2 size={12} /> Conexoes</h4>
+            <div className="space-y-2">
+              {project && <div className="flex items-center gap-2 p-2.5 rounded-lg bg-card border border-border"><FolderOpen size={14} className="text-primary" /><span className="text-xs font-semibold">{project.name}</span><Badge variant="outline" className="text-[9px] ml-auto">{project.status}</Badge></div>}
+              {funnel && <div className="flex items-center gap-2 p-2.5 rounded-lg bg-card border border-border"><MapPin size={14} className="text-warning" /><span className="text-xs font-semibold">{funnel.name}</span>{node && <span className="text-[10px] text-muted-foreground ml-1">/ {node.data.name}</span>}</div>}
+              {linkedDocs.map(d => <div key={d.id} className="flex items-center gap-2 p-2.5 rounded-lg bg-card border border-border"><FileText size={14} className="text-info" /><span className="text-xs font-semibold">{d.title}</span><ExternalLink size={10} className="text-muted-foreground ml-auto" /></div>)}
+              {!project && !funnel && linkedDocs.length === 0 && <p className="text-caption text-xs">Nenhuma conexao - vincule a um projeto, funil ou documento.</p>}
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() =>
-                handleUpdate({
-                  status:
-                    localTask.status === 'Concluída' ? 'Pendente' : 'Concluída',
-                })
-              }
-              className={cn(
-                'w-7 h-7 rounded-full border flex items-center justify-center transition-colors shrink-0',
-                localTask.status === 'Concluída'
-                  ? 'bg-success border-success text-success-foreground'
-                  : 'border-border text-transparent hover:border-primary hover:text-primary/50',
-              )}
-            >
-              <Check size={16} strokeWidth={3} />
-            </button>
-            <input
-              value={localTask.title}
-              onChange={(e) => handleUpdate({ title: e.target.value })}
-              className="text-2xl font-bold text-foreground bg-transparent outline-none flex-1 placeholder:text-border"
-              placeholder="Título da tarefa"
-            />
-          </div>
-        </div>
-
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto task-scrollbar p-6 pb-32">
-          <TaskMetadata task={localTask} onUpdate={handleUpdate} />
-
-          {/* Description */}
-          <div className="mb-10">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 block">
-              Descrição
-            </label>
-            <div className="bg-background rounded-2xl p-5 border border-border focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10 transition-all shadow-sm">
-              <textarea
-                value={localTask.description || ''}
-                onChange={(e) => handleUpdate({ description: e.target.value })}
-                placeholder="Adicione mais detalhes a esta tarefa..."
-                className="w-full bg-transparent outline-none text-foreground text-sm resize-none min-h-[120px] placeholder:text-muted-foreground/60"
-              />
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Tag size={12} /> Detalhes</h4>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2.5 rounded-lg bg-card border border-border"><span className="text-[10px] text-muted-foreground block mb-0.5">Categoria</span><span className="text-xs font-semibold">{task.category || 'Geral'}</span></div>
+              <div className="p-2.5 rounded-lg bg-card border border-border"><span className="text-[10px] text-muted-foreground block mb-0.5">Deadline</span><span className="text-xs font-semibold">{task.deadline || 'Sem prazo'}</span></div>
             </div>
           </div>
-
-          <TaskSubtasks
-            task={localTask}
-            onAdd={addSubtask}
-            onToggle={(id) =>
-              handleUpdate({
-                subtasks: localTask.subtasks?.map((st) =>
-                  st.id === id ? { ...st, isCompleted: !st.isCompleted } : st,
-                ),
-              })
-            }
-            onUpdateTitle={(id, title) =>
-              handleUpdate({
-                subtasks: localTask.subtasks?.map((st) =>
-                  st.id === id ? { ...st, title } : st,
-                ),
-              })
-            }
-            onRemove={(id) =>
-              handleUpdate({
-                subtasks: localTask.subtasks?.filter((st) => st.id !== id),
-              })
-            }
-          />
-
-          <TaskActivity task={localTask} />
-        </div>
-
-        {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 bg-muted border-t border-border p-4 flex items-end gap-3 z-20">
-          <Avatar className="w-9 h-9 shrink-0">
-            <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
-              ME
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 bg-background rounded-2xl border border-border flex flex-col p-2 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10 transition-all shadow-sm">
-            <textarea
-              placeholder="Escreva um comentário..."
-              className="w-full bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground resize-none h-[40px] px-2 py-1"
-            />
-            <div className="flex items-center justify-between px-2 pt-1">
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <button className="p-1.5 hover:text-primary hover:bg-accent rounded-md transition-colors">
-                  <AtSign size={14} />
-                </button>
-                <button className="p-1.5 hover:text-primary hover:bg-accent rounded-md transition-colors">
-                  <Paperclip size={14} />
-                </button>
-              </div>
-              <button className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-all shadow-sm hover:scale-105 transform shrink-0">
-                <Send size={14} className="ml-0.5" />
-              </button>
-            </div>
-          </div>
+          {task.subtasks && task.subtasks.length > 0 && <div className="space-y-3"><h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><CheckSquare size={12} /> Subtarefas <span className="text-[10px] font-normal ml-1">{task.subtasks.filter(s => s.isCompleted).length}/{task.subtasks.length}</span></h4><div className="space-y-1.5">{task.subtasks.map(s => <div key={s.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-accent/50 transition-colors"><Checkbox checked={s.isCompleted} /><span className={cn('text-xs', s.isCompleted && 'line-through text-muted-foreground')}>{s.title}</span></div>)}</div></div>}
+          {task.comments && task.comments.length > 0 && <div className="space-y-3"><h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><MessageSquare size={12} /> Comentarios ({task.comments.length})</h4><div className="space-y-2">{task.comments.map(c => <div key={c.id} className="p-3 rounded-lg bg-card border border-border"><div className="flex items-center gap-2 mb-1"><div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-[9px] text-white font-bold">{c.author.charAt(0)}</div><span className="text-[11px] font-semibold">{c.author}</span><span className="text-[10px] text-muted-foreground ml-auto">{c.createdAt}</span></div><p className="text-xs text-foreground/80">{c.content}</p></div>)}</div></div>}
         </div>
       </SheetContent>
     </Sheet>

@@ -108,6 +108,7 @@ export type Task = {
   subtasks?: Subtask[]
   comments?: Comment[]
   attachmentCount?: number
+  linkedDocumentIds?: string[]
 }
 
 export type Folder = {
@@ -129,6 +130,7 @@ export type Document = {
   content: string
   updatedAt: string
   folderId?: string | null
+  linkedTaskIds?: string[]
 }
 
 export type Resource = {
