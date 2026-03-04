@@ -16,16 +16,11 @@ import {
   ArrowRight,
   Network,
   FileText,
-  AlertCircle,
-  CalendarDays,
-  CalendarClock,
   Plus,
   FolderOpen,
   TrendingUp,
-  Clock,
   ArrowUpRight,
 } from 'lucide-react'
-import { useState } from 'react'
 
 function isValidDate(dateStr?: string): boolean {
   if (!dateStr) return false
@@ -38,9 +33,6 @@ function safeFormatDate(dateStr?: string, dateFormat: string = 'dd/MM'): string 
   return format(new Date(dateStr as string), dateFormat, { locale: ptBR })
 }
 
-/* ══════════════════════════════════════════
-   METRIC CARD COMPONENT
-   ══════════════════════════════════════════ */
 function MetricCard({
   label,
   value,
@@ -54,12 +46,19 @@ function MetricCard({
   color?: 'brand' | 'success' | 'warning' | 'danger' | 'info'
   delay?: number
 }) {
-  const colorMap = {
-    brand: 'text-brand bg-brand-subtle',
-    success: 'text-success bg-success-bg',
-    warning: 'text-warning bg-warning-bg',
-    danger: 'text-danger bg-danger-bg',
-    info: 'text-info bg-info-bg',
+  const colorMap: Record<string, string> = {
+    brand: 'hsl(var(--brand))',
+    success: 'hsl(var(--success))',
+    warning: 'hsl(var(--warning))',
+    danger: 'hsl(var(--danger))',
+    info: 'hsl(var(--info))',
+  }
+  const bgMap: Record<string, string> = {
+    brand: 'hsl(var(--brand-subtle))',
+    success: 'hsl(var(--success-bg))',
+    warning: 'hsl(var(--warning-bg))',
+    danger: 'hsl(var(--danger-bg))',
+    info: 'hsl(var(--info-bg))',
   }
 
   return (
@@ -68,117 +67,71 @@ function MetricCard({
       style={{ animationDelay: `${delay}ms` }}
     >
       <div className="flex items-start justify-between mb-3">
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${colorMap[color]}`}>
-          <Icon size={18} />
+        <div
+          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+          style={{ background: bgMap[color], color: colorMap[color] }}
+        >
+          <Icon className="w-[18px] h-[18px]" />
         </div>
       </div>
-      <div className="metric-value animate-count-up" style={{ animationDelay: `${delay + 100}ms` }}>
-        {value}
-      </div>
-      <div className="metric-label mt-1.5">{label}</div>
+      <div className="metric-value">{value}</div>
+      <div className="text-caption mt-1">{label}</div>
     </div>
   )
 }
 
-/* ══════════════════════════════════════════
-   TASK SECTION COMPONENT
-   ══════════════════════════════════════════ */
-function TaskSection({
-  title,
+function ProjectCard({
+  project,
   tasks,
-  icon: Icon,
-  color,
-  emptyText,
+  funnelCount,
+  delay = 0,
 }: {
-  title: string
-  tasks: Array<{ id: string; title: string; priority?: string; deadline?: string }>
-  icon: React.ElementType
-  color: string
-  emptyText: string
+  project: any
+  tasks: any[]
+  funnelCount: number
+  delay?: number
 }) {
-  const priorityStyle: Record<string, string> = {
-    Alta: 'bg-danger-bg text-danger',
-    Média: 'bg-warning-bg text-warning',
-    Baixa: 'bg-info-bg text-info',
+  const completed = tasks.filter((t: any) => t.status === 'Concluído' || t.status === 'Concluída').length
+  const total = tasks.length
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0
+
+  const statusColor: Record<string, string> = {
+    Ativo: 'hsl(var(--success))',
+    Pausado: 'hsl(var(--warning))',
+    Concluído: 'hsl(var(--info))',
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 mb-3">
-        <div className={`w-2 h-2 rounded-full ${color}`} />
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {title}
-        </h3>
-        <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-semibold rounded-md">
-          {tasks.length}
-        </Badge>
+    <Link
+      to={`/projetos/${project.id}`}
+      className="card-interactive p-5 animate-fade-in-up opacity-0 group block"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ background: statusColor[project.status] || 'hsl(var(--text-ghost))' }}
+          />
+          <span className="text-caption">{project.status}</span>
+        </div>
+        <ArrowUpRight className="w-4 h-4 text-[hsl(var(--text-ghost))] group-hover:text-[hsl(var(--brand))] transition-colors" />
       </div>
 
-      {tasks.length === 0 ? (
-        <div className="text-[13px] text-muted-foreground/60 py-4 text-center border border-dashed border-border rounded-lg">
-          {emptyText}
-        </div>
-      ) : (
-        <div className="space-y-1">
-          {tasks.slice(0, 5).map((task) => (
-            <div key={task.id} className="task-row group">
-              <CheckSquare size={14} className="text-muted-foreground/50 shrink-0" />
-              <span className="text-[13px] text-foreground truncate flex-1 font-medium">
-                {task.title}
-              </span>
-              {task.priority && (
-                <span className={`badge-premium ${priorityStyle[task.priority] || ''}`}>
-                  {task.priority}
-                </span>
-              )}
-              {task.deadline && (
-                <span className="text-[11px] text-muted-foreground font-medium">
-                  {safeFormatDate(task.deadline)}
-                </span>
-              )}
-            </div>
-          ))}
-          {tasks.length > 5 && (
-            <div className="text-[12px] text-muted-foreground text-center pt-1 font-medium">
-              +{tasks.length - 5} mais
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+      <h3 className="font-semibold text-sm mb-1 text-foreground">{project.name}</h3>
+      <p className="text-caption mb-4 line-clamp-2">{project.description}</p>
+
+      <div className="flex items-center justify-between text-caption mb-2">
+        <span>{funnelCount} funis</span>
+        <span>{pct}%</span>
+      </div>
+      <div className="progress-bar">
+        <div className="progress-bar-fill" style={{ width: `${pct}%` }} />
+      </div>
+    </Link>
   )
 }
 
-/* ══════════════════════════════════════════
-   EMPTY STATE
-   ══════════════════════════════════════════ */
-function EmptyState({ icon: Icon, title, description, actionLabel, onAction }: {
-  icon: React.ElementType
-  title: string
-  description: string
-  actionLabel?: string
-  onAction?: () => void
-}) {
-  return (
-    <div className="empty-state py-8">
-      <div className="empty-state-icon">
-        <Icon size={22} />
-      </div>
-      <h4 className="text-sm font-semibold text-foreground mb-1">{title}</h4>
-      <p className="text-[13px] text-muted-foreground max-w-[240px]">{description}</p>
-      {actionLabel && onAction && (
-        <Button onClick={onAction} size="sm" className="mt-4 btn-primary text-xs h-8 px-4">
-          <Plus size={14} className="mr-1.5" />
-          {actionLabel}
-        </Button>
-      )}
-    </div>
-  )
-}
-
-/* ══════════════════════════════════════════
-   DASHBOARD MAIN
-   ══════════════════════════════════════════ */
 export default function Index() {
   const [projects] = useProjectStore()
   const [tasks] = useTaskStore()
@@ -186,249 +139,128 @@ export default function Index() {
   const [docs] = useDocumentStore()
   const [, setAction] = useQuickActionStore()
 
-  const activeProjects = projects.filter((p) => p.status === 'Ativo').length
-  const pendingTasks = tasks.filter((t) => t.status !== 'Concluído')
-  const completedTasks = tasks.filter((t) => t.status === 'Concluído').length
-  const activeFunnels = funnels.filter((f) => f.status === 'Ativo').length
-
-  const today = startOfToday()
-  const overdueTasks = pendingTasks.filter(
-    (t) => isValidDate(t.deadline) && isBefore(new Date(t.deadline as string), today),
+  const activeProjects = projects.filter((p) => p.status === 'Ativo')
+  const completedTasks = tasks.filter((t) => t.status === 'Concluído' || t.status === 'Concluída').length
+  const totalTasks = tasks.length
+  const overdueTasks = tasks.filter(
+    (t) => t.deadline && isValidDate(t.deadline) && isBefore(new Date(t.deadline), startOfToday()) && t.status !== 'Concluído' && t.status !== 'Concluída',
   )
-  const todayTasks = pendingTasks.filter(
-    (t) => isValidDate(t.deadline) && isToday(new Date(t.deadline as string)),
-  )
-  const weekTasks = pendingTasks.filter((t) => {
-    if (!isValidDate(t.deadline)) return false
-    const d = new Date(t.deadline as string)
-    return isThisWeek(d) && !isToday(d) && !isBefore(d, today)
-  })
-
-  const completionRate = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0
 
   return (
-    <div className="p-6 md:p-8 max-w-[1600px] w-full mx-auto space-y-8 animate-fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Dashboard
-          </h1>
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Sistema Online
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline">Exportar Relatório</Button>
-          <Button onClick={() => setAction({ type: 'task', mode: 'create' })}>
-            Quick Action
-          </Button>
+    <div className="p-6 md:p-8 max-w-[1400px] w-full mx-auto space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-display">Dashboard</h1>
+          <p className="text-subhead mt-1">Visão geral dos seus projetos</p>
         </div>
         <Button
-          onClick={() => setAction({ mode: 'create', type: 'task' })}
-          className="btn-primary text-xs h-9 px-4 gap-1.5"
+          className="btn-primary"
+          onClick={() => setAction({ type: 'project', mode: 'create' })}
         >
-          <Plus size={15} />
-          Nova Tarefa
+          <Plus className="w-4 h-4 mr-2" /> Novo Projeto
         </Button>
       </div>
 
-      {/* Metrics Grid */}
+      {/* Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard label="Projetos Ativos" value={activeProjects} icon={FolderOpen} color="brand" delay={0} />
-        <MetricCard label="Tarefas Pendentes" value={pendingTasks.length} icon={Clock} color="warning" delay={60} />
-        <MetricCard label="Funis Ativos" value={activeFunnels} icon={Network} color="info" delay={120} />
-        <MetricCard label="Taxa Conclusão" value={`${completionRate}%`} icon={TrendingUp} color="success" delay={180} />
+        <MetricCard
+          label="Projetos Ativos"
+          value={activeProjects.length}
+          icon={Target}
+          color="brand"
+          delay={0}
+        />
+        <MetricCard
+          label="Tarefas Concluídas"
+          value={`${completedTasks}/${totalTasks}`}
+          icon={CheckSquare}
+          color="success"
+          delay={50}
+        />
+        <MetricCard
+          label="Funis Ativos"
+          value={funnels.filter((f) => f.status === 'Ativo').length}
+          icon={Network}
+          color="info"
+          delay={100}
+        />
+        <MetricCard
+          label="Documentos"
+          value={docs.length}
+          icon={FileText}
+          color="warning"
+          delay={150}
+        />
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        {/* Plano de Ação — 2 columns */}
-        <Card className="lg:col-span-2 card-premium">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <Target size={16} className="text-brand" />
-                <h2 className="text-base font-semibold tracking-tight">Plano de Ação</h2>
-              </div>
-              <Link
-                to="/tarefas"
-                className="text-xs text-muted-foreground hover:text-brand font-medium flex items-center gap-1 transition-colors"
-              >
-                Ver tudo <ArrowUpRight size={12} />
-              </Link>
-            </div>
+      {/* Overdue alert */}
+      {overdueTasks.length > 0 && (
+        <div
+          className="p-4 rounded-lg animate-fade-in-up opacity-0"
+          style={{
+            background: 'hsl(var(--danger-bg))',
+            border: '1px solid hsl(var(--danger) / 0.2)',
+            animationDelay: '200ms',
+          }}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <div className="dot-danger" />
+            <span className="font-semibold text-sm" style={{ color: 'hsl(var(--danger))' }}>
+              {overdueTasks.length} tarefa{overdueTasks.length > 1 ? 's' : ''} atrasada{overdueTasks.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          <p className="text-caption ml-4">
+            {overdueTasks
+              .slice(0, 3)
+              .map((t) => t.title)
+              .join(', ')}
+            {overdueTasks.length > 3 && ` e mais ${overdueTasks.length - 3}`}
+          </p>
+        </div>
+      )}
 
-            <div className="grid md:grid-cols-3 gap-5">
-              <TaskSection
-                title="Atrasadas"
-                tasks={overdueTasks}
-                icon={AlertCircle}
-                color="bg-danger"
-                emptyText="Nenhuma atrasada"
-              />
-              <TaskSection
-                title="Hoje"
-                tasks={todayTasks}
-                icon={CalendarDays}
-                color="bg-warning"
-                emptyText="Nada para hoje"
-              />
-              <TaskSection
-                title="Esta Semana"
-                tasks={weekTasks}
-                icon={CalendarClock}
-                color="bg-info"
-                emptyText="Semana livre"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Activity / Quick Stats */}
-        <Card className="card-premium">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-5">
-              <Layers size={16} className="text-brand" />
-              <h2 className="text-base font-semibold tracking-tight">Resumo</h2>
-            </div>
-
-            <div className="space-y-4">
-              {/* Progress */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-muted-foreground">Progresso Geral</span>
-                  <span className="text-xs font-bold text-foreground">{completionRate}%</span>
-                </div>
-                <div className="progress-bar">
-                  <div className="progress-bar-fill" style={{ width: `${completionRate}%` }} />
-                </div>
-              </div>
-
-              <div className="divider" />
-
-              {/* Quick stats list */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="dot dot-danger" />
-                    <span className="text-[13px] text-foreground font-medium">Atrasadas</span>
-                  </div>
-                  <span className="text-[13px] font-bold text-foreground">{overdueTasks.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="dot dot-warning" />
-                    <span className="text-[13px] text-foreground font-medium">Para Hoje</span>
-                  </div>
-                  <span className="text-[13px] font-bold text-foreground">{todayTasks.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="dot dot-success" />
-                    <span className="text-[13px] text-foreground font-medium">Concluídas</span>
-                  </div>
-                  <span className="text-[13px] font-bold text-foreground">{completedTasks}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="dot dot-info" />
-                    <span className="text-[13px] text-foreground font-medium">Documentos</span>
-                  </div>
-                  <span className="text-[13px] font-bold text-foreground">{docs.length}</span>
-                </div>
-              </div>
-
-              <div className="divider" />
-
-              {/* CTA */}
-              <Button
-                variant="outline"
-                onClick={() => setAction({ mode: 'create', type: 'project' })}
-                className="w-full h-9 text-xs font-semibold border-dashed border-border hover:border-brand hover:bg-brand-subtle hover:text-brand transition-all"
-              >
-                <Plus size={14} className="mr-1.5" />
-                Novo Projeto
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Projects Grid */}
+      {/* Projects */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <FolderOpen size={16} className="text-brand" />
-            <h2 className="text-base font-semibold tracking-tight">Projetos Recentes</h2>
-          </div>
+          <h2 className="text-heading">Projetos</h2>
           <Link
             to="/projetos"
-            className="text-xs text-muted-foreground hover:text-brand font-medium flex items-center gap-1 transition-colors"
+            className="text-caption flex items-center gap-1 hover:text-foreground transition-colors"
           >
-            Ver todos <ArrowUpRight size={12} />
+            Ver todos <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
 
         {projects.length === 0 ? (
-          <EmptyState
-            icon={FolderOpen}
-            title="Nenhum projeto"
-            description="Crie seu primeiro projeto para começar a organizar seus funis."
-            actionLabel="Criar Projeto"
-            onAction={() => setAction({ mode: 'create', type: 'project' })}
-          />
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <FolderOpen className="w-6 h-6" />
+            </div>
+            <h3 className="font-semibold text-sm mb-1 text-foreground">
+              Nenhum projeto ainda
+            </h3>
+            <p className="text-caption mb-4">
+              Comece criando seu primeiro projeto
+            </p>
+            <Button
+              className="btn-primary"
+              onClick={() => setAction({ type: 'project', mode: 'create' })}
+            >
+              <Plus className="w-4 h-4 mr-2" /> Criar Projeto
+            </Button>
+          </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {projects.slice(0, 6).map((project, i) => {
-              const pTasks = tasks.filter((t) => t.projectId === project.id)
-              const pDone = pTasks.filter((t) => t.status === 'Concluído').length
-              const pProgress = pTasks.length > 0 ? Math.round((pDone / pTasks.length) * 100) : 0
-              const pFunnels = funnels.filter((f) => f.projectId === project.id).length
-
-              return (
-                <Link
-                  key={project.id}
-                  to={`/projetos/${project.id}`}
-                  className="card-premium p-4 block group animate-fade-in-up opacity-0"
-                  style={{ animationDelay: `${i * 50}ms` }}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-foreground truncate pr-2 group-hover:text-brand transition-colors">
-                      {project.name}
-                    </h3>
-                    <Badge
-                      variant={project.status === 'Ativo' ? 'default' : 'secondary'}
-                      className="text-[10px] shrink-0 h-5 px-2 rounded-md font-semibold"
-                    >
-                      {project.status}
-                    </Badge>
-                  </div>
-
-                  {project.description && (
-                    <p className="text-[12px] text-muted-foreground line-clamp-2 mb-3">
-                      {project.description}
-                    </p>
-                  )}
-
-                  <div className="progress-bar mb-3">
-                    <div className="progress-bar-fill" style={{ width: `${pProgress}%` }} />
-                  </div>
-
-                  <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Network size={12} /> {pFunnels} funis
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <CheckSquare size={12} /> {pDone}/{pTasks.length}
-                    </span>
-                    <span className="ml-auto font-semibold text-foreground">{pProgress}%</span>
-                  </div>
-                </Link>
-              )
-            })}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.slice(0, 6).map((p, i) => (
+              <ProjectCard
+                key={p.id}
+                project={p}
+                tasks={tasks.filter((t) => t.projectId === p.id)}
+                funnelCount={funnels.filter((f) => f.projectId === p.id).length}
+                delay={250 + i * 50}
+              />
+            ))}
           </div>
         )}
       </div>

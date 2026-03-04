@@ -9,7 +9,6 @@ import {
   SidebarHeader,
   SidebarFooter,
   SidebarInset,
-  SidebarTrigger,
   SidebarGroup,
   useSidebar,
 } from '@/components/ui/sidebar'
@@ -24,11 +23,20 @@ import {
   PanelLeftClose,
   Plus,
   Sparkles,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import QuickActionModal from '@/components/QuickActionModal'
 import { DataManager } from '@/components/DataManager'
 import useQuickActionStore from '@/stores/useQuickActionStore'
+import { useTheme } from 'next-themes'
+import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 const navGroups = [
   {
@@ -54,70 +62,79 @@ const navGroups = [
   },
 ]
 
+function ThemeSwitch() {
+  const { theme, setTheme } = useTheme()
+  const isDark = theme === 'dark'
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 shrink-0"
+          onClick={() => setTheme(isDark ? 'light' : 'dark')}
+        >
+          {isDark ? (
+            <Sun className="h-4 w-4 text-yellow-400" />
+          ) : (
+            <Moon className="h-4 w-4" />
+          )}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="right">
+        {isDark ? 'Modo Claro' : 'Modo Escuro'}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 function AppSidebar() {
   const location = useLocation()
-  const { setOpen, isMobile } = useSidebar()
+  const { open, toggleSidebar } = useSidebar()
   const [, setQuickAction] = useQuickActionStore()
 
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r border-border bg-sidebar z-30 shadow-none transition-all duration-200 ease-in-out"
-      onMouseEnter={() => !isMobile && setOpen(true)}
-      onMouseLeave={() => !isMobile && setOpen(false)}
+      className="border-r border-border bg-sidebar z-30 transition-all duration-200 ease-in-out"
     >
       <SidebarHeader
         className={cn(
           'shrink-0 transition-all duration-200 ease-in-out border-b border-border',
-          'flex flex-row items-center justify-between p-4 px-5 h-[60px]',
-          'group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-3 group-data-[collapsible=icon]:py-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:h-auto',
+          'flex flex-row items-center justify-between p-3 px-4 h-[56px]',
+          'group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2',
         )}
       >
-        <div className="flex items-center w-full justify-between group-data-[collapsible=icon]:hidden">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-brand to-brand-dark rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm">
-              <Sparkles size={16} />
-            </div>
-            <span className="font-bold text-base tracking-tight text-foreground truncate whitespace-nowrap">
-              Funil OS
-            </span>
+        <Link to="/" className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[hsl(var(--brand))] to-[hsl(var(--brand-dark))] flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setQuickAction({ mode: 'create', type: 'task' })}
-              className="w-7 h-7 bg-brand-subtle hover:bg-brand/10 text-brand rounded-md flex items-center justify-center shrink-0 transition-all duration-100 outline-none focus-ring"
-              title="Nova tarefa"
-            >
-              <Plus size={15} />
-            </button>
-            <div className="text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center">
-              <SidebarTrigger>
-                <PanelLeftClose size={16} />
-              </SidebarTrigger>
-            </div>
-          </div>
-        </div>
-
-        <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center">
-          <div className="w-8 h-8 bg-gradient-to-br from-brand to-brand-dark rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm">
-            <Sparkles size={16} />
-          </div>
-        </div>
-        <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center text-muted-foreground hover:text-foreground">
-          <SidebarTrigger>
-            <PanelLeft size={16} />
-          </SidebarTrigger>
-        </div>
+          <span className="font-bold text-sm tracking-tight truncate group-data-[collapsible=icon]:hidden text-foreground">
+            Funil OS
+          </span>
+        </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 shrink-0 group-data-[collapsible=icon]:hidden"
+          onClick={toggleSidebar}
+        >
+          {open ? (
+            <PanelLeftClose className="h-4 w-4" />
+          ) : (
+            <PanelLeft className="h-4 w-4" />
+          )}
+        </Button>
       </SidebarHeader>
 
-      <SidebarContent className="p-2 gap-0">
+      <SidebarContent className="px-2 py-3 flex-1 overflow-y-auto no-scrollbar">
         {navGroups.map((group) => (
-          <SidebarGroup key={group.label} className="py-2">
-            <div className="section-header group-data-[collapsible=icon]:hidden mb-1">
+          <SidebarGroup key={group.label} className="mb-1">
+            <div className="nav-group-label group-data-[collapsible=icon]:hidden mb-1">
               {group.label}
             </div>
-            <SidebarMenu className="space-y-0.5">
+            <SidebarMenu>
               {group.items.map((item) => {
                 const isActive =
                   item.url === '/'
@@ -130,22 +147,18 @@ function AppSidebar() {
                       asChild
                       isActive={isActive}
                       tooltip={item.title}
-                      className={cn(
-                        'h-9 rounded-lg px-3 gap-3 font-medium text-[13px] transition-all duration-150',
-                        isActive
-                          ? 'bg-brand-subtle text-brand font-semibold shadow-none'
-                          : 'text-muted-foreground hover:bg-brand-ghost hover:text-foreground',
-                      )}
                     >
-                      <Link to={item.url}>
-                        <item.icon
-                          size={17}
-                          className={cn(
-                            'shrink-0 transition-colors',
-                            isActive ? 'text-brand' : 'text-muted-foreground',
-                          )}
-                        />
-                        <span className="truncate">{item.title}</span>
+                      <Link
+                        to={item.url}
+                        className={cn(
+                          'nav-item',
+                          isActive && 'nav-item-active',
+                        )}
+                      >
+                        <item.icon className="w-[18px] h-[18px] shrink-0" />
+                        <span className="truncate group-data-[collapsible=icon]:hidden">
+                          {item.title}
+                        </span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -156,15 +169,36 @@ function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border p-3 group-data-[collapsible=icon]:p-2">
-        <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-light to-brand flex items-center justify-center text-white text-xs font-bold shrink-0">
-            DK
-          </div>
-          <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
-            <span className="text-[13px] font-semibold text-foreground truncate">Diego K.</span>
-            <span className="text-[11px] text-muted-foreground truncate">Growth Lead</span>
-          </div>
+      <SidebarFooter className="border-t border-border p-3">
+        <div className="flex items-center gap-2 group-data-[collapsible=icon]:flex-col">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                className="h-8 w-8 shrink-0 btn-primary"
+                onClick={() =>
+                  setQuickAction({ type: 'project', mode: 'create' })
+                }
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Criar Novo</TooltipContent>
+          </Tooltip>
+          <ThemeSwitch />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 group-data-[collapsible=icon]:block hidden"
+                onClick={toggleSidebar}
+              >
+                <PanelLeft className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Expandir Menu</TooltipContent>
+          </Tooltip>
         </div>
       </SidebarFooter>
     </Sidebar>
@@ -173,23 +207,17 @@ function AppSidebar() {
 
 export default function Layout() {
   return (
-    <SidebarProvider defaultOpen={false}>
-      <AppSidebar />
-      <SidebarInset className="bg-background relative flex flex-col h-screen overflow-hidden w-full transition-all duration-200 ease-in-out">
-        <header className="h-20 flex items-center justify-between px-6 border-b border-border bg-background md:hidden shrink-0 z-10 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0">
-              <Folder size={18} className="fill-current" />
-            </div>
-            <span className="font-bold text-lg text-foreground">Funil OS</span>
-          </div>
-          <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
-        </header>
-        <main className="flex-1 overflow-auto animate-fade-in relative flex flex-col no-scrollbar">
-          <Outlet />
-        </main>
-      </SidebarInset>
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex min-h-svh w-full">
+        <AppSidebar />
+        <SidebarInset className="flex-1 flex flex-col min-w-0">
+          <main className="flex-1 overflow-y-auto bg-background">
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </div>
       <QuickActionModal />
+      <DataManager />
     </SidebarProvider>
   )
 }
