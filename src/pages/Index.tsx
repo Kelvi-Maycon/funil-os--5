@@ -4,14 +4,12 @@ import useTaskStore from '@/stores/useTaskStore'
 import useFunnelStore from '@/stores/useFunnelStore'
 import useDocumentStore from '@/stores/useDocumentStore'
 import useQuickActionStore from '@/stores/useQuickActionStore'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { format, isToday, isThisWeek, isBefore, startOfToday } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
-  Clock,
   Target,
   CheckSquare,
   Layers,
@@ -21,6 +19,11 @@ import {
   AlertCircle,
   CalendarDays,
   CalendarClock,
+  Plus,
+  FolderOpen,
+  TrendingUp,
+  Clock,
+  ArrowUpRight,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -30,22 +33,158 @@ function isValidDate(dateStr?: string): boolean {
   return !isNaN(d.getTime())
 }
 
-function safeFormatDate(
-  dateStr?: string,
-  dateFormat: string = 'dd/MM',
-): string {
+function safeFormatDate(dateStr?: string, dateFormat: string = 'dd/MM'): string {
   if (!isValidDate(dateStr)) return '---'
-  return format(new Date(dateStr as string), dateFormat)
+  return format(new Date(dateStr as string), dateFormat, { locale: ptBR })
 }
 
+/* ══════════════════════════════════════════
+   METRIC CARD COMPONENT
+   ══════════════════════════════════════════ */
+function MetricCard({
+  label,
+  value,
+  icon: Icon,
+  color = 'brand',
+  delay = 0,
+}: {
+  label: string
+  value: number | string
+  icon: React.ElementType
+  color?: 'brand' | 'success' | 'warning' | 'danger' | 'info'
+  delay?: number
+}) {
+  const colorMap = {
+    brand: 'text-brand bg-brand-subtle',
+    success: 'text-success bg-success-bg',
+    warning: 'text-warning bg-warning-bg',
+    danger: 'text-danger bg-danger-bg',
+    info: 'text-info bg-info-bg',
+  }
+
+  return (
+    <div
+      className="metric-card animate-fade-in-up opacity-0"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${colorMap[color]}`}>
+          <Icon size={18} />
+        </div>
+      </div>
+      <div className="metric-value animate-count-up" style={{ animationDelay: `${delay + 100}ms` }}>
+        {value}
+      </div>
+      <div className="metric-label mt-1.5">{label}</div>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   TASK SECTION COMPONENT
+   ══════════════════════════════════════════ */
+function TaskSection({
+  title,
+  tasks,
+  icon: Icon,
+  color,
+  emptyText,
+}: {
+  title: string
+  tasks: Array<{ id: string; title: string; priority?: string; deadline?: string }>
+  icon: React.ElementType
+  color: string
+  emptyText: string
+}) {
+  const priorityStyle: Record<string, string> = {
+    Alta: 'bg-danger-bg text-danger',
+    Média: 'bg-warning-bg text-warning',
+    Baixa: 'bg-info-bg text-info',
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 mb-3">
+        <div className={`w-2 h-2 rounded-full ${color}`} />
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {title}
+        </h3>
+        <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-semibold rounded-md">
+          {tasks.length}
+        </Badge>
+      </div>
+
+      {tasks.length === 0 ? (
+        <div className="text-[13px] text-muted-foreground/60 py-4 text-center border border-dashed border-border rounded-lg">
+          {emptyText}
+        </div>
+      ) : (
+        <div className="space-y-1">
+          {tasks.slice(0, 5).map((task) => (
+            <div key={task.id} className="task-row group">
+              <CheckSquare size={14} className="text-muted-foreground/50 shrink-0" />
+              <span className="text-[13px] text-foreground truncate flex-1 font-medium">
+                {task.title}
+              </span>
+              {task.priority && (
+                <span className={`badge-premium ${priorityStyle[task.priority] || ''}`}>
+                  {task.priority}
+                </span>
+              )}
+              {task.deadline && (
+                <span className="text-[11px] text-muted-foreground font-medium">
+                  {safeFormatDate(task.deadline)}
+                </span>
+              )}
+            </div>
+          ))}
+          {tasks.length > 5 && (
+            <div className="text-[12px] text-muted-foreground text-center pt-1 font-medium">
+              +{tasks.length - 5} mais
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   EMPTY STATE
+   ══════════════════════════════════════════ */
+function EmptyState({ icon: Icon, title, description, actionLabel, onAction }: {
+  icon: React.ElementType
+  title: string
+  description: string
+  actionLabel?: string
+  onAction?: () => void
+}) {
+  return (
+    <div className="empty-state py-8">
+      <div className="empty-state-icon">
+        <Icon size={22} />
+      </div>
+      <h4 className="text-sm font-semibold text-foreground mb-1">{title}</h4>
+      <p className="text-[13px] text-muted-foreground max-w-[240px]">{description}</p>
+      {actionLabel && onAction && (
+        <Button onClick={onAction} size="sm" className="mt-4 btn-primary text-xs h-8 px-4">
+          <Plus size={14} className="mr-1.5" />
+          {actionLabel}
+        </Button>
+      )}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   DASHBOARD MAIN
+   ══════════════════════════════════════════ */
 export default function Index() {
   const [projects] = useProjectStore()
   const [tasks] = useTaskStore()
   const [funnels] = useFunnelStore()
   const [docs] = useDocumentStore()
   const [, setAction] = useQuickActionStore()
-
-  const [quickTask, setQuickTask] = useState('')
 
   const activeProjects = projects.filter((p) => p.status === 'Ativo').length
   const pendingTasks = tasks.filter((t) => t.status !== 'Concluído')
@@ -54,9 +193,7 @@ export default function Index() {
 
   const today = startOfToday()
   const overdueTasks = pendingTasks.filter(
-    (t) =>
-      isValidDate(t.deadline) &&
-      isBefore(new Date(t.deadline as string), today),
+    (t) => isValidDate(t.deadline) && isBefore(new Date(t.deadline as string), today),
   )
   const todayTasks = pendingTasks.filter(
     (t) => isValidDate(t.deadline) && isToday(new Date(t.deadline as string)),
@@ -67,19 +204,7 @@ export default function Index() {
     return isThisWeek(d) && !isToday(d) && !isBefore(d, today)
   })
 
-  const addQuickTask = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!quickTask.trim()) return
-    setAction({ type: 'task', mode: 'create' })
-    setQuickTask('')
-  }
-
-  const getProjectStats = (projectId: string) => {
-    const pFunnels = funnels.filter((f) => f.projectId === projectId).length
-    const pTasks = tasks.filter((t) => t.projectId === projectId).length
-    const pDocs = docs.filter((d) => d.projectId === projectId).length
-    return { pFunnels, pTasks, pDocs }
-  }
+  const completionRate = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0
 
   return (
     <div className="p-6 md:p-8 max-w-[1600px] w-full mx-auto space-y-8 animate-fade-in">
@@ -101,322 +226,211 @@ export default function Index() {
             Quick Action
           </Button>
         </div>
+        <Button
+          onClick={() => setAction({ mode: 'create', type: 'task' })}
+          className="btn-primary text-xs h-9 px-4 gap-1.5"
+        >
+          <Plus size={15} />
+          Nova Tarefa
+        </Button>
       </div>
 
-      <div className="space-y-1">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          Bom dia, Diego
-        </h2>
-        <p className="text-muted-foreground capitalize text-base">
-          {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
-        </p>
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard label="Projetos Ativos" value={activeProjects} icon={FolderOpen} color="brand" delay={0} />
+        <MetricCard label="Tarefas Pendentes" value={pendingTasks.length} icon={Clock} color="warning" delay={60} />
+        <MetricCard label="Funis Ativos" value={activeFunnels} icon={Network} color="info" delay={120} />
+        <MetricCard label="Taxa Conclusão" value={`${completionRate}%`} icon={TrendingUp} color="success" delay={180} />
       </div>
 
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <Card className="hover-lift">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Projetos Ativos
-            </CardTitle>
-            <Layers className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground">
-              {activeProjects}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {projects.length} total
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="hover-lift">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Funis Ativos
-            </CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground">
-              {activeFunnels}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {funnels.length} total
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="hover-lift">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Tasks Pendentes
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-warning">
-              {pendingTasks.length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {tasks.length} total
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="hover-lift">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Tasks Concluídas
-            </CardTitle>
-            <CheckSquare className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-success">
-              {completedTasks}
-            </div>
-            {tasks.length > 0 && (
-              <div className="mt-2">
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-success rounded-full transition-all"
-                    style={{
-                      width: `${Math.round((completedTasks / tasks.length) * 100)}%`,
-                    }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {Math.round((completedTasks / tasks.length) * 100)}% concluído
-                </p>
+      {/* Main Content Grid */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        {/* Plano de Ação — 2 columns */}
+        <Card className="lg:col-span-2 card-premium">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <Target size={16} className="text-brand" />
+                <h2 className="text-base font-semibold tracking-tight">Plano de Ação</h2>
               </div>
-            )}
+              <Link
+                to="/tarefas"
+                className="text-xs text-muted-foreground hover:text-brand font-medium flex items-center gap-1 transition-colors"
+              >
+                Ver tudo <ArrowUpRight size={12} />
+              </Link>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-5">
+              <TaskSection
+                title="Atrasadas"
+                tasks={overdueTasks}
+                icon={AlertCircle}
+                color="bg-danger"
+                emptyText="Nenhuma atrasada"
+              />
+              <TaskSection
+                title="Hoje"
+                tasks={todayTasks}
+                icon={CalendarDays}
+                color="bg-warning"
+                emptyText="Nada para hoje"
+              />
+              <TaskSection
+                title="Esta Semana"
+                tasks={weekTasks}
+                icon={CalendarClock}
+                color="bg-info"
+                emptyText="Semana livre"
+              />
+            </div>
           </CardContent>
         </Card>
-      </div>
 
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          Plano de Ação
-        </h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card
-            className={
-              overdueTasks.length > 0 ? 'border-danger/30 bg-danger/5' : ''
-            }
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-danger flex items-center gap-1.5">
-                <AlertCircle size={14} /> Atrasadas
-              </CardTitle>
-              <Badge
-                variant="outline"
-                className="bg-danger/10 text-danger border-danger/20"
-              >
-                {overdueTasks.length}
-              </Badge>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {overdueTasks.slice(0, 4).map((t) => (
-                <div
-                  key={t.id}
-                  className="flex items-center justify-between py-1.5 border-b border-border last:border-0"
-                >
-                  <span className="text-sm font-medium text-foreground truncate flex-1 mr-2">
-                    {t.title}
-                  </span>
-                  <span className="text-[10px] text-danger font-semibold shrink-0">
-                    {safeFormatDate(t.deadline, 'dd/MM')}
-                  </span>
-                </div>
-              ))}
-              {overdueTasks.length === 0 && (
-                <p className="text-xs text-muted-foreground py-2">
-                  Nenhuma tarefa atrasada 🎉
-                </p>
-              )}
-            </CardContent>
-          </Card>
+        {/* Activity / Quick Stats */}
+        <Card className="card-premium">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-5">
+              <Layers size={16} className="text-brand" />
+              <h2 className="text-base font-semibold tracking-tight">Resumo</h2>
+            </div>
 
-          <Card
-            className={
-              todayTasks.length > 0 ? 'border-warning/30 bg-warning/5' : ''
-            }
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-warning flex items-center gap-1.5">
-                <CalendarDays size={14} /> Hoje
-              </CardTitle>
-              <Badge
-                variant="outline"
-                className="bg-warning/10 text-warning border-warning/20"
-              >
-                {todayTasks.length}
-              </Badge>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {todayTasks.slice(0, 4).map((t) => (
-                <div
-                  key={t.id}
-                  className="flex items-center justify-between py-1.5 border-b border-border last:border-0"
-                >
-                  <span className="text-sm font-medium text-foreground truncate flex-1 mr-2">
-                    {t.title}
-                  </span>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                    {t.priority}
-                  </Badge>
-                </div>
-              ))}
-              {todayTasks.length === 0 && (
-                <p className="text-xs text-muted-foreground py-2">
-                  Nenhuma tarefa para hoje
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-info flex items-center gap-1.5">
-                <CalendarClock size={14} /> Esta Semana
-              </CardTitle>
-              <Badge
-                variant="outline"
-                className="bg-info/10 text-info border-info/20"
-              >
-                {weekTasks.length}
-              </Badge>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {weekTasks.slice(0, 4).map((t) => (
-                <div
-                  key={t.id}
-                  className="flex items-center justify-between py-1.5 border-b border-border last:border-0"
-                >
-                  <span className="text-sm font-medium text-foreground truncate flex-1 mr-2">
-                    {t.title}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-semibold shrink-0">
-                    {safeFormatDate(t.deadline, 'dd/MM')}
-                  </span>
-                </div>
-              ))}
-              {weekTasks.length === 0 && (
-                <p className="text-xs text-muted-foreground py-2">
-                  Nenhuma tarefa esta semana
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <form onSubmit={addQuickTask} className="flex items-center gap-2">
-          <Input
-            placeholder="➕ Adicionar task rápida..."
-            value={quickTask}
-            onChange={(e) => setQuickTask(e.target.value)}
-            className="flex-1"
-          />
-          <Button type="submit" variant="dark" size="sm">
-            Criar
-          </Button>
-        </form>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-1 lg:max-w-3xl">
-        <Card className="flex flex-col bg-foreground text-background relative overflow-hidden border-none shadow-md">
-          <div className="absolute -right-12 -top-12 w-48 h-48 rounded-full border-[12px] border-background opacity-5 pointer-events-none"></div>
-          <div className="absolute -left-12 -bottom-12 w-32 h-32 rounded-full border-[8px] border-background opacity-5 pointer-events-none"></div>
-          <CardHeader className="relative z-10">
-            <CardTitle className="flex items-center gap-2 text-background">
-              <Clock size={18} className="text-primary" /> Próximas Tasks
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 relative z-10">
             <div className="space-y-4">
-              {pendingTasks.slice(0, 5).map((t) => (
-                <div
-                  key={t.id}
-                  className="flex items-center justify-between border-b border-background/20 pb-3 last:border-0 last:pb-0"
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="font-medium text-base text-background">
-                      {t.title}
-                    </span>
-                    <span className="text-xs uppercase font-semibold text-background/60">
-                      {safeFormatDate(t.deadline, 'dd/MM/yyyy')}
-                    </span>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className={
-                      t.priority === 'Alta'
-                        ? 'bg-danger text-danger-foreground border-none'
-                        : 'bg-background/20 text-background border-none'
-                    }
-                  >
-                    {t.priority}
-                  </Badge>
+              {/* Progress */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-muted-foreground">Progresso Geral</span>
+                  <span className="text-xs font-bold text-foreground">{completionRate}%</span>
                 </div>
-              ))}
+                <div className="progress-bar">
+                  <div className="progress-bar-fill" style={{ width: `${completionRate}%` }} />
+                </div>
+              </div>
+
+              <div className="divider" />
+
+              {/* Quick stats list */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="dot dot-danger" />
+                    <span className="text-[13px] text-foreground font-medium">Atrasadas</span>
+                  </div>
+                  <span className="text-[13px] font-bold text-foreground">{overdueTasks.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="dot dot-warning" />
+                    <span className="text-[13px] text-foreground font-medium">Para Hoje</span>
+                  </div>
+                  <span className="text-[13px] font-bold text-foreground">{todayTasks.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="dot dot-success" />
+                    <span className="text-[13px] text-foreground font-medium">Concluídas</span>
+                  </div>
+                  <span className="text-[13px] font-bold text-foreground">{completedTasks}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="dot dot-info" />
+                    <span className="text-[13px] text-foreground font-medium">Documentos</span>
+                  </div>
+                  <span className="text-[13px] font-bold text-foreground">{docs.length}</span>
+                </div>
+              </div>
+
+              <div className="divider" />
+
+              {/* CTA */}
+              <Button
+                variant="outline"
+                onClick={() => setAction({ mode: 'create', type: 'project' })}
+                className="w-full h-9 text-xs font-semibold border-dashed border-border hover:border-brand hover:bg-brand-subtle hover:text-brand transition-all"
+              >
+                <Plus size={14} className="mr-1.5" />
+                Novo Projeto
+              </Button>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">
-            Projetos Recentes
-          </h2>
+      {/* Projects Grid */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <FolderOpen size={16} className="text-brand" />
+            <h2 className="text-base font-semibold tracking-tight">Projetos Recentes</h2>
+          </div>
           <Link
             to="/projetos"
-            className="text-sm text-primary hover:underline font-medium flex items-center gap-1"
+            className="text-xs text-muted-foreground hover:text-brand font-medium flex items-center gap-1 transition-colors"
           >
-            Ver todos <ArrowRight size={14} />
+            Ver todos <ArrowUpRight size={12} />
           </Link>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {projects.slice(0, 3).map((p) => {
-            const stats = getProjectStats(p.id)
-            return (
-              <Link to={`/projetos/${p.id}`} key={p.id}>
-                <Card className="hover-lift cursor-pointer h-full group">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                        {p.name}
-                      </CardTitle>
-                      <Badge
-                        variant="outline"
-                        className={
-                          p.status === 'Ativo'
-                            ? 'bg-success/10 text-success border-none'
-                            : 'bg-muted text-muted-foreground border-none'
-                        }
-                      >
-                        {p.status}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                      {p.description}
+
+        {projects.length === 0 ? (
+          <EmptyState
+            icon={FolderOpen}
+            title="Nenhum projeto"
+            description="Crie seu primeiro projeto para começar a organizar seus funis."
+            actionLabel="Criar Projeto"
+            onAction={() => setAction({ mode: 'create', type: 'project' })}
+          />
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {projects.slice(0, 6).map((project, i) => {
+              const pTasks = tasks.filter((t) => t.projectId === project.id)
+              const pDone = pTasks.filter((t) => t.status === 'Concluído').length
+              const pProgress = pTasks.length > 0 ? Math.round((pDone / pTasks.length) * 100) : 0
+              const pFunnels = funnels.filter((f) => f.projectId === project.id).length
+
+              return (
+                <Link
+                  key={project.id}
+                  to={`/projetos/${project.id}`}
+                  className="card-premium p-4 block group animate-fade-in-up opacity-0"
+                  style={{ animationDelay: `${i * 50}ms` }}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-foreground truncate pr-2 group-hover:text-brand transition-colors">
+                      {project.name}
+                    </h3>
+                    <Badge
+                      variant={project.status === 'Ativo' ? 'default' : 'secondary'}
+                      className="text-[10px] shrink-0 h-5 px-2 rounded-md font-semibold"
+                    >
+                      {project.status}
+                    </Badge>
+                  </div>
+
+                  {project.description && (
+                    <p className="text-[12px] text-muted-foreground line-clamp-2 mb-3">
+                      {project.description}
                     </p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Network size={12} /> {stats.pFunnels} funis
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <CheckSquare size={12} /> {stats.pTasks} tasks
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <FileText size={12} /> {stats.pDocs} docs
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            )
-          })}
-        </div>
+                  )}
+
+                  <div className="progress-bar mb-3">
+                    <div className="progress-bar-fill" style={{ width: `${pProgress}%` }} />
+                  </div>
+
+                  <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Network size={12} /> {pFunnels} funis
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <CheckSquare size={12} /> {pDone}/{pTasks.length}
+                    </span>
+                    <span className="ml-auto font-semibold text-foreground">{pProgress}%</span>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
