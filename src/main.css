@@ -6,31 +6,31 @@
 
 @layer base {
   :root {
-    /* Brand Colors: #C2714F */
-    --brand: 18 49% 54%;
-    --brand-light: 18 49% 74%;
-    --brand-dark: 18 49% 34%;
+    /* Brand Colors: A modern, professional Indigo to replace the previous rustic orange */
+    --brand: 238 82% 61%;
+    --brand-light: 238 82% 81%;
+    --brand-dark: 238 82% 41%;
 
-    /* App Colors: #FAF7F2 */
-    --bg-app: 38 33% 96%;
+    /* App Colors: Clean Grayscale */
+    --bg-app: 210 20% 98%;
     --bg-sidebar: 0 0% 100%;
     --bg-card: 0 0% 100%;
 
-    /* Text Colors: #3D2B1F */
-    --text-primary: 24 33% 18%;
-    --text-secondary: 24 15% 45%;
-    --text-muted: 24 10% 60%;
+    /* Text Colors: Neutral Slate */
+    --text-primary: 222 47% 11%;
+    --text-secondary: 215 16% 47%;
+    --text-muted: 215 14% 65%;
 
-    --border: 38 20% 88%;
-    --border-light: 38 20% 92%;
+    --border: 214 32% 91%;
+    --border-light: 214 32% 95%;
 
-    --success: 142 60% 45%;
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 35 90% 55%;
+    --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --danger: 0 70% 55%;
+    --danger: 348 83% 47%;
     --danger-foreground: 0 0% 100%;
-    --info: 210 90% 55%;
+    --info: 200 98% 39%;
     --info-foreground: 0 0% 100%;
 
     /* Shadcn UI Mapping */
@@ -46,14 +46,14 @@
     --primary: var(--brand);
     --primary-foreground: 0 0% 100%;
 
-    --secondary: var(--bg-app);
+    --secondary: 210 40% 96%;
     --secondary-foreground: var(--text-primary);
 
-    --muted: var(--bg-app);
+    --muted: 210 40% 96%;
     --muted-foreground: var(--text-secondary);
 
-    --accent: var(--bg-app);
-    --accent-foreground: var(--brand);
+    --accent: 210 40% 96%;
+    --accent-foreground: var(--text-primary);
 
     --destructive: var(--danger);
     --destructive-foreground: 0 0% 100%;
@@ -67,8 +67,8 @@
     --sidebar-foreground: var(--text-secondary);
     --sidebar-primary: var(--brand);
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: var(--bg-app);
-    --sidebar-accent-foreground: var(--brand);
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: var(--text-primary);
     --sidebar-border: var(--border);
     --sidebar-ring: var(--brand);
   }
@@ -129,7 +129,7 @@
   }
 
   .section-label {
-    @apply text-[12px] uppercase tracking-[0.08em] font-bold text-muted-foreground;
+    @apply text-xs uppercase tracking-[0.08em] font-bold text-muted-foreground;
   }
 
   @keyframes fade-in {
@@ -153,3 +153,4 @@
     scrollbar-width: none;
   }
 }
+

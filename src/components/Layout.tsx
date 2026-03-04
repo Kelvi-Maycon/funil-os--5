@@ -126,14 +126,10 @@ function AppSidebar() {
               const isActive = checkIsActive(item.url)
               return (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    tooltip={item.title}
-                  >
+                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
                     <Link to={item.url}>
                       <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                      <span>{item.title}</span>
+                      <span className="truncate">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -159,17 +155,10 @@ function AppSidebar() {
                   const isActive = checkIsActive(item.url)
                   return (
                     <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={item.title}
-                      >
+                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
                         <Link to={item.url}>
-                          <item.icon
-                            size={20}
-                            strokeWidth={isActive ? 2.5 : 2}
-                          />
-                          <span>{item.title}</span>
+                          <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                          <span className="truncate">{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -189,14 +178,10 @@ function AppSidebar() {
               const isActive = checkIsActive(item.url)
               return (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    tooltip={item.title}
-                  >
+                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
                     <Link to={item.url}>
                       <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                      <span>{item.title}</span>
+                      <span className="truncate">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -208,22 +193,22 @@ function AppSidebar() {
 
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:py-3 shrink-0 transition-all duration-200 border-t border-border">
         <div className="flex items-center w-full justify-between group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-3">
-          <div className="flex items-center group-data-[collapsible=icon]:justify-center w-full">
+          <div className="flex items-center group-data-[collapsible=icon]:justify-center w-full overflow-hidden">
             <img
               src="https://img.usecurling.com/ppl/thumbnail?gender=male&seed=8"
               alt="Avatar"
               className="w-10 h-10 rounded-full border border-border shrink-0 mr-3 group-data-[collapsible=icon]:mr-0 shadow-sm"
             />
-            <div className="flex flex-col overflow-hidden transition-all duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden">
-              <span className="text-sm font-bold text-foreground truncate whitespace-nowrap">
+            <div className="flex flex-col overflow-hidden transition-all duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden flex-1">
+              <span className="text-sm font-bold text-foreground truncate">
                 Diego K.
               </span>
-              <span className="text-xs font-semibold text-muted-foreground truncate whitespace-nowrap">
+              <span className="text-xs font-semibold text-muted-foreground truncate">
                 diego@funilos.com
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-1 overflow-hidden transition-colors duration-100 text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:justify-center w-full">
+          <div className="flex items-center gap-1 shrink-0 transition-colors duration-100 text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:justify-center">
             <DataManager />
           </div>
         </div>
@@ -254,3 +239,4 @@ export default function Layout() {
     </SidebarProvider>
   )
 }
+

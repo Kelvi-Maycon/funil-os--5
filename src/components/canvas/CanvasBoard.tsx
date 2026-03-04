@@ -221,7 +221,7 @@ const EdgeItem = memo(
     const d = getEdgePath(sourceCoords, targetCoords, edgeStyle)
     const strokeColor =
       edge.style?.stroke ||
-      (isSelected ? 'hsl(var(--primary))' : 'url(#edge-gradient)')
+      (isSelected ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))')
     const strokeWidth = edge.style?.strokeWidth || (isSelected ? 4 : 3)
     const strokeDasharray = edge.style?.strokeDasharray || 'none'
     const midX = sourceCoords.x + (targetCoords.x - sourceCoords.x) / 2
@@ -533,14 +533,16 @@ export default function CanvasBoard({
         setRightPanelState(null)
       if (settingsNodeId && selectedNodes.includes(settingsNodeId))
         setSettingsNodeId(null)
+      toast({ title: 'Elementos excluídos com sucesso.' })
     } else if (selectedEdge) {
       onChangeWithHistory({
         ...funnel,
         edges: funnel.edges.filter((e) => e.id !== selectedEdge),
       })
       setSelectedEdge(null)
+      toast({ title: 'Linha excluída com sucesso.' })
     }
-  }, [onChangeWithHistory, setSelectedNodes, selectedEdge, setSelectedEdge])
+  }, [onChangeWithHistory, setSelectedNodes, selectedEdge, setSelectedEdge, toast])
 
   const handleConfirmDelete = useCallback(() => {
     const { funnel, rightPanelState, settingsNodeId } = latest.current
@@ -556,9 +558,10 @@ export default function CanvasBoard({
       })
       if (rightPanelState?.nodeId === nodeToDelete) setRightPanelState(null)
       if (settingsNodeId === nodeToDelete) setSettingsNodeId(null)
+      toast({ title: 'Elemento excluído com sucesso.' })
     }
     setNodeToDelete(null)
-  }, [nodeToDelete, handleDeleteSelected, onChangeWithHistory])
+  }, [nodeToDelete, handleDeleteSelected, onChangeWithHistory, toast])
 
   useEffect(() => {
     const el = boardRef.current
@@ -1001,11 +1004,10 @@ export default function CanvasBoard({
       ? funnel.nodes.find((n) => n.id === selectedNodes[0])
       : undefined
   const selectedEdgeObj = funnel.edges.find((e) => e.id === selectedEdge)
+  
+  // Contextual property panel logic
   const showPropertiesPanel =
-    isMultiSelect ||
-    selectedNodeObj ||
-    selectedEdgeObj ||
-    (selectedNodes.length === 0 && !selectedEdgeObj)
+    isMultiSelect || selectedNodeObj || selectedEdgeObj
 
   const isToolbarActive =
     activeTool !== 'Select' ||
@@ -1301,6 +1303,32 @@ export default function CanvasBoard({
         </div>
       )}
 
+      {!showPropertiesPanel && !rightPanelState && (
+        <div className="absolute top-24 right-6 bg-card rounded-2xl shadow-xl border border-border p-5 w-[280px] flex flex-col gap-6 z-40 max-h-[80vh] overflow-y-auto">
+          <h4 className="section-label">CANVAS</h4>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="section-label block">Estilo de Conexão</label>
+              <Select
+                value={funnel.edgeStyle || 'curved'}
+                onValueChange={(val) =>
+                  onChangeWithHistory({ ...funnel, edgeStyle: val as any })
+                }
+              >
+                <SelectTrigger className="w-full bg-background">
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="curved">Curvo</SelectItem>
+                  <SelectItem value="straight">Reto</SelectItem>
+                  <SelectItem value="orthogonal">Ortogonal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showPropertiesPanel && !rightPanelState && (
         <div className="absolute top-24 right-6 bg-card rounded-2xl shadow-xl border border-border p-5 w-[280px] flex flex-col gap-6 z-40 max-h-[80vh] overflow-y-auto">
           <h4 className="section-label">
@@ -1308,32 +1336,8 @@ export default function CanvasBoard({
               ? 'MÚLTIPLOS'
               : selectedNodeObj
                 ? 'ESTILO'
-                : selectedEdgeObj
-                  ? 'LINHA'
-                  : 'CANVAS'}
+                : 'LINHA'}
           </h4>
-          {!selectedNodeObj && !selectedEdgeObj && !isMultiSelect && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="section-label block">Estilo de Conexão</label>
-                <Select
-                  value={funnel.edgeStyle || 'curved'}
-                  onValueChange={(val) =>
-                    onChangeWithHistory({ ...funnel, edgeStyle: val as any })
-                  }
-                >
-                  <SelectTrigger className="w-full bg-background">
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="curved">Curvo</SelectItem>
-                    <SelectItem value="straight">Reto</SelectItem>
-                    <SelectItem value="orthogonal">Ortogonal</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
           {(selectedNodeObj || isMultiSelect) && (
             <>
               <div className="space-y-3">
@@ -1482,18 +1486,6 @@ export default function CanvasBoard({
           className="absolute inset-0 w-full h-full pointer-events-none"
         >
           <svg className="absolute inset-0 w-full h-full overflow-visible z-0 pointer-events-none">
-            <defs>
-              <linearGradient
-                id="edge-gradient"
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="0%"
-              >
-                <stop offset="0%" stopColor="hsl(var(--primary))" />
-                <stop offset="100%" stopColor="hsl(var(--muted-foreground))" />
-              </linearGradient>
-            </defs>
             {funnel.edges.map((e) => {
               const sourceNode = funnel.nodes.find((n) => n.id === e.source)
               const targetNode = funnel.nodes.find((n) => n.id === e.target)
@@ -1672,17 +1664,19 @@ export default function CanvasBoard({
             ),
           })
           setSettingsNodeId(null)
+          toast({ title: 'Configurações do nó salvas com sucesso.' })
         }}
       />
       <ConfirmDialog
         open={!!nodeToDelete}
         onOpenChange={(open) => !open && setNodeToDelete(null)}
         title="Excluir Elementos?"
-        description="Esta ação removerá os elementos selecionados do canvas."
-        confirmLabel="Excluir"
+        description="Esta ação removerá permanentemente os elementos selecionados do canvas. Deseja continuar?"
+        confirmLabel="Excluir Elementos"
         variant="destructive"
         onConfirm={handleConfirmDelete}
       />
     </div>
   )
 }
+

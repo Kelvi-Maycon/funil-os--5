@@ -53,46 +53,22 @@ const icons: Record<string, any> = {
 }
 
 const getTypeTheme = (type: string) => {
-  const themes: Record<string, { color: string; border: string; bg: string }> =
-    {
-      Ad: {
-        color: 'hsl(var(--info))',
-        border: 'hsl(var(--info))',
-        bg: 'hsl(var(--info) / 0.1)',
-      },
-      LandingPage: {
-        color: 'hsl(var(--primary))',
-        border: 'hsl(var(--primary))',
-        bg: 'hsl(var(--primary) / 0.1)',
-      },
-      Email: {
-        color: 'hsl(var(--warning))',
-        border: 'hsl(var(--warning))',
-        bg: 'hsl(var(--warning) / 0.1)',
-      },
-      Checkout: {
-        color: 'hsl(var(--success))',
-        border: 'hsl(var(--success))',
-        bg: 'hsl(var(--success) / 0.1)',
-      },
-      WaitUntil: {
-        color: 'hsl(var(--muted-foreground))',
-        border: 'hsl(var(--border))',
-        bg: 'hsl(var(--muted))',
-      },
-      VSL: {
-        color: '#8b5cf6',
-        border: '#8b5cf6',
-        bg: 'rgba(139, 92, 246, 0.1)',
-      },
-    }
-  return (
-    themes[type] || {
-      color: 'hsl(var(--primary))',
-      border: 'hsl(var(--primary))',
-      bg: 'hsl(var(--primary) / 0.1)',
-    }
-  )
+  const themes: Record<string, { color: string; border: string; bg: string }> = {
+    Ad: { color: 'hsl(var(--info))', border: 'hsl(var(--info))', bg: 'hsl(var(--info) / 0.1)' },
+    LandingPage: { color: 'hsl(var(--primary))', border: 'hsl(var(--primary))', bg: 'hsl(var(--primary) / 0.1)' },
+    Email: { color: 'hsl(var(--warning))', border: 'hsl(var(--warning))', bg: 'hsl(var(--warning) / 0.1)' },
+    Checkout: { color: 'hsl(var(--success))', border: 'hsl(var(--success))', bg: 'hsl(var(--success) / 0.1)' },
+    WaitUntil: { color: 'hsl(var(--muted-foreground))', border: 'hsl(var(--border))', bg: 'hsl(var(--muted))' },
+    VSL: { color: '#8b5cf6', border: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },
+    Slack: { color: '#E01E5A', border: '#E01E5A', bg: 'rgba(224, 30, 90, 0.1)' },
+    SMS: { color: '#10B981', border: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' },
+    WATI: { color: '#059669', border: '#059669', bg: 'rgba(5, 150, 105, 0.1)' },
+    ManyChat: { color: '#3B82F6', border: '#3B82F6', bg: 'rgba(59, 130, 246, 0.1)' },
+    Upsell: { color: '#F59E0B', border: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' },
+    Obrigado: { color: '#10B981', border: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' },
+    Form: { color: '#6366F1', border: '#6366F1', bg: 'rgba(99, 102, 241, 0.1)' },
+  }
+  return themes[type] || { color: 'hsl(var(--foreground))', border: 'hsl(var(--border))', bg: 'hsl(var(--muted))' }
 }
 
 type NodeItemProps = {
@@ -460,7 +436,7 @@ export default function NodeItem({
       >
         <div
           ref={textRef}
-          className="font-bold text-[16px] whitespace-pre-wrap outline-none min-h-[24px] min-w-[20px]"
+          className="font-bold text-base whitespace-pre-wrap outline-none min-h-[24px] min-w-[20px]"
           contentEditable={isEditingText}
           suppressContentEditableWarning
           onPointerDown={(e) => {
@@ -659,7 +635,7 @@ export default function NodeItem({
     return (
       <div
         className={cn(
-          'absolute top-0 left-0 pointer-events-auto min-w-[150px] max-w-[400px] p-4 rounded-[12px] shadow-sm text-foreground z-10 group',
+          'absolute top-0 left-0 pointer-events-auto min-w-[150px] max-w-[400px] p-4 rounded-xl shadow-sm text-foreground z-10 group',
           selected && 'ring-2 ring-primary/60 shadow-md',
           !currentlyDragging && 'transition-transform duration-150',
           currentlyDragging
@@ -696,7 +672,7 @@ export default function NodeItem({
       >
         <div
           ref={textRef}
-          className="font-bold text-[16px] whitespace-pre-wrap outline-none cursor-text"
+          className="font-bold text-base whitespace-pre-wrap outline-none cursor-text"
           contentEditable={isEditingText}
           suppressContentEditableWarning
           onPointerDown={(e) => {
@@ -717,7 +693,7 @@ export default function NodeItem({
     return (
       <div
         className={cn(
-          'absolute top-0 left-0 pointer-events-auto w-[300px] rounded-[14px] shadow-sm border border-border bg-white z-10 overflow-hidden group',
+          'absolute top-0 left-0 pointer-events-auto w-[300px] rounded-xl shadow-sm border border-border bg-white z-10 overflow-hidden group',
           selected && 'ring-4 ring-primary/40 border-primary shadow-md',
           !currentlyDragging && 'transition-transform duration-150',
           currentlyDragging
@@ -758,19 +734,19 @@ export default function NodeItem({
   return (
     <div
       className={cn(
-        'absolute top-0 left-0 pointer-events-auto w-[240px] rounded-[14px] px-[20px] py-[18px] z-10 flex flex-col group select-none duration-200 hover-lift',
+        'absolute top-0 left-0 pointer-events-auto w-[240px] rounded-xl px-5 py-4 z-10 flex flex-col group select-none duration-200 hover-lift',
         !currentlyDragging
           ? 'transition-[box-shadow,background-color,border-color,opacity,transform]'
           : 'transition-[box-shadow,background-color,border-color,opacity]',
         !customFill &&
           !customStroke &&
-          'bg-card border border-border shadow-[0_2px_12px_rgba(0,0,0,0.04)]',
+          'bg-card border border-border shadow-sm',
         isHovered &&
           !selected &&
           !customFill &&
-          'shadow-[0_8px_24px_rgba(0,0,0,0.08)]',
+          'shadow-md',
         selected &&
-          'border-primary shadow-[0_8px_24px_rgba(192,120,72,0.15)] ring-2 ring-primary',
+          'border-primary shadow-md ring-2 ring-primary/20',
         currentlyDragging && 'opacity-95 z-50 shadow-2xl',
         node.data.isCompleted && 'opacity-70 grayscale-[30%]',
       )}
@@ -816,7 +792,7 @@ export default function NodeItem({
         {hasDocs && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-border shadow-[0_2px_8px_rgba(0,0,0,0.05)] text-primary cursor-help transition-transform hover:scale-110">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-border shadow-sm text-primary cursor-help transition-transform hover:scale-110">
                 <FileText size={14} strokeWidth={2.5} />
               </div>
             </TooltipTrigger>
@@ -826,7 +802,7 @@ export default function NodeItem({
         {hasAssets && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-border shadow-[0_2px_8px_rgba(0,0,0,0.05)] text-primary cursor-help transition-transform hover:scale-110">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-border shadow-sm text-primary cursor-help transition-transform hover:scale-110">
                 <ImageIcon size={14} strokeWidth={2.5} />
               </div>
             </TooltipTrigger>
@@ -836,7 +812,7 @@ export default function NodeItem({
         {hasTasks && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-border shadow-[0_2px_8px_rgba(0,0,0,0.05)] text-primary cursor-help transition-transform hover:scale-110">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-border shadow-sm text-primary cursor-help transition-transform hover:scale-110">
                 <CheckSquare size={14} strokeWidth={2.5} />
               </div>
             </TooltipTrigger>
@@ -847,7 +823,7 @@ export default function NodeItem({
 
       <div
         className={cn(
-          'absolute -top-3.5 right-4 flex items-center gap-1.5 z-20 transition-all duration-200',
+          'absolute -top-4 right-2 flex items-center gap-1.5 z-30 transition-all duration-200 bg-card border border-border p-1 rounded-lg shadow-sm',
           selected || isHovered
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-2 pointer-events-none',
@@ -860,13 +836,14 @@ export default function NodeItem({
                 e.stopPropagation()
                 onOpenSettings()
               }}
-              className="interactive-icon w-8 h-8 bg-white border border-border rounded-full flex items-center justify-center text-muted-foreground hover:text-primary shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-transform hover:scale-110"
+              className="interactive-icon w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-primary transition-colors"
             >
               <Settings size={14} strokeWidth={2.5} />
             </button>
           </TooltipTrigger>
           <TooltipContent>Configurações</TooltipContent>
         </Tooltip>
+        <div className="w-px h-4 bg-border" />
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -874,7 +851,7 @@ export default function NodeItem({
                 e.stopPropagation()
                 onDelete()
               }}
-              className="interactive-icon w-8 h-8 bg-white border border-border rounded-full flex items-center justify-center text-red-500 hover:text-red-700 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-transform hover:scale-110"
+              className="interactive-icon w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:bg-red-50 hover:text-red-500 transition-colors"
             >
               <Trash2 size={14} strokeWidth={2.5} />
             </button>
@@ -885,12 +862,12 @@ export default function NodeItem({
 
       <div className="flex items-center gap-2 mb-3">
         <div
-          className="w-[24px] h-[24px] rounded-[6px] flex items-center justify-center"
+          className="w-6 h-6 rounded-md flex items-center justify-center"
           style={{ backgroundColor: theme.bg, color: theme.color }}
         >
           <Icon size={14} strokeWidth={2.5} />
         </div>
-        <span className="text-[12px] uppercase tracking-[0.08em] font-bold text-muted-foreground">
+        <span className="text-xs uppercase tracking-[0.08em] font-bold text-muted-foreground">
           {node.type}
         </span>
       </div>
@@ -898,14 +875,14 @@ export default function NodeItem({
       <div className="flex flex-col mb-1">
         <h4
           className={cn(
-            'font-bold text-[16px] truncate leading-tight transition-all text-foreground',
+            'font-bold text-base truncate leading-tight transition-all text-foreground',
             node.data.isCompleted && 'line-through opacity-70',
           )}
         >
           {node.data.name}
         </h4>
         {node.data.subtitle && (
-          <span className="text-[14px] mt-1 truncate font-medium text-muted-foreground">
+          <span className="text-sm mt-1 truncate font-medium text-muted-foreground">
             {node.data.subtitle}
           </span>
         )}
@@ -926,7 +903,7 @@ export default function NodeItem({
               />
               <span
                 className={cn(
-                  'text-[14px] leading-tight font-bold flex-1 transition-all break-words',
+                  'text-sm leading-tight font-bold flex-1 transition-all break-words',
                   task.status === 'Concluído'
                     ? 'text-muted-foreground line-through'
                     : 'text-foreground',
@@ -957,7 +934,7 @@ export default function NodeItem({
                   newTaskTitle.trim() ? handleAddTask() : setIsAddingTask(false)
                 }
                 placeholder="Nome da tarefa..."
-                className="flex-1 text-[14px] border rounded px-2 py-1 outline-none transition-all w-full font-bold bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
+                className="flex-1 text-sm border rounded px-2 py-1 outline-none transition-all w-full font-bold bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
               />
             </div>
           ) : (
@@ -966,7 +943,7 @@ export default function NodeItem({
                 e.stopPropagation()
                 setIsAddingTask(true)
               }}
-              className="flex items-center gap-1.5 mt-1 text-[14px] font-bold transition-colors w-full text-left py-0.5 rounded-sm interactive-icon text-muted-foreground hover:text-primary"
+              className="flex items-center gap-1.5 mt-1 text-sm font-bold transition-colors w-full text-left py-0.5 rounded-sm interactive-icon text-muted-foreground hover:text-primary"
             >
               <Plus size={14} strokeWidth={2.5} /> Adicionar tarefa
             </button>
@@ -995,16 +972,17 @@ export default function NodeItem({
         )}
       >
         <button
-          className="flex items-center gap-1.5 bg-white border border-border rounded-[8px] px-3 py-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.05)] text-muted-foreground hover:text-primary hover:border-primary transition-all hover:scale-[1.02]"
+          className="flex items-center gap-1.5 bg-white border border-border rounded-lg px-3 py-1.5 shadow-sm text-muted-foreground hover:text-primary hover:border-primary transition-all hover:scale-[1.02]"
           onClick={(e) => {
             e.stopPropagation()
             onAddChild()
           }}
         >
           <ExternalLink size={14} strokeWidth={2} />
-          <span className="text-[12px] font-bold">Exit</span>
+          <span className="text-xs font-bold">Exit</span>
         </button>
       </div>
     </div>
   )
 }
+
