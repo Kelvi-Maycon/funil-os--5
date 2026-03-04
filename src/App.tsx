@@ -18,6 +18,7 @@ const Tasks = lazy(() => import('./pages/Tasks'))
 const Documents = lazy(() => import('./pages/Documents'))
 const Library = lazy(() => import('./pages/Library'))
 const Insights = lazy(() => import('./pages/Insights'))
+const Config = lazy(() => import('./pages/Config'))
 
 function AppSkeleton() {
   return (
@@ -71,6 +72,7 @@ const App = () => (
                 <Route path="/documentos" element={<Documents />} />
                 <Route path="/biblioteca" element={<Library />} />
                 <Route path="/insights" element={<Insights />} />
+                <Route path="/config" element={<Config />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
