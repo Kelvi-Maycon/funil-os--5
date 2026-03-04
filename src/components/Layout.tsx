@@ -31,6 +31,12 @@ import {
   PanelLeftClose,
   Plus,
   ChevronDown,
+  LineChart,
+  Lightbulb,
+  Image as ImageIcon,
+  BookMarked,
+  Users,
+  CreditCard,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import QuickActionModal from '@/components/QuickActionModal'
@@ -42,18 +48,26 @@ const navGroups = {
     { title: 'Dashboard', icon: LayoutDashboard, url: '/' },
     { title: 'Projetos', icon: Folder, url: '/projetos' },
     { title: 'Funis / Canvas', icon: Network, url: '/canvas' },
+    { title: 'Analytics', icon: LineChart, url: '/analytics' },
   ],
   tools: [
     { title: 'Tarefas', icon: CheckSquare, url: '/tarefas' },
     { title: 'Documentos', icon: FileText, url: '/documentos' },
     { title: 'Biblioteca', icon: BookOpen, url: '/biblioteca' },
+    { title: 'Insights', icon: Lightbulb, url: '/insights' },
+    { title: 'Ativos', icon: ImageIcon, url: '/ativos' },
+    { title: 'Swipe File', icon: BookMarked, url: '/swipe' },
   ],
-  config: [{ title: 'Configurações', icon: Settings, url: '/config' }],
+  config: [
+    { title: 'Configurações', icon: Settings, url: '/config' },
+    { title: 'Equipe', icon: Users, url: '/equipe' },
+    { title: 'Faturamento', icon: CreditCard, url: '/faturamento' },
+  ],
 }
 
 function AppSidebar() {
   const location = useLocation()
-  const { setOpen, isMobile } = useSidebar()
+  const { setOpen, isMobile, state } = useSidebar()
   const [, setQuickAction] = useQuickActionStore()
 
   const checkIsActive = (url: string) => {
@@ -91,26 +105,37 @@ function AppSidebar() {
             <button
               onClick={() => setQuickAction({ mode: 'create', type: 'task' })}
               className="w-8 h-8 bg-background hover:bg-primary/10 text-primary hover:text-primary rounded-lg flex items-center justify-center shrink-0 transition-colors duration-100 outline-none"
+              title="Nova Ação"
             >
               <Plus size={18} />
             </button>
-            <div className="text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center w-8 h-8 transition-colors duration-100 cursor-pointer">
+            <div
+              className="text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center w-8 h-8 transition-colors duration-100 cursor-pointer"
+              title="Recolher Sidebar"
+            >
               <PanelLeftClose size={20} />
             </div>
           </div>
         </div>
 
         <div className="hidden group-data-[collapsible=icon]:flex flex-col items-center gap-3 w-full">
-          <div className="text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center w-8 h-8 transition-colors duration-100 cursor-pointer">
+          <div
+            className="text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center w-8 h-8 transition-colors duration-100 cursor-pointer"
+            title="Expandir Sidebar"
+          >
             <PanelLeft size={20} />
           </div>
           <button
             onClick={() => setQuickAction({ mode: 'create', type: 'task' })}
             className="w-8 h-8 bg-background hover:bg-primary/10 text-primary hover:text-primary rounded-lg flex items-center justify-center shrink-0 transition-colors duration-100 outline-none"
+            title="Nova Ação"
           >
             <Plus size={18} />
           </button>
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0 shadow-sm">
+          <div
+            className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0 shadow-sm"
+            title="Funil OS"
+          >
             <Folder size={18} className="fill-current" />
           </div>
         </div>
@@ -126,7 +151,11 @@ function AppSidebar() {
               const isActive = checkIsActive(item.url)
               return (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={item.title}
+                  >
                     <Link to={item.url}>
                       <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                       <span className="truncate">{item.title}</span>
@@ -155,9 +184,16 @@ function AppSidebar() {
                   const isActive = checkIsActive(item.url)
                   return (
                     <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={item.title}
+                      >
                         <Link to={item.url}>
-                          <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                          <item.icon
+                            size={20}
+                            strokeWidth={isActive ? 2.5 : 2}
+                          />
                           <span className="truncate">{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -169,26 +205,43 @@ function AppSidebar() {
           </SidebarGroup>
         </Collapsible>
 
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden mb-2">
-            CONFIG
-          </SidebarGroupLabel>
-          <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center">
-            {navGroups.config.map((item) => {
-              const isActive = checkIsActive(item.url)
-              return (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                    <Link to={item.url}>
-                      <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                      <span className="truncate">{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
+        <Collapsible defaultOpen className="group/collapsible mt-auto">
+          <SidebarGroup>
+            <SidebarGroupLabel
+              asChild
+              className="group-data-[collapsible=icon]:hidden hover:bg-accent cursor-pointer rounded-md mb-2"
+            >
+              <CollapsibleTrigger className="w-full flex items-center justify-between outline-none px-2">
+                CONFIG
+                <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              <SidebarMenu className="gap-2 mt-1 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:mt-0">
+                {navGroups.config.map((item) => {
+                  const isActive = checkIsActive(item.url)
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={item.title}
+                      >
+                        <Link to={item.url}>
+                          <item.icon
+                            size={20}
+                            strokeWidth={isActive ? 2.5 : 2}
+                          />
+                          <span className="truncate">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
       </SidebarContent>
 
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:py-3 shrink-0 transition-all duration-200 border-t border-border">
@@ -198,6 +251,7 @@ function AppSidebar() {
               src="https://img.usecurling.com/ppl/thumbnail?gender=male&seed=8"
               alt="Avatar"
               className="w-10 h-10 rounded-full border border-border shrink-0 mr-3 group-data-[collapsible=icon]:mr-0 shadow-sm"
+              title={state === 'collapsed' ? 'Perfil: Diego K.' : undefined}
             />
             <div className="flex flex-col overflow-hidden transition-all duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden flex-1">
               <span className="text-sm font-bold text-foreground truncate">
@@ -239,4 +293,3 @@ export default function Layout() {
     </SidebarProvider>
   )
 }
-

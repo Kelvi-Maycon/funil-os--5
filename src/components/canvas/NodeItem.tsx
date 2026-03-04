@@ -53,22 +53,81 @@ const icons: Record<string, any> = {
 }
 
 const getTypeTheme = (type: string) => {
-  const themes: Record<string, { color: string; border: string; bg: string }> = {
-    Ad: { color: 'hsl(var(--info))', border: 'hsl(var(--info))', bg: 'hsl(var(--info) / 0.1)' },
-    LandingPage: { color: 'hsl(var(--primary))', border: 'hsl(var(--primary))', bg: 'hsl(var(--primary) / 0.1)' },
-    Email: { color: 'hsl(var(--warning))', border: 'hsl(var(--warning))', bg: 'hsl(var(--warning) / 0.1)' },
-    Checkout: { color: 'hsl(var(--success))', border: 'hsl(var(--success))', bg: 'hsl(var(--success) / 0.1)' },
-    WaitUntil: { color: 'hsl(var(--muted-foreground))', border: 'hsl(var(--border))', bg: 'hsl(var(--muted))' },
-    VSL: { color: '#8b5cf6', border: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },
-    Slack: { color: '#E01E5A', border: '#E01E5A', bg: 'rgba(224, 30, 90, 0.1)' },
-    SMS: { color: '#10B981', border: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' },
-    WATI: { color: '#059669', border: '#059669', bg: 'rgba(5, 150, 105, 0.1)' },
-    ManyChat: { color: '#3B82F6', border: '#3B82F6', bg: 'rgba(59, 130, 246, 0.1)' },
-    Upsell: { color: '#F59E0B', border: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' },
-    Obrigado: { color: '#10B981', border: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' },
-    Form: { color: '#6366F1', border: '#6366F1', bg: 'rgba(99, 102, 241, 0.1)' },
-  }
-  return themes[type] || { color: 'hsl(var(--foreground))', border: 'hsl(var(--border))', bg: 'hsl(var(--muted))' }
+  const themes: Record<string, { color: string; border: string; bg: string }> =
+    {
+      Ad: {
+        color: 'hsl(var(--info))',
+        border: 'hsl(var(--info))',
+        bg: 'hsl(var(--info) / 0.1)',
+      },
+      LandingPage: {
+        color: 'hsl(var(--primary))',
+        border: 'hsl(var(--primary))',
+        bg: 'hsl(var(--primary) / 0.1)',
+      },
+      Email: {
+        color: 'hsl(var(--warning))',
+        border: 'hsl(var(--warning))',
+        bg: 'hsl(var(--warning) / 0.1)',
+      },
+      Checkout: {
+        color: 'hsl(var(--success))',
+        border: 'hsl(var(--success))',
+        bg: 'hsl(var(--success) / 0.1)',
+      },
+      WaitUntil: {
+        color: 'hsl(var(--muted-foreground))',
+        border: 'hsl(var(--border))',
+        bg: 'hsl(var(--muted))',
+      },
+      VSL: {
+        color: 'hsl(var(--primary))',
+        border: 'hsl(var(--primary))',
+        bg: 'hsl(var(--primary) / 0.1)',
+      },
+      Slack: {
+        color: 'hsl(var(--danger))',
+        border: 'hsl(var(--danger))',
+        bg: 'hsl(var(--danger) / 0.1)',
+      },
+      SMS: {
+        color: 'hsl(var(--success))',
+        border: 'hsl(var(--success))',
+        bg: 'hsl(var(--success) / 0.1)',
+      },
+      WATI: {
+        color: 'hsl(var(--success))',
+        border: 'hsl(var(--success))',
+        bg: 'hsl(var(--success) / 0.1)',
+      },
+      ManyChat: {
+        color: 'hsl(var(--info))',
+        border: 'hsl(var(--info))',
+        bg: 'hsl(var(--info) / 0.1)',
+      },
+      Upsell: {
+        color: 'hsl(var(--warning))',
+        border: 'hsl(var(--warning))',
+        bg: 'hsl(var(--warning) / 0.1)',
+      },
+      Obrigado: {
+        color: 'hsl(var(--success))',
+        border: 'hsl(var(--success))',
+        bg: 'hsl(var(--success) / 0.1)',
+      },
+      Form: {
+        color: 'hsl(var(--info))',
+        border: 'hsl(var(--info))',
+        bg: 'hsl(var(--info) / 0.1)',
+      },
+    }
+  return (
+    themes[type] || {
+      color: 'hsl(var(--foreground))',
+      border: 'hsl(var(--border))',
+      bg: 'hsl(var(--muted))',
+    }
+  )
 }
 
 type NodeItemProps = {
@@ -734,19 +793,15 @@ export default function NodeItem({
   return (
     <div
       className={cn(
-        'absolute top-0 left-0 pointer-events-auto w-[240px] rounded-xl px-5 py-4 z-10 flex flex-col group select-none duration-200 hover-lift',
+        'absolute top-0 left-0 pointer-events-auto w-[240px] rounded-xl px-6 py-4 z-10 flex flex-col group select-none duration-200 hover-lift',
         !currentlyDragging
           ? 'transition-[box-shadow,background-color,border-color,opacity,transform]'
           : 'transition-[box-shadow,background-color,border-color,opacity]',
         !customFill &&
           !customStroke &&
           'bg-card border border-border shadow-sm',
-        isHovered &&
-          !selected &&
-          !customFill &&
-          'shadow-md',
-        selected &&
-          'border-primary shadow-md ring-2 ring-primary/20',
+        isHovered && !selected && !customFill && 'shadow-md',
+        selected && 'border-primary shadow-md ring-2 ring-primary/20',
         currentlyDragging && 'opacity-95 z-50 shadow-2xl',
         node.data.isCompleted && 'opacity-70 grayscale-[30%]',
       )}
@@ -788,7 +843,7 @@ export default function NodeItem({
       onDrop={handleDrop}
       data-node-id={node.id}
     >
-      <div className="absolute -top-3.5 -left-3.5 flex items-center gap-1.5 z-30">
+      <div className="absolute -top-4 -left-4 flex items-center gap-2 z-30">
         {hasDocs && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -823,7 +878,7 @@ export default function NodeItem({
 
       <div
         className={cn(
-          'absolute -top-4 right-2 flex items-center gap-1.5 z-30 transition-all duration-200 bg-card border border-border p-1 rounded-lg shadow-sm',
+          'absolute -top-4 right-2 flex items-center gap-2 z-30 transition-all duration-200 bg-card border border-border p-1 rounded-lg shadow-sm',
           selected || isHovered
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-2 pointer-events-none',
@@ -836,7 +891,7 @@ export default function NodeItem({
                 e.stopPropagation()
                 onOpenSettings()
               }}
-              className="interactive-icon w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-primary transition-colors"
+              className="interactive-icon w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-primary transition-colors"
             >
               <Settings size={14} strokeWidth={2.5} />
             </button>
@@ -851,7 +906,7 @@ export default function NodeItem({
                 e.stopPropagation()
                 onDelete()
               }}
-              className="interactive-icon w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:bg-red-50 hover:text-red-500 transition-colors"
+              className="interactive-icon w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:bg-red-50 hover:text-red-500 transition-colors"
             >
               <Trash2 size={14} strokeWidth={2.5} />
             </button>
@@ -860,7 +915,7 @@ export default function NodeItem({
         </Tooltip>
       </div>
 
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <div
           className="w-6 h-6 rounded-md flex items-center justify-center"
           style={{ backgroundColor: theme.bg, color: theme.color }}
@@ -882,14 +937,14 @@ export default function NodeItem({
           {node.data.name}
         </h4>
         {node.data.subtitle && (
-          <span className="text-sm mt-1 truncate font-medium text-muted-foreground">
+          <span className="text-sm mt-2 truncate font-medium text-muted-foreground">
             {node.data.subtitle}
           </span>
         )}
       </div>
 
       {node.data.isTaskMode && (
-        <div className="mt-3 flex flex-col gap-1.5 border-t border-border pt-3">
+        <div className="mt-4 flex flex-col gap-2 border-t border-border pt-4">
           {linkedTasks.map((task) => (
             <div
               key={task.id}
@@ -914,7 +969,7 @@ export default function NodeItem({
             </div>
           ))}
           {isAddingTask ? (
-            <div className="flex items-center gap-1.5 mt-1">
+            <div className="flex items-center gap-2 mt-2">
               <input
                 autoFocus
                 type="text"
@@ -943,7 +998,7 @@ export default function NodeItem({
                 e.stopPropagation()
                 setIsAddingTask(true)
               }}
-              className="flex items-center gap-1.5 mt-1 text-sm font-bold transition-colors w-full text-left py-0.5 rounded-sm interactive-icon text-muted-foreground hover:text-primary"
+              className="flex items-center gap-2 mt-2 text-sm font-bold transition-colors w-full text-left py-1 rounded-sm interactive-icon text-muted-foreground hover:text-primary"
             >
               <Plus size={14} strokeWidth={2.5} /> Adicionar tarefa
             </button>
@@ -972,7 +1027,7 @@ export default function NodeItem({
         )}
       >
         <button
-          className="flex items-center gap-1.5 bg-white border border-border rounded-lg px-3 py-1.5 shadow-sm text-muted-foreground hover:text-primary hover:border-primary transition-all hover:scale-[1.02]"
+          className="flex items-center gap-2 bg-white border border-border rounded-lg px-3 py-2 shadow-sm text-muted-foreground hover:text-primary hover:border-primary transition-all hover:scale-[1.02]"
           onClick={(e) => {
             e.stopPropagation()
             onAddChild()
@@ -985,4 +1040,3 @@ export default function NodeItem({
     </div>
   )
 }
-

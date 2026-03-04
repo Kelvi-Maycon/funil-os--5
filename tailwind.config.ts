@@ -35,15 +35,24 @@ export default {
         lg: ['20px', { lineHeight: '28px' }],
         xl: ['24px', { lineHeight: '32px' }],
         '2xl': ['32px', { lineHeight: '40px' }],
+        '3xl': ['40px', { lineHeight: '48px' }],
+        '4xl': ['48px', { lineHeight: '56px' }],
       },
       spacing: {
         1: '4px',
+        1.5: '6px',
         2: '8px',
+        2.5: '10px',
         3: '12px',
         4: '16px',
+        5: '20px',
         6: '24px',
         8: '32px',
+        10: '40px',
         12: '48px',
+        16: '64px',
+        20: '80px',
+        24: '96px',
       },
       colors: {
         brand: {
@@ -123,4 +132,3 @@ export default {
   },
   plugins: [animatePlugin, typographyPlugin, aspectRatioPlugin],
 } satisfies Config
-

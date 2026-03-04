@@ -1,463 +1,274 @@
-import { useState, useMemo } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import useProjectStore from '@/stores/useProjectStore'
 import useFunnelStore from '@/stores/useFunnelStore'
 import useTaskStore from '@/stores/useTaskStore'
-import useDocumentStore from '@/stores/useDocumentStore'
 import useQuickActionStore from '@/stores/useQuickActionStore'
-
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Input } from '@/components/ui/input'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
-import { EmptyState } from '@/components/ui/empty-state'
-
-import {
-  Network,
-  FileText,
-  CheckSquare,
-  Plus,
-  Pencil,
-  Check,
-  X,
-} from 'lucide-react'
 import { format } from 'date-fns'
-
-import TasksBoard from '@/components/tasks/TasksBoard'
-import TaskDetailSheet from '@/components/tasks/TaskDetailSheet'
-import CanvasBoard from '@/components/canvas/CanvasBoard'
-import { Task, Funnel } from '@/types'
+import {
+  Folder,
+  ArrowLeft,
+  Network,
+  CheckSquare,
+  FileText,
+  Plus,
+  Settings,
+  MoreVertical,
+  Calendar,
+} from 'lucide-react'
+import { EmptyState } from '@/components/ui/empty-state'
 
 export default function ProjectDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [projects, setProjects] = useProjectStore()
-  const [funnels, setFunnels] = useFunnelStore()
-  const [tasks, setTasks] = useTaskStore()
-  const [docs] = useDocumentStore()
+  const [projects] = useProjectStore()
+  const [funnels] = useFunnelStore()
+  const [tasks] = useTaskStore()
   const [, setAction] = useQuickActionStore()
 
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
-  const [selectedFunnelId, setSelectedFunnelId] = useState<string | null>(null)
-  const [isEditingName, setIsEditingName] = useState(false)
-  const [editName, setEditName] = useState('')
-
   const project = projects.find((p) => p.id === id)
-
-  const projectFunnels = useMemo(
-    () => funnels.filter((f) => f.projectId === id),
-    [funnels, id],
-  )
-  const projectTasks = useMemo(
-    () => tasks.filter((t) => t.projectId === id),
-    [tasks, id],
-  )
-  const projectDocs = useMemo(
-    () => docs.filter((d) => d.projectId === id),
-    [docs, id],
-  )
+  const projectFunnels = funnels.filter((f) => f.projectId === id)
+  const projectTasks = tasks.filter((t) => t.projectId === id)
 
   if (!project) {
     return (
-      <div className="p-8 text-center text-muted-foreground">
-        Projeto não encontrado
+      <div className="p-8 text-center text-muted-foreground font-bold">
+        Projeto não encontrado.
+        <Button variant="link" onClick={() => navigate('/projetos')}>
+          Voltar para Projetos
+        </Button>
       </div>
     )
   }
 
-  const completedTasks = projectTasks.filter(
-    (t) => t.status === 'Concluído',
-  ).length
-  const totalTasks = projectTasks.length
-
-  const updateTask = (taskId: string, updates: Partial<Task>) => {
-    setTasks(tasks.map((t) => (t.id === taskId ? { ...t, ...updates } : t)))
-  }
-
-  const updateFunnel = (updated: Funnel) => {
-    setFunnels(funnels.map((f) => (f.id === updated.id ? updated : f)))
-  }
-
-  const startEditName = () => {
-    setEditName(project.name)
-    setIsEditingName(true)
-  }
-
-  const saveName = () => {
-    if (editName.trim()) {
-      setProjects(
-        projects.map((p) =>
-          p.id === id ? { ...p, name: editName.trim() } : p,
-        ),
-      )
-    }
-    setIsEditingName(false)
-  }
-
-  const cancelEditName = () => {
-    setIsEditingName(false)
-  }
-
   return (
-    <Tabs
-      defaultValue="funnels"
-      className="flex flex-col h-full bg-background overflow-hidden animate-fade-in"
-    >
-      <div className="flex flex-col p-6 md:p-8 shrink-0 z-10 relative">
-        <div className="max-w-[1600px] w-full mx-auto flex flex-col gap-8">
-          <div className="flex items-center justify-between">
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/projetos" className="text-base font-medium">
-                      Projetos
-                    </Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  {isEditingName ? (
-                    <div className="flex items-center gap-1.5">
-                      <Input
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        className="h-10 w-64 text-3xl font-bold tracking-tight px-2"
-                        autoFocus
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveName()
-                          if (e.key === 'Escape') cancelEditName()
-                        }}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={saveName}
-                      >
-                        <Check size={16} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={cancelEditName}
-                      >
-                        <X size={16} />
-                      </Button>
-                    </div>
-                  ) : (
-                    <BreadcrumbPage
-                      className="font-bold text-3xl tracking-tight text-foreground group cursor-pointer flex items-center gap-2"
-                      onClick={startEditName}
-                    >
-                      {project.name}
-                      <Pencil
-                        size={16}
-                        className="opacity-0 group-hover:opacity-50 transition-opacity text-muted-foreground"
-                      />
-                    </BreadcrumbPage>
-                  )}
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+    <div className="p-8 max-w-[1600px] w-full mx-auto space-y-8 animate-fade-in">
+      <div className="flex items-center gap-4 text-sm font-bold text-muted-foreground mb-4">
+        <Link
+          to="/projetos"
+          className="hover:text-foreground flex items-center gap-1"
+        >
+          <ArrowLeft size={16} /> Projetos
+        </Link>
+        <span>/</span>
+        <span className="text-foreground">{project.name}</span>
+      </div>
+
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-card p-6 md:p-8 rounded-2xl border border-border shadow-sm">
+        <div className="flex items-start gap-6">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
+            <Folder size={32} className="fill-current opacity-20" />
           </div>
-
-          <div className="flex flex-col lg:flex-row justify-between gap-6 items-start lg:items-center">
-            <TabsList className="bg-card gap-1 p-1.5 rounded-lg flex flex-wrap justify-start border border-border inline-flex h-auto shadow-sm">
-              <TabsTrigger
-                value="funnels"
-                className="rounded-md px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                {project.name}
+              </h1>
+              <Badge
+                variant="outline"
+                className={
+                  project.status === 'Ativo'
+                    ? 'bg-success/10 text-success border-none font-bold'
+                    : 'bg-muted text-muted-foreground border-none font-bold'
+                }
               >
-                <Network size={16} className="mr-2" /> Funnels
-              </TabsTrigger>
-              <TabsTrigger
-                value="tasks"
-                className="rounded-md px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
-              >
-                <CheckSquare size={16} className="mr-2" /> Tasks
-              </TabsTrigger>
-              <TabsTrigger
-                value="documents"
-                className="rounded-md px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
-              >
-                <FileText size={16} className="mr-2" /> Documents
-              </TabsTrigger>
-            </TabsList>
-
-            <div className="flex items-center gap-6 bg-card py-3 px-6 rounded-xl border border-border shadow-sm">
-              <div className="flex flex-col pr-6 border-r border-border last:border-0">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                  Funis
-                </span>
-                <span className="text-xl font-bold text-foreground leading-none">
-                  {projectFunnels.length}
-                </span>
-              </div>
-              <div className="flex flex-col px-6 border-r border-border last:border-0">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                  Tasks
-                </span>
-                <span className="text-xl font-bold text-foreground leading-none">
-                  {completedTasks}/{totalTasks}
-                </span>
-              </div>
-              <div className="flex flex-col pl-6 border-r border-border last:border-0">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                  Docs
-                </span>
-                <span className="text-xl font-bold text-foreground leading-none">
-                  {projectDocs.length}
-                </span>
-              </div>
+                {project.status}
+              </Badge>
+            </div>
+            <p className="text-muted-foreground text-base max-w-2xl font-medium leading-relaxed">
+              {project.description || 'Sem descrição.'}
+            </p>
+            <div className="flex items-center gap-4 text-xs font-bold text-muted-foreground pt-2">
+              <span className="flex items-center gap-1.5">
+                <Calendar size={14} /> Criado em{' '}
+                {format(new Date(project.createdAt), 'dd/MM/yyyy')}
+              </span>
             </div>
           </div>
         </div>
+        <div className="flex items-center gap-3 shrink-0 w-full md:w-auto">
+          <Button
+            variant="outline"
+            onClick={() =>
+              setAction({ type: 'project', mode: 'edit', itemId: project.id })
+            }
+            className="flex-1 md:flex-none font-bold"
+          >
+            <Settings size={16} className="mr-2" /> Configurações
+          </Button>
+          <Button
+            onClick={() =>
+              setAction({
+                type: 'canvas',
+                mode: 'create',
+                defaultProjectId: project.id,
+              })
+            }
+            className="flex-1 md:flex-none font-bold"
+          >
+            <Plus size={16} className="mr-2" /> Novo Funil
+          </Button>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 pt-0 md:p-8 md:pt-0 bg-background relative flex flex-col min-h-0">
-        <TabsContent
-          value="funnels"
-          className="flex-1 m-0 data-[state=active]:flex flex-col border-none outline-none"
-        >
-          {!selectedFunnelId ? (
-            <div className="flex flex-col flex-1 max-w-[1600px] mx-auto w-full">
-              <div className="flex justify-between items-center mb-6 shrink-0">
-                <h3 className="text-2xl font-bold text-foreground">
-                  Funis do Projeto
-                </h3>
+      <Tabs defaultValue="funnels" className="w-full">
+        <TabsList className="w-full sm:w-auto grid grid-cols-3 h-auto p-1.5 bg-background rounded-xl border border-border mb-6">
+          <TabsTrigger
+            value="funnels"
+            className="text-sm font-bold py-2.5 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm"
+          >
+            <Network size={16} className="mr-2" /> Funis (
+            {projectFunnels.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="tasks"
+            className="text-sm font-bold py-2.5 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm"
+          >
+            <CheckSquare size={16} className="mr-2" /> Tarefas (
+            {projectTasks.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="docs"
+            className="text-sm font-bold py-2.5 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm"
+          >
+            <FileText size={16} className="mr-2" /> Docs
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="funnels" className="space-y-6 outline-none">
+          {projectFunnels.length === 0 ? (
+            <EmptyState
+              icon={Network}
+              title="Nenhum funil neste projeto"
+              description="Crie seu primeiro canvas para desenhar a estratégia deste projeto."
+              action={
                 <Button
                   onClick={() =>
                     setAction({
                       type: 'canvas',
                       mode: 'create',
-                      defaultProjectId: id,
+                      defaultProjectId: project.id,
                     })
                   }
                 >
-                  <Plus size={16} className="mr-2" /> Novo Funil
+                  Criar Primeiro Funil
                 </Button>
-              </div>
-              {projectFunnels.length > 0 ? (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {projectFunnels.map((f) => (
-                    <Card
-                      key={f.id}
-                      className="cursor-pointer hover-lift group overflow-hidden flex flex-col"
-                      onClick={() => setSelectedFunnelId(f.id)}
-                    >
-                      <div
-                        className="h-36 bg-card border-b border-border relative shrink-0"
-                        style={{
-                          backgroundImage:
-                            'radial-gradient(hsl(var(--border)) 1px, transparent 0)',
-                          backgroundSize: '16px 16px',
-                        }}
-                      >
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background/60 backdrop-blur-sm z-10">
-                          <Button
-                            variant="dark"
-                            className="pointer-events-none"
-                          >
-                            Abrir Canvas
-                          </Button>
-                        </div>
-                        {f.nodes.length > 0 && (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-30 scale-75">
-                            <Network
-                              size={64}
-                              className="text-muted-foreground"
-                            />
-                          </div>
-                        )}
-                      </div>
-                      <CardHeader className="p-6 pb-2">
-                        <CardTitle className="line-clamp-1 text-xl">
-                          {f.name}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-6 pt-2 flex justify-between items-center flex-1">
-                        <span className="text-base text-muted-foreground">
-                          {f.nodes.length} blocos
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="bg-muted text-muted-foreground border-none font-medium"
-                        >
-                          {f.status}
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={Network}
-                  title="Nenhum funil encontrado"
-                  description="Comece mapeando a jornada do seu cliente. Crie o primeiro funil para este projeto."
-                  action={
-                    <Button
-                      onClick={() =>
-                        setAction({
-                          type: 'canvas',
-                          mode: 'create',
-                          defaultProjectId: id,
-                        })
-                      }
-                    >
-                      <Plus size={16} className="mr-2" /> Novo Funil
-                    </Button>
-                  }
-                />
-              )}
-            </div>
+              }
+            />
           ) : (
-            <div className="flex-1 relative rounded-xl border border-border overflow-hidden bg-background shadow-sm flex flex-col min-h-[600px] -mx-2 sm:mx-0 max-w-[1600px] mx-auto w-full">
-              <CanvasBoard
-                funnel={projectFunnels.find((f) => f.id === selectedFunnelId)!}
-                onChange={updateFunnel}
-                hideHeader
-                onBack={() => setSelectedFunnelId(null)}
-              />
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {projectFunnels.map((f) => (
+                <Link to={`/canvas/${f.id}`} key={f.id} className="group">
+                  <Card className="p-6 hover-lift border-border bg-card h-full flex flex-col group-hover:border-primary/50 transition-colors">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-info/10 text-info flex items-center justify-center">
+                        <Network size={20} />
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="font-bold bg-background"
+                      >
+                        {f.status}
+                      </Badge>
+                    </div>
+                    <h3 className="font-bold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
+                      {f.name}
+                    </h3>
+                    <div className="mt-auto pt-4 border-t border-border flex items-center justify-between text-sm font-bold text-muted-foreground">
+                      <span>{f.nodes.length} nós</span>
+                      <span>Atualizado hoje</span>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
             </div>
           )}
         </TabsContent>
 
-        <TabsContent
-          value="tasks"
-          className="flex-1 m-0 data-[state=active]:flex flex-col border-none outline-none"
-        >
-          <div className="flex flex-col flex-1 max-w-[1600px] mx-auto w-full">
-            <div className="flex justify-between items-center mb-6 shrink-0">
-              <h3 className="text-2xl font-bold text-foreground">Tarefas</h3>
-              <Button
-                onClick={() =>
-                  setAction({
-                    type: 'task',
-                    mode: 'create',
-                    defaultProjectId: id,
-                  })
-                }
-              >
-                <Plus size={16} className="mr-2" /> Nova Tarefa
-              </Button>
+        <TabsContent value="tasks" className="outline-none">
+          {projectTasks.length === 0 ? (
+            <EmptyState
+              icon={CheckSquare}
+              title="Nenhuma tarefa"
+              description="Comece a adicionar tarefas para acompanhar o progresso deste projeto."
+              action={
+                <Button
+                  onClick={() =>
+                    setAction({
+                      type: 'task',
+                      mode: 'create',
+                      defaultProjectId: project.id,
+                    })
+                  }
+                >
+                  Adicionar Tarefa
+                </Button>
+              }
+            />
+          ) : (
+            <div className="space-y-3">
+              {projectTasks.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center justify-between bg-card p-4 rounded-xl border border-border shadow-sm hover:border-primary/50 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`w-3 h-3 rounded-full ${t.status === 'Concluída' ? 'bg-success' : 'bg-warning'}`}
+                    />
+                    <span
+                      className={`font-bold text-sm ${t.status === 'Concluída' ? 'line-through text-muted-foreground' : 'text-foreground'}`}
+                    >
+                      {t.title}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge
+                      variant="outline"
+                      className="font-bold text-[10px] uppercase"
+                    >
+                      {t.priority}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground w-8 h-8 rounded-lg"
+                    >
+                      <MoreVertical size={16} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
-            {projectTasks.length > 0 ? (
-              <div className="flex-1 overflow-hidden min-h-[500px] -mx-4 px-4 sm:mx-0 sm:px-0">
-                <TasksBoard
-                  tasks={projectTasks}
-                  updateTask={updateTask}
-                  onCardClick={setSelectedTask}
-                />
-              </div>
-            ) : (
-              <EmptyState
-                icon={CheckSquare}
-                title="Nenhuma tarefa"
-                description="Organize as entregas do projeto criando tarefas para sua equipe."
-                action={
-                  <Button
-                    onClick={() =>
-                      setAction({
-                        type: 'task',
-                        mode: 'create',
-                        defaultProjectId: id,
-                      })
-                    }
-                  >
-                    <Plus size={16} className="mr-2" /> Nova Tarefa
-                  </Button>
-                }
-              />
-            )}
-          </div>
+          )}
         </TabsContent>
 
-        <TabsContent
-          value="documents"
-          className="flex-1 m-0 data-[state=active]:flex flex-col border-none outline-none"
-        >
-          <div className="flex flex-col flex-1 max-w-[1600px] mx-auto w-full">
-            <div className="flex justify-between items-center mb-6 shrink-0">
-              <h3 className="text-2xl font-bold text-foreground">Documentos</h3>
+        <TabsContent value="docs" className="outline-none">
+          <EmptyState
+            icon={FileText}
+            title="Área de Documentos"
+            description="Armazene scripts, copys e referências deste projeto aqui."
+            action={
               <Button
                 onClick={() =>
                   setAction({
                     type: 'document',
                     mode: 'create',
-                    defaultProjectId: id,
+                    defaultProjectId: project.id,
                   })
                 }
               >
-                <Plus size={16} className="mr-2" /> Novo Documento
+                Criar Documento
               </Button>
-            </div>
-            {projectDocs.length > 0 ? (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {projectDocs.map((d) => (
-                  <Card
-                    key={d.id}
-                    className="cursor-pointer hover-lift group flex flex-col"
-                    onClick={() => navigate('/documentos')}
-                  >
-                    <CardHeader className="p-6 pb-4 flex flex-row items-start justify-between space-y-0 shrink-0">
-                      <div className="w-12 h-12 rounded-lg bg-info/10 flex items-center justify-center text-info mb-2 group-hover:scale-105 transition-transform">
-                        <FileText size={24} />
-                      </div>
-                      <span className="text-sm text-muted-foreground font-medium">
-                        {format(new Date(d.updatedAt), 'dd/MM/yyyy')}
-                      </span>
-                    </CardHeader>
-                    <CardContent className="p-6 pt-0 flex-1 flex flex-col">
-                      <CardTitle className="text-xl line-clamp-1 mb-2">
-                        {d.title}
-                      </CardTitle>
-                      <p className="text-base text-muted-foreground line-clamp-2">
-                        {d.content.replace(/<[^>]*>?/gm, '') ||
-                          'Documento vazio'}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                icon={FileText}
-                title="Nenhum documento"
-                description="Crie briefings, roteiros e textos centralizados neste projeto."
-                action={
-                  <Button
-                    onClick={() =>
-                      setAction({
-                        type: 'document',
-                        mode: 'create',
-                        defaultProjectId: id,
-                      })
-                    }
-                  >
-                    <Plus size={16} className="mr-2" /> Novo Documento
-                  </Button>
-                }
-              />
-            )}
-          </div>
+            }
+          />
         </TabsContent>
-      </div>
-
-      <TaskDetailSheet
-        task={selectedTask}
-        onClose={() => setSelectedTask(null)}
-        onUpdate={updateTask}
-      />
-    </Tabs>
+      </Tabs>
+    </div>
   )
 }

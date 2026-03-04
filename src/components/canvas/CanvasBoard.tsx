@@ -542,7 +542,13 @@ export default function CanvasBoard({
       setSelectedEdge(null)
       toast({ title: 'Linha excluída com sucesso.' })
     }
-  }, [onChangeWithHistory, setSelectedNodes, selectedEdge, setSelectedEdge, toast])
+  }, [
+    onChangeWithHistory,
+    setSelectedNodes,
+    selectedEdge,
+    setSelectedEdge,
+    toast,
+  ])
 
   const handleConfirmDelete = useCallback(() => {
     const { funnel, rightPanelState, settingsNodeId } = latest.current
@@ -1004,7 +1010,7 @@ export default function CanvasBoard({
       ? funnel.nodes.find((n) => n.id === selectedNodes[0])
       : undefined
   const selectedEdgeObj = funnel.edges.find((e) => e.id === selectedEdge)
-  
+
   // Contextual property panel logic
   const showPropertiesPanel =
     isMultiSelect || selectedNodeObj || selectedEdgeObj
@@ -1332,11 +1338,7 @@ export default function CanvasBoard({
       {showPropertiesPanel && !rightPanelState && (
         <div className="absolute top-24 right-6 bg-card rounded-2xl shadow-xl border border-border p-5 w-[280px] flex flex-col gap-6 z-40 max-h-[80vh] overflow-y-auto">
           <h4 className="section-label">
-            {isMultiSelect
-              ? 'MÚLTIPLOS'
-              : selectedNodeObj
-                ? 'ESTILO'
-                : 'LINHA'}
+            {isMultiSelect ? 'MÚLTIPLOS' : selectedNodeObj ? 'ESTILO' : 'LINHA'}
           </h4>
           {(selectedNodeObj || isMultiSelect) && (
             <>
@@ -1679,4 +1681,3 @@ export default function CanvasBoard({
     </div>
   )
 }
-

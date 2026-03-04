@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    /* Brand Colors: A modern, professional Indigo to replace the previous rustic orange */
+    /* Brand Colors: A modern, professional Indigo */
     --brand: 238 82% 61%;
     --brand-light: 238 82% 81%;
     --brand-dark: 238 82% 41%;
@@ -16,7 +16,7 @@
     --bg-sidebar: 0 0% 100%;
     --bg-card: 0 0% 100%;
 
-    /* Text Colors: Neutral Slate */
+    /* Text Colors: Neutral Slate with proper contrast */
     --text-primary: 222 47% 11%;
     --text-secondary: 215 16% 47%;
     --text-muted: 215 14% 65%;
@@ -125,7 +125,7 @@
   }
   .hover-lift:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
   }
 
   .section-label {
@@ -153,4 +153,3 @@
     scrollbar-width: none;
   }
 }
-

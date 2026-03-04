@@ -1,110 +1,120 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import useFunnelStore from '@/stores/useFunnelStore'
+import useProjectStore from '@/stores/useProjectStore'
 import useQuickActionStore from '@/stores/useQuickActionStore'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Network, Plus, Search, Folder, ChevronRight } from 'lucide-react'
+import { useState } from 'react'
+import { format } from 'date-fns'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Search, Network, Plus } from 'lucide-react'
 
 export default function Funnels() {
   const [funnels] = useFunnelStore()
+  const [projects] = useProjectStore()
   const [, setAction] = useQuickActionStore()
   const [search, setSearch] = useState('')
-  const navigate = useNavigate()
 
   const filteredFunnels = funnels.filter((f) =>
     f.name.toLowerCase().includes(search.toLowerCase()),
   )
 
+  const getProjectName = (id?: string | null) => {
+    if (!id) return 'Rascunho'
+    return projects.find((p) => p.id === id)?.name || 'Desconhecido'
+  }
+
   return (
-    <div className="p-6 md:p-8 max-w-[1600px] w-full mx-auto space-y-8 animate-fade-in">
+    <div className="p-8 max-w-[1600px] w-full mx-auto space-y-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Canvas & Funis
+            Funis e Canvas
           </h1>
-          <p className="text-base font-medium text-muted-foreground">
-            Mapeie a jornada do seu cliente e arquiteturas de conversão
+          <p className="text-muted-foreground text-base font-medium">
+            Desenhe e gerencie a estrutura dos seus funis de marketing.
           </p>
         </div>
-        <Button onClick={() => setAction({ type: 'canvas', mode: 'create' })}>
-          <Plus size={16} className="mr-2" /> Novo Funil
+        <Button
+          onClick={() => setAction({ type: 'canvas', mode: 'create' })}
+          className="font-bold"
+        >
+          <Plus size={16} className="mr-2" /> Novo Canvas
         </Button>
       </div>
 
-      <div className="relative max-w-md">
-        <Search
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          size={18}
-        />
-        <Input
-          placeholder="Buscar funis..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
-      {filteredFunnels.length === 0 ? (
+      {funnels.length === 0 ? (
         <EmptyState
           icon={Network}
-          title="Nenhum funil encontrado"
-          description="Você ainda não criou nenhum funil. Comece agora mapeando sua primeira estratégia."
+          title="Nenhum funil criado"
+          description="Você ainda não tem nenhum funil desenhado. Crie um novo canvas para mapear suas estratégias visuais."
           action={
             <Button
               onClick={() => setAction({ type: 'canvas', mode: 'create' })}
+              size="lg"
             >
-              <Plus size={16} className="mr-2" /> Criar Meu Primeiro Funil
+              Criar Novo Canvas
             </Button>
           }
         />
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredFunnels.map((f) => (
-            <Card
-              key={f.id}
-              className="cursor-pointer hover-lift group overflow-hidden flex flex-col"
-              onClick={() => navigate(`/canvas/${f.id}`)}
-            >
-              <div
-                className="h-36 bg-card border-b border-border relative shrink-0"
-                style={{
-                  backgroundImage:
-                    'radial-gradient(hsl(var(--border)) 1px, transparent 0)',
-                  backgroundSize: '16px 16px',
-                }}
-              >
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background/60 backdrop-blur-sm z-10">
-                  <Button variant="dark" className="pointer-events-none">
-                    Abrir Canvas
-                  </Button>
-                </div>
-                {f.nodes.length > 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center opacity-30 scale-75">
-                    <Network size={64} className="text-muted-foreground" />
+        <>
+          <div className="relative max-w-md">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              size={18}
+            />
+            <Input
+              placeholder="Pesquisar funis..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 bg-card font-medium"
+            />
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredFunnels.map((f) => (
+              <Link to={`/canvas/${f.id}`} key={f.id} className="block group">
+                <Card className="h-full hover-lift border-border shadow-sm bg-card group-hover:border-info/50 transition-colors p-6 flex flex-col">
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-info/10 text-info flex items-center justify-center">
+                      <Network size={20} />
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={
+                        f.status === 'Ativo'
+                          ? 'bg-success/10 text-success border-none font-bold'
+                          : 'bg-muted text-muted-foreground border-none font-bold'
+                      }
+                    >
+                      {f.status}
+                    </Badge>
                   </div>
-                )}
-              </div>
-              <CardHeader className="p-6 pb-2">
-                <CardTitle className="line-clamp-1 text-xl">{f.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 pt-2 flex justify-between items-center flex-1">
-                <span className="text-base text-muted-foreground">
-                  {f.nodes.length} blocos
-                </span>
-                <Badge
-                  variant="outline"
-                  className="bg-muted text-muted-foreground border-none font-medium"
-                >
-                  {f.status}
-                </Badge>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <h3 className="font-bold text-lg group-hover:text-info transition-colors line-clamp-1 mb-2 text-foreground">
+                    {f.name}
+                  </h3>
+                  <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-6">
+                    <Folder size={14} />
+                    <span className="truncate">
+                      {getProjectName(f.projectId)}
+                    </span>
+                  </div>
+                  <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">
+                    <span className="text-xs font-bold text-muted-foreground">
+                      {f.nodes.length} blocos
+                    </span>
+                    <div className="text-info text-sm font-bold flex items-center opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0">
+                      Abrir <ChevronRight size={16} />
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

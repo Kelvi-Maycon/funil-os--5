@@ -17,6 +17,7 @@ const Canvas = lazy(() => import('./pages/Canvas'))
 const Tasks = lazy(() => import('./pages/Tasks'))
 const Documents = lazy(() => import('./pages/Documents'))
 const Library = lazy(() => import('./pages/Library'))
+const Insights = lazy(() => import('./pages/Insights'))
 
 function AppSkeleton() {
   return (
@@ -53,7 +54,7 @@ function AppSkeleton() {
 const App = () => (
   <BrowserRouter>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <TooltipProvider>
+      <TooltipProvider delayDuration={150}>
         <Toaster />
         <Sonner />
         <GlobalSearch />
@@ -69,6 +70,7 @@ const App = () => (
                 <Route path="/tarefas" element={<Tasks />} />
                 <Route path="/documentos" element={<Documents />} />
                 <Route path="/biblioteca" element={<Library />} />
+                <Route path="/insights" element={<Insights />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
