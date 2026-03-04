@@ -498,9 +498,8 @@ export default function CanvasBoard({
         case 'z':
           if (e.ctrlKey || e.metaKey) {
             e.preventDefault()
-            e.shiftKey
-              ? redo(latest.current.funnel, onChange)
-              : undo(latest.current.funnel, onChange)
+            if (e.shiftKey) redo(latest.current.funnel, onChange)
+            else undo(latest.current.funnel, onChange)
           }
           break
       }
@@ -733,21 +732,27 @@ export default function CanvasBoard({
       setActiveTool('Select')
       try {
         ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
-      } catch (err) {}
+      } catch (err) {
+        /* ignore */
+      }
       return
     }
     if (selectionBox) {
       setSelectionBox(null)
       try {
         ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
-      } catch (err) {}
+      } catch (err) {
+        /* ignore */
+      }
       return
     }
     if (isPanning) {
       setIsPanning(false)
       try {
         ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
-      } catch (err) {}
+      } catch (err) {
+        /* ignore */
+      }
       document.body.style.userSelect = ''
     }
   }
