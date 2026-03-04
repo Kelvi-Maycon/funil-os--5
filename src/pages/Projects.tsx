@@ -116,8 +116,8 @@ export default function Projects() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-[1600px] w-full mx-auto space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+    <div className="p-6 md:p-8 max-w-[1600px] w-full mx-auto space-y-8 animate-fade-in">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Projetos
@@ -158,7 +158,7 @@ export default function Projects() {
         </div>
       </div>
 
-      <div className="relative max-w-md mb-8">
+      <div className="relative max-w-md">
         <Search
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           size={18}

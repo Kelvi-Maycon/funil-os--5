@@ -19,7 +19,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl bg-card p-12 min-h-[400px] text-center shadow-sm w-full',
+        'flex flex-col items-center justify-center border border-dashed border-border rounded-xl bg-card p-12 min-h-[400px] text-center shadow-sm w-full',
         className,
       )}
     >
@@ -27,7 +27,7 @@ export function EmptyState({
         <Icon size={32} />
       </div>
       <h3 className="text-xl font-bold text-foreground">{title}</h3>
-      <p className="text-muted-foreground mt-2 mb-6 max-w-sm text-base mx-auto">
+      <p className="text-muted-foreground mt-2 mb-6 max-w-sm text-base mx-auto font-medium">
         {description}
       </p>
       {action}

@@ -8,7 +8,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 type ConfirmDialogProps = {
   open: boolean
@@ -33,12 +34,12 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="rounded-2xl">
+      <AlertDialogContent className="rounded-2xl border-border bg-card">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-lg font-bold">
+          <AlertDialogTitle className="text-lg font-bold text-foreground">
             {title}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-sm text-slate-500">
+          <AlertDialogDescription className="text-sm text-muted-foreground">
             {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -48,7 +49,15 @@ export function ConfirmDialog({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className={`rounded-full ${variant === 'destructive' ? 'bg-red-600 hover:bg-red-700 text-white' : ''}`}
+            className={cn(
+              'rounded-full',
+              variant === 'destructive'
+                ? buttonVariants({
+                    variant: 'destructive',
+                    className: 'rounded-full',
+                  })
+                : '',
+            )}
           >
             {confirmLabel}
           </AlertDialogAction>

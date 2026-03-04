@@ -113,7 +113,7 @@ export default function ProjectDetail() {
       className="flex flex-col h-full bg-background overflow-hidden animate-fade-in"
     >
       <div className="flex flex-col p-6 md:p-8 shrink-0 z-10 relative">
-        <div className="max-w-[1600px] w-full mx-auto flex flex-col gap-6">
+        <div className="max-w-[1600px] w-full mx-auto flex flex-col gap-8">
           <div className="flex items-center justify-between">
             <Breadcrumb>
               <BreadcrumbList>
@@ -131,7 +131,7 @@ export default function ProjectDetail() {
                       <Input
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="h-8 w-64 text-base font-bold"
+                        className="h-10 w-64 text-3xl font-bold tracking-tight px-2"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') saveName()
@@ -157,7 +157,7 @@ export default function ProjectDetail() {
                     </div>
                   ) : (
                     <BreadcrumbPage
-                      className="font-bold text-3xl group cursor-pointer flex items-center gap-2"
+                      className="font-bold text-3xl tracking-tight text-foreground group cursor-pointer flex items-center gap-2"
                       onClick={startEditName}
                     >
                       {project.name}
@@ -173,22 +173,22 @@ export default function ProjectDetail() {
           </div>
 
           <div className="flex flex-col lg:flex-row justify-between gap-6 items-start lg:items-center">
-            <TabsList className="bg-card gap-1 p-1.5 rounded-xl flex flex-wrap justify-start border border-border inline-flex h-auto shadow-sm">
+            <TabsList className="bg-card gap-1 p-1.5 rounded-lg flex flex-wrap justify-start border border-border inline-flex h-auto shadow-sm">
               <TabsTrigger
                 value="funnels"
-                className="rounded-lg px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
+                className="rounded-md px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
               >
                 <Network size={16} className="mr-2" /> Funnels
               </TabsTrigger>
               <TabsTrigger
                 value="tasks"
-                className="rounded-lg px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
+                className="rounded-md px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
               >
                 <CheckSquare size={16} className="mr-2" /> Tasks
               </TabsTrigger>
               <TabsTrigger
                 value="documents"
-                className="rounded-lg px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
+                className="rounded-md px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground font-semibold transition-all text-base"
               >
                 <FileText size={16} className="mr-2" /> Documents
               </TabsTrigger>

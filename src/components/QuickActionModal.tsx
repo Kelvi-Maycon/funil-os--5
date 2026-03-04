@@ -231,7 +231,7 @@ export default function QuickActionModal() {
 
   return (
     <Dialog open={!!state} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-[640px] p-8 rounded-2xl border border-border shadow-2xl bg-card gap-0">
+      <DialogContent className="max-w-[640px] p-8 gap-0">
         <DialogHeader className="space-y-0 text-left">
           <DialogTitle className="text-2xl font-bold text-foreground leading-tight">
             {isCreate ? 'Ação Rápida' : `Editar ${currentTypeLabel}`}
@@ -257,10 +257,10 @@ export default function QuickActionModal() {
                   type="button"
                   onClick={() => setSelectedType(type.id)}
                   className={cn(
-                    'flex flex-col items-center justify-center py-6 px-2 rounded-xl border-2 transition-all duration-200 outline-none hover-lift',
+                    'flex flex-col items-center justify-center py-6 px-2 rounded-xl border transition-all duration-200 outline-none hover-lift',
                     isActive
                       ? 'border-primary bg-primary/5'
-                      : 'border-border bg-background hover:bg-muted',
+                      : 'border-border bg-card hover:bg-muted',
                   )}
                 >
                   <div
@@ -268,7 +268,7 @@ export default function QuickActionModal() {
                       'w-12 h-12 rounded-lg flex items-center justify-center mb-3 shadow-sm transition-colors duration-200',
                       isActive
                         ? 'bg-primary text-primary-foreground'
-                        : 'bg-card text-muted-foreground border border-border',
+                        : 'bg-background text-muted-foreground border border-border',
                     )}
                   >
                     <type.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
@@ -317,7 +317,7 @@ export default function QuickActionModal() {
                         <button
                           type="button"
                           className={cn(
-                            'w-full h-10 flex items-center justify-start text-left font-bold px-3 text-sm bg-background border border-input rounded-lg transition-colors hover:border-primary outline-none',
+                            'w-full h-10 flex items-center justify-start text-left font-bold px-3 text-sm bg-background border border-input rounded-lg transition-colors hover:border-primary outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
                             !formData.deadline && 'text-muted-foreground',
                           )}
                         >
@@ -363,7 +363,7 @@ export default function QuickActionModal() {
                         setFormData({ ...formData, priority: val })
                       }
                     >
-                      <SelectTrigger className="h-10 bg-background">
+                      <SelectTrigger className="h-10 bg-background rounded-lg">
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent className="z-[100] rounded-xl">
@@ -452,7 +452,7 @@ export default function QuickActionModal() {
                         setFormData({ ...formData, projectId: val })
                       }
                     >
-                      <SelectTrigger className="h-10 bg-background">
+                      <SelectTrigger className="h-10 bg-background rounded-lg">
                         <SelectValue placeholder="Selecione um projeto" />
                       </SelectTrigger>
                       <SelectContent className="z-[100] rounded-xl">

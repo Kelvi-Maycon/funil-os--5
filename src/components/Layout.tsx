@@ -162,7 +162,7 @@ export default function Layout() {
     <SidebarProvider defaultOpen={false}>
       <AppSidebar />
       <SidebarInset className="bg-background relative flex flex-col h-screen overflow-hidden w-full transition-all duration-200 ease-in-out">
-        <header className="h-20 flex items-center justify-between px-6 border-b border-border bg-card md:hidden shrink-0 z-10 shadow-sm">
+        <header className="h-20 flex items-center justify-between px-6 border-b border-border bg-background md:hidden shrink-0 z-10 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shrink-0">
               <Folder size={18} className="fill-current" />
