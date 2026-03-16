@@ -1128,18 +1128,7 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
     if (phase === 'loading') {
         return (
             <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
-                <header className="px-4 md:px-8 h-20 w-full hidden md:flex items-center justify-between">
-                    <div className="flex items-center gap-8">
-                        <div>
-                            <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
-                                <PuzzleIcon size={28} className="text-violet-600" />
-                                Hub de Prática
-                            </h1>
-                            <p className="text-xs font-semibold tracking-wider text-neutral-400 uppercase mt-0.5">Preparando sua sessão...</p>
-                        </div>
-                    </div>
-                </header>
-                <main className="max-w-[1400px] w-full mt-2 lg:mt-4 mx-auto px-4 md:px-8">
+                <main className="w-full mt-2 lg:mt-4">
                     <div className="bg-white rounded-3xl p-12 shadow-soft border border-neutral-100 flex flex-col items-center justify-center text-center mt-12">
                         <div className="w-20 h-20 bg-violet-50 rounded-full flex items-center justify-center text-violet-600 mb-6 animate-pulse">
                             <PuzzleIcon size={36} />
@@ -1162,18 +1151,7 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
     if (allModesEmpty) {
         return (
             <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
-                <header className="px-4 md:px-8 h-20 w-full hidden md:flex items-center justify-between">
-                    <div className="flex items-center gap-8">
-                        <div>
-                            <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
-                                <PuzzleIcon size={28} className="text-violet-600" />
-                                Hub de Prática
-                            </h1>
-                            <p className="text-xs font-semibold tracking-wider text-neutral-400 uppercase mt-0.5">Sessão vazia</p>
-                        </div>
-                    </div>
-                </header>
-                <main className="max-w-[1400px] w-full mt-2 lg:mt-4 mx-auto px-4 md:px-8">
+                <main className="w-full mt-2 lg:mt-4">
                     {error ? (
                         <div className="bg-red-50 text-red-700 border border-red-200 p-6 rounded-2xl mb-8 flex items-center gap-3 font-semibold">
                             ❌ {error}
@@ -1253,19 +1231,7 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
 
     return (
         <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
-            <header className="px-4 md:px-8 h-20 w-full hidden md:flex items-center justify-between">
-                <div className="flex items-center gap-8">
-                    <div>
-                        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
-                            <PuzzleIcon size={28} className="text-violet-600" />
-                            Hub de Prática
-                        </h1>
-                        <p className="text-xs font-semibold tracking-wider text-neutral-400 uppercase mt-0.5">Fixação dinâmica em múltiplos formatos</p>
-                    </div>
-                </div>
-            </header>
-
-            <main className="max-w-[1400px] w-full mt-2 lg:mt-4 mx-auto px-4 md:px-8 relative">
+            <main className="w-full mt-2 lg:mt-4 relative">
                 <div className="bg-white rounded-[2rem] p-6 lg:p-10 shadow-soft border border-neutral-100 mb-8 relative overflow-hidden" ref={workspaceRef} data-testid="builder-workspace-header">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-violet-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-70"></div>
                     

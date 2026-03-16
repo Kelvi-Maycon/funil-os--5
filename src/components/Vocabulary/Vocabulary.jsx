@@ -157,19 +157,7 @@ export default function Vocabulary() {
 
   return (
         <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
-            <header className="px-4 md:px-8 h-20 w-full hidden md:flex items-center justify-between">
-                <div className="flex items-center gap-8">
-                    <div>
-                        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
-                            <BookOpen size={28} className="text-violet-600" />
-                            Vocabulário
-                        </h1>
-                        <p className="text-xs font-semibold tracking-wider text-neutral-400 uppercase mt-0.5">Gerencie palavras, collocations, seed NGSL e o banco que alimenta Reader, Builder e revisão.</p>
-                    </div>
-                </div>
-            </header>
-
-            <main className="max-w-[1400px] w-full mt-2 lg:mt-4 mx-auto px-4 md:px-8">
+            <main className="w-full mt-2 lg:mt-4">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
                     <StatCard label="Itens no banco" value={words.length} tone="default" />
                     <StatCard label="Seed NGSL" value={seededCount} tone="purple" />

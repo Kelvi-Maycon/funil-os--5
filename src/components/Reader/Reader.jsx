@@ -273,20 +273,7 @@ export default function Reader({ onPractice }) {
 
   return (
     <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16" onClick={closeTooltip}>
-      {/* Gamified Dashboard Header Approach */}
-      <header className="px-4 md:px-8 h-20 w-full hidden md:flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
-              <BookIcon size={28} className="text-violet-600" />
-              Leitor Imersivo
-            </h1>
-            <p className="text-xs font-semibold tracking-wider text-neutral-400 uppercase mt-0.5">Captura de contexto natural</p>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-[1400px] w-full mt-2 lg:mt-4 mx-auto px-4 md:px-8">
+      <main className="w-full mt-2 lg:mt-4">
         {tokens === null ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             

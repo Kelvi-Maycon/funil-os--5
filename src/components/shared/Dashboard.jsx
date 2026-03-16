@@ -229,7 +229,7 @@ export default function Dashboard() {
 
   return (
     <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
-      <header className="px-4 md:px-8 h-20 w-full hidden md:flex items-center justify-between">
+      <header className="h-20 w-full hidden md:flex items-center justify-between">
         <div className="flex items-center gap-8">
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900">Dashboard</h1>
@@ -252,7 +252,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-[1400px] w-full mt-2 lg:mt-4 mx-auto px-4 md:px-8">
+      <main className="w-full mt-2 lg:mt-4">
         <div className="grid grid-cols-12 gap-6">
           
           {/* Hero Widget */}
@@ -297,80 +297,87 @@ export default function Dashboard() {
           </section>
 
           {/* Level Widget */}
-          <section className="col-span-12 lg:col-span-7 bg-white rounded-3xl p-6 md:p-8 shadow-soft border border-neutral-100 flex flex-col justify-center relative overflow-hidden">
-            <div className="absolute top-3 right-3 flex gap-2">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-300/20 text-violet-700 text-[10px] font-bold uppercase tracking-widest">🏆 Rank: {config.userLevel}</span>
+          <section className="col-span-12 lg:col-span-7 bg-white rounded-3xl p-6 md:p-8 lg:p-10 shadow-soft border border-neutral-100 flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute top-4 right-4 flex gap-2">
+              <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 text-[10px] font-bold uppercase tracking-widest border border-violet-100 shadow-inner-soft">🏆 Rank: {config.userLevel}</span>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-6">
+            
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8 mt-4 lg:mt-0">
               <div className="flex items-center gap-5">
                 <div className="w-16 h-16 rounded-2xl bg-neutral-50 border border-neutral-100 flex items-center justify-center shadow-inner-soft text-neutral-400">
                   <ShieldIcon size={32} />
                 </div>
                 <div>
                   <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Panorama do nivel</p>
-                  <h3 className="text-2xl font-bold text-neutral-900">Nivel atual {config.userLevel}</h3>
-                  <p className="text-sm text-neutral-500 mt-0.5">{activeWords} palavras ativas e {masteredWords} dominadas.</p>
+                  <h3 className="text-3xl font-extrabold text-neutral-900 tracking-tight">Nivel atual {config.userLevel}</h3>
+                  <p className="text-sm font-medium text-neutral-500 mt-1">{activeWords} palavras ativas e {masteredWords} dominadas.</p>
                 </div>
               </div>
               <div className="text-right">
                 <div className="flex items-baseline justify-end gap-1">
-                  <span className="text-4xl font-black text-neutral-900 tracking-tight">{xp}</span>
+                  <span className="text-5xl font-black text-neutral-900 tracking-tight">{xp}</span>
                 </div>
                 <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">XP Acumulado</p>
               </div>
             </div>
-            <div className="space-y-3">
-              <div className="w-full bg-neutral-100 rounded-full h-3.5 overflow-hidden border border-neutral-200/50 shadow-inner">
-                <div className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-400 h-full rounded-full xp-bar-fill" style={{ width: `${levelProgressPct}%` }}></div>
+            
+            <div className="space-y-4 mb-8">
+              <div className="w-full bg-neutral-100 rounded-full h-4 overflow-hidden border border-neutral-200 shadow-inner-soft">
+                <div className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 h-full rounded-full xp-bar-fill relative overflow-hidden" style={{ width: `${levelProgressPct}%` }}>
+                    <div className="absolute inset-0 bg-white/20 -skew-x-12 translate-x-full animate-[shimmer_2s_infinite]"></div>
+                </div>
               </div>
-              <div className="flex justify-between text-xs font-medium text-neutral-500">
+              <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-neutral-500">
                 <span>{levelProgress}/{XP_PER_LEVEL} XP</span>
-                <span>{XP_PER_LEVEL - levelProgress} XP → Nível superior</span>
+                <span>{XP_PER_LEVEL - levelProgress} XP → proximo nivel</span>
               </div>
             </div>
             
-            <div className="flex items-center gap-2 mt-5 pt-5 border-t border-neutral-100">
-              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mr-1">Marcos</span>
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-2 -mb-2">
-                <div className="flex flex-col items-center gap-1">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 flex items-center justify-center shadow text-sm">🥉</div>
-                    <span className="text-[9px] font-bold text-neutral-400">Bronze</span>
+            <div className="flex items-center gap-6 mt-auto pt-6 border-t border-neutral-100">
+              <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest w-16">Marcos</span>
+              <div className="flex items-center justify-between flex-1 relative mr-2">
+                {/* Background line for milestones */}
+                <div className="absolute left-4 right-4 top-5 h-1.5 bg-neutral-100 -z-10 rounded-full"></div>
+                
+                <div className="flex flex-col items-center gap-2.5 z-10">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-200 to-orange-400 flex items-center justify-center shadow-sm text-xl border-[3px] border-white text-orange-800">🥉</div>
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Bronze</span>
                 </div>
-                <div className="h-px flex-1 bg-neutral-200 w-6"></div>
-                <div className="flex flex-col items-center gap-1">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-neutral-200 to-neutral-400 flex items-center justify-center shadow text-sm">🥈</div>
-                    <span className="text-[9px] font-bold text-neutral-400">Prata</span>
+                <div className="flex flex-col items-center gap-2.5 z-10">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-neutral-200 to-neutral-400 flex items-center justify-center shadow-sm text-xl border-[3px] border-white text-neutral-700">🥈</div>
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Prata</span>
                 </div>
-                <div className="h-px flex-1 bg-neutral-200 w-6"></div>
-                <div className="flex flex-col items-center gap-1">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center shadow text-sm">🥇</div>
-                    <span className="text-[9px] font-bold text-neutral-400">Ouro</span>
+                <div className="flex flex-col items-center gap-2.5 z-10">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center shadow-sm text-xl border-[3px] border-white text-yellow-800">🥇</div>
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Ouro</span>
                 </div>
-                <div className="h-px flex-1 bg-neutral-200 w-6"></div>
-                <div className="flex flex-col items-center gap-1">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-300 to-fuchsia-500 flex items-center justify-center shadow text-sm text-white">💎</div>
-                    <span className="text-[9px] font-bold text-neutral-400">Platina</span>
+                <div className="flex flex-col items-center gap-2.5 z-10">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-violet-400 to-fuchsia-400 flex items-center justify-center shadow-lg text-xl border-[3px] border-white text-white">💎</div>
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Platina</span>
                 </div>
               </div>
             </div>
           </section>
 
           {/* Prompt Widget */}
-          <section className="col-span-12 lg:col-span-5 bg-white rounded-3xl p-6 md:p-8 shadow-soft border border-neutral-100 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Daily Prompt</p>
-              <span className={`px-3 py-1 rounded-full border text-[10px] font-bold tracking-wider uppercase ${promptState.status === 'empty' ? 'border-violet-300/30 text-violet-700 bg-violet-300/10' : 'border-pink-300 text-pink-600 bg-pink-50'}`}>
+          <section className="col-span-12 lg:col-span-5 bg-white rounded-3xl p-6 md:p-8 lg:p-10 shadow-soft border border-neutral-100 flex flex-col justify-between">
+            <div className="flex items-start justify-between mb-6">
+              <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">Daily Prompt</p>
+              <span className={`px-3 py-1.5 rounded-full border text-[10px] font-bold tracking-widest uppercase shadow-inner-soft ${promptState.status === 'empty' ? 'border-violet-200 text-violet-600 bg-violet-50' : 'border-pink-200 text-pink-600 bg-pink-50'}`}>
                 {promptState.status === 'empty' ? 'Indisponivel' : 'Pronto'}
               </span>
             </div>
-            <h3 className="text-xl font-bold text-neutral-900 mb-2">{promptState.title || 'Pronto para o desafio?'}</h3>
-            <p className="text-sm text-neutral-500 mb-6">{promptState.challenge || promptState.description || 'Capture vocabulario no reader para liberar um desafio contextual.'}</p>
+            
+            <div className="mb-auto mt-4 lg:mt-6">
+              <h3 className="text-2xl md:text-3xl font-extrabold text-neutral-900 mb-3 tracking-tight leading-tight">{promptState.title || 'Pronto para o desafio?'}</h3>
+              <p className="text-base font-medium text-neutral-500 mb-8 leading-relaxed max-w-sm">{promptState.challenge || promptState.description || 'Capture vocabulário no reader para liberar um desafio contextual amanhã.'}</p>
+            </div>
             
             <button
                onClick={handlePromptAction} 
-               className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors flex items-center gap-2 w-max shadow-md shadow-violet-600/20">
-              <SparkIcon size={16} />
-              {promptState.ctaLabel || 'Abrir reader'}
+               className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 w-full mt-auto shadow-md shadow-violet-600/20 transform hover:-translate-y-0.5">
+              <SparkIcon size={18} />
+              {promptState.ctaLabel || 'Abrir reader para capturar'}
             </button>
           </section>
 

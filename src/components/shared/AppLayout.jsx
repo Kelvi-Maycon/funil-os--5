@@ -173,39 +173,53 @@ export default function AppLayout() {
   const pageMeta = useMemo(() => {
     if (location.pathname.startsWith('/reader')) {
       return {
-        title: 'Reader',
-        kicker: 'Leitura ativa',
+        title: 'Leitor Imersivo',
+        description: 'Captura de contexto natural',
+        icon: BookIcon,
         action: { label: 'Importar texto', event: 'reader-primary' },
       };
     }
     if (location.pathname.startsWith('/vocabulary')) {
-      return { title: 'Vocabulario', kicker: 'Banco lexical', action: null };
+      return { 
+        title: 'Vocabulário', 
+        description: 'Gerencie palavras, collocations, seed NGSL e o banco lexical.',
+        icon: LayersIcon,
+        action: null 
+      };
     }
     if (location.pathname.startsWith('/practice')) {
       return {
-        title: 'Pratica Rapida',
-        kicker: 'Hub de pratica',
+        title: 'Prática Rápida',
+        description: 'Desenvolva suas habilidades ativas',
+        icon: BoltIcon,
         action: { label: 'Continuar sessao', event: 'practice-primary' },
       };
     }
     if (location.pathname.startsWith('/flashcards')) {
       return {
-        title: 'Revisao',
-        kicker: 'SRS diario',
+        title: 'Revisão',
+        description: 'Proteja o que você aprendeu com SRS',
+        icon: ReviewIcon,
         action: { label: 'Iniciar revisao', event: 'flashcards-primary' },
       };
     }
     if (location.pathname.startsWith('/evolution')) {
-      return { title: 'Evolucao', kicker: 'Panorama completo', action: null };
+      return { 
+        title: 'Dashboard de Evolução', 
+        description: 'Visualize seu progresso, histórico de vocabulário e crescimento geral.',
+        icon: TrendIcon,
+        action: null 
+      };
     }
     if (location.pathname.startsWith('/settings')) {
       return {
-        title: 'Configuracoes',
-        kicker: 'Preferencias e integracoes',
+        title: 'Configurações',
+        description: 'Preferências e integrações',
+        icon: Settings2,
         action: { label: 'Salvar', event: 'settings-primary' },
       };
     }
-    return { title: 'Dashboard', kicker: 'Base de estudo', action: null };
+    return { title: 'Dashboard', description: 'Base de estudo', icon: GridIcon, action: null };
   }, [location.pathname]);
 
   const isDashboard = location.pathname === '/';
@@ -230,19 +244,20 @@ export default function AppLayout() {
       <div className="md:ml-[282px]">
         {!isDashboard ? (
           <header className="sticky top-0 z-30 border-b border-white/45 bg-white/34">
-            <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-3 px-4 backdrop-blur-xl md:px-8 xl:px-10">
+            <div className="mx-auto flex h-[100px] max-w-[1400px] items-center gap-3 px-4 backdrop-blur-xl md:px-8 xl:px-10">
               <Button variant="outline" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)}>
                 <Menu className="h-4 w-4" />
               </Button>
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-col">
-                  <span className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-primary">
-                    {pageMeta.kicker}
-                  </span>
-                  <h2 className="truncate text-[22px] font-display font-bold text-neutral-950">
+                  <h2 className="truncate text-[22px] font-display font-extrabold text-neutral-900 flex items-center gap-2.5">
+                    {pageMeta.icon && <pageMeta.icon size={26} className="text-violet-600 font-bold" strokeWidth={2.5} />}
                     {pageMeta.title}
                   </h2>
+                  <span className="mt-0.5 text-[10.5px] font-bold uppercase tracking-wider text-neutral-400">
+                    {pageMeta.description}
+                  </span>
                 </div>
               </div>
 

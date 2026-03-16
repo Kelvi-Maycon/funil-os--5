@@ -160,19 +160,7 @@ export default function Flashcard() {
   if (session === null) {
     return (
         <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
-            <header className="px-4 md:px-8 h-20 w-full hidden md:flex items-center justify-between">
-                <div className="flex items-center gap-8">
-                    <div>
-                        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
-                            <BrainIcon size={28} className="text-violet-600" />
-                            Flashcards SRS
-                        </h1>
-                        <p className="text-xs font-semibold tracking-wider text-neutral-400 uppercase mt-0.5">Revise os cards do dia e mantenha o ciclo de longo prazo em movimento.</p>
-                    </div>
-                </div>
-            </header>
-            
-            <main className="max-w-[1400px] w-full mt-2 lg:mt-4 mx-auto px-4 md:px-8">
+            <main className="w-full mt-2 lg:mt-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-soft border border-neutral-100 flex flex-col justify-between relative overflow-hidden group">
                         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-violet-50/50 to-transparent pointer-events-none"></div>
@@ -260,19 +248,7 @@ export default function Flashcard() {
 
     return (
         <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
-            <header className="px-4 md:px-8 h-20 w-full hidden md:flex items-center justify-between">
-                <div className="flex items-center gap-8">
-                    <div>
-                        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
-                            <BrainIcon size={28} className="text-violet-600" />
-                            Flashcards SRS
-                        </h1>
-                        <p className="text-xs font-semibold tracking-wider text-neutral-400 uppercase mt-0.5">Sessão concluída</p>
-                    </div>
-                </div>
-            </header>
-
-            <main className="max-w-[800px] w-full mt-2 lg:mt-8 mx-auto px-4 md:px-8 text-center">
+            <main className="max-w-[800px] w-full mt-2 lg:mt-8 mx-auto text-center">
                 <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center text-green-600 mb-8 mx-auto border border-green-100 shadow-inner-soft">
                     <BrainIcon size={40} />
                 </div>
@@ -312,19 +288,7 @@ export default function Flashcard() {
 
   return (
         <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
-            <header className="px-4 md:px-8 h-20 w-full hidden md:flex items-center justify-between">
-                <div className="flex items-center gap-8">
-                    <div>
-                        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
-                            <BrainIcon size={28} className="text-violet-600" />
-                            Flashcards SRS
-                        </h1>
-                        <p className="text-xs font-semibold tracking-wider text-neutral-400 uppercase mt-0.5">Card {current + 1} de {session.length}</p>
-                    </div>
-                </div>
-            </header>
-
-            <main className="max-w-[800px] w-full mt-2 lg:mt-8 mx-auto px-4 md:px-8">
+            <main className="max-w-[800px] w-full mt-2 lg:mt-8 mx-auto">
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-3 text-sm font-bold">
                         <span className="text-neutral-500">Progresso</span>
