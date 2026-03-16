@@ -242,60 +242,53 @@ export default function AppLayout() {
       </aside>
 
       <div className="md:ml-[282px]">
-        {!isDashboard ? (
-          <header className="sticky top-0 z-30 border-b border-white/45 bg-white/34">
-            <div className="mx-auto flex h-[100px] max-w-[1400px] items-center gap-3 px-4 backdrop-blur-xl md:px-8 xl:px-10">
-              <Button variant="outline" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)}>
-                <Menu className="h-4 w-4" />
-              </Button>
-
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-col">
-                  <h2 className="truncate text-[22px] font-display font-extrabold text-neutral-900 flex items-center gap-2.5">
-                    {pageMeta.icon && <pageMeta.icon size={26} className="text-violet-600 font-bold" strokeWidth={2.5} />}
-                    {pageMeta.title}
-                  </h2>
-                  <span className="mt-0.5 text-[10.5px] font-bold uppercase tracking-wider text-neutral-400">
-                    {pageMeta.description}
-                  </span>
-                </div>
-              </div>
-
-              <div className="hidden w-full max-w-xs items-center md:flex">
-                <div className="relative w-full">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input className="w-full max-w-sm pl-9" placeholder="Buscar licao..." />
-                </div>
-              </div>
-
-              {pageMeta.action ? (
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="hidden md:inline-flex"
-                  data-testid="page-primary-action"
-                  onClick={() => dispatchPageAction(pageMeta.action.event)}
-                >
-                  {pageMeta.action.label}
-                </Button>
-              ) : null}
-
-              <NotificationsPopover />
-            </div>
-          </header>
-        ) : (
-          <div className="sticky top-0 z-30 border-b border-white/45 bg-white/34 px-4 py-3 backdrop-blur-xl md:hidden">
-            <div className="mx-auto flex max-w-[1400px] items-center justify-between">
-              <Button variant="outline" size="icon" onClick={() => setMobileOpen(true)}>
-                <Menu className="h-4 w-4" />
-              </Button>
-              <NotificationsPopover />
-            </div>
+        <div className="sticky top-0 z-30 border-b border-white/45 bg-white/34 px-4 py-3 backdrop-blur-xl md:hidden">
+          <div className="mx-auto flex max-w-[1400px] items-center justify-between">
+            <Button variant="outline" size="icon" onClick={() => setMobileOpen(true)}>
+              <Menu className="h-4 w-4" />
+            </Button>
+            <NotificationsPopover />
           </div>
-        )}
+        </div>
 
         <main className="min-h-[calc(100vh-4rem)]">
           <div className="mx-auto max-w-[1400px] px-4 py-6 md:px-8 md:py-8 xl:px-10">
+            {!isDashboard && (
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pt-2 lg:pt-0">
+                <div>
+                  <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
+                    {pageMeta.icon && <pageMeta.icon size={28} className="text-violet-600 font-bold" strokeWidth={2.5} />}
+                    {pageMeta.title}
+                  </h1>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 mt-0.5">
+                    {pageMeta.description}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="relative hidden sm:block">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                    <Input className="w-full sm:w-[240px] pl-9 bg-white border-neutral-200 focus:border-violet-500 rounded-xl shadow-sm" placeholder="Buscar..." />
+                  </div>
+
+                  {pageMeta.action ? (
+                    <Button
+                      variant="default"
+                      size="default"
+                      className="hidden sm:inline-flex rounded-xl font-bold bg-neutral-900 hover:bg-black text-white shadow-sm transition-transform hover:-translate-y-0.5 px-6"
+                      data-testid="page-primary-action"
+                      onClick={() => dispatchPageAction(pageMeta.action.event)}
+                    >
+                      {pageMeta.action.label}
+                    </Button>
+                  ) : null}
+                  
+                  <div className="hidden md:block">
+                     <NotificationsPopover />
+                  </div>
+                </div>
+              </div>
+            )}
             <Outlet />
           </div>
         </main>

@@ -113,11 +113,6 @@ export default function Evolution() {
   return (
         <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
             <main className="w-full mt-2 lg:mt-4">
-                <div className="flex justify-end mb-6">
-                    <button className="bg-white text-neutral-900 hover:bg-neutral-50 px-5 py-2.5 rounded-full font-bold shadow-sm border border-neutral-200 transition-transform hover:-translate-y-0.5 flex items-center gap-2">
-                        <Download className="h-4 w-4" /> Exportar Relatório
-                    </button>
-                </div>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
                     <StatCard icon={BookOpen} tone="blue" label="Palavras" value={words.length} />
                     <StatCard icon={Sparkles} tone="pink" label="Experiência" value={`${xp} XP`} />

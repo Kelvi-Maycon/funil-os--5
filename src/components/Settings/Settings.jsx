@@ -169,15 +169,10 @@ export default function Settings() {
   }, [form]);
 
   return (
-    <div>
-      <PageHeader
-        icon={<SettingsIcon size={22} />}
-        title="Configuracoes"
-        description="Ajuste nivel, IA, pratica e dados locais sem sair do fluxo principal."
-      />
-
-      <div className="page-content settings-page">
-        <div className="settings-tabs">
+    <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
+      <main className="w-full mt-2 lg:mt-4">
+        <div className="page-content settings-page">
+          <div className="settings-tabs">
           {[
             ['essential', 'Essencial', <GridIcon key="essential" size={16} />],
             ['ai', 'IA', <SparkIcon key="ai" size={16} />],
@@ -254,7 +249,7 @@ export default function Settings() {
         ) : null}
 
         {tab === 'ai' ? (
-          <div style={{ maxWidth: 760 }}>
+          <div>
             <div className="card mb-lg">
               <h3 className="settings-section-title">Provedor de IA</h3>
               <div className="settings-pill-row mb-lg">
@@ -343,7 +338,7 @@ export default function Settings() {
         ) : null}
 
         {tab === 'study' ? (
-          <div style={{ maxWidth: 860 }}>
+          <div>
             <div className="card mb-lg">
               <h3 className="settings-section-title">Pratica e SRS</h3>
               <div className="grid-2" style={{ gap: 16 }}>
@@ -433,7 +428,7 @@ export default function Settings() {
         ) : null}
 
         {tab === 'data' ? (
-          <div style={{ maxWidth: 860 }}>
+          <div>
             <div className="card mb-lg">
               <h3 className="settings-section-title">Uso local e progresso</h3>
               <div style={{ fontSize: 13, color: 'var(--c-muted)', marginBottom: 10 }}>
@@ -489,6 +484,7 @@ export default function Settings() {
           </div>
         ) : null}
       </div>
+      </main>
     </div>
   );
 }

@@ -248,7 +248,7 @@ export default function Flashcard() {
 
     return (
         <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
-            <main className="max-w-[800px] w-full mt-2 lg:mt-8 mx-auto text-center">
+            <main className="w-full mt-2 lg:mt-4 text-center">
                 <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center text-green-600 mb-8 mx-auto border border-green-100 shadow-inner-soft">
                     <BrainIcon size={40} />
                 </div>
@@ -288,7 +288,7 @@ export default function Flashcard() {
 
   return (
         <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
-            <main className="max-w-[800px] w-full mt-2 lg:mt-8 mx-auto">
+            <main className="w-full mt-2 lg:mt-4">
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-3 text-sm font-bold">
                         <span className="text-neutral-500">Progresso</span>
