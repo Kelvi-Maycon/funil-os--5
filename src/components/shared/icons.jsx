@@ -284,3 +284,24 @@ export function WriteIcon(props) {
     </SvgIcon>
   );
 }
+
+export function RefreshCwIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M3 21v-5h5" />
+    </SvgIcon>
+  );
+}
+
+export function TypeIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <polyline points="4 7 4 4 20 4 20 7" />
+      <line x1="9" y1="20" x2="15" y2="20" />
+      <line x1="12" y1="4" x2="12" y2="20" />
+    </SvgIcon>
+  );
+}

@@ -24,18 +24,16 @@ import { useUiStore } from '../../store/useUiStore.js';
 import { generateSentences } from '../../services/ai.js';
 import { containsLexiconText, normalizeLexiconText } from '../../utils/lexicon.js';
 import { shuffle } from '../../utils/shuffle.js';
-import { buildBuilderExercises, selectBuilderWords } from './session.js';
+import { buildBuilderExercises, selectBuilderWords, buildMixedExercises } from './session.js';
 import { buildClozeExercises, buildTransformExercises, selectDailyPromptTargets } from './practiceModes.js';
 import PageHeader from '../shared/PageHeader.jsx';
-import { EyeIcon, PencilIcon, PlayIcon, PuzzleIcon, ReloadIcon, SparkIcon } from '../shared/icons.jsx';
+import { EyeIcon, PencilIcon, PlayIcon, PuzzleIcon, RefreshCwIcon, ReloadIcon, SparkIcon, TypeIcon } from '../shared/icons.jsx';
 
 const AI_WARMUP_TIMEOUT_MS = 5000;
 const AVAILABLE_CONTAINER_ID = 'builder-available';
 const ANSWER_CONTAINER_ID = 'builder-answer';
 const PRACTICE_MODES = [
-    { id: 'assembly', label: 'Montagem' },
-    { id: 'transform', label: 'Transform' },
-    { id: 'cloze', label: 'Cloze' },
+    { id: 'practice', label: 'Praticar' },
     { id: 'prompt', label: 'Prompt' },
 ];
 
@@ -227,6 +225,8 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
     const [production, setProduction] = useState('');
     const [showProd, setShowProd] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [explanation, setExplanation] = useState(null);
+    const [isExplaining, setIsExplaining] = useState(false);
     const maxAttempts = 3;
 
     const sensors = useSensors(
@@ -248,23 +248,6 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
             return currentAvailable.filter((item) => item.id !== tokenId);
         });
 
-        if (result.alreadyCompleted) {
-            pushToast({
-                kind: 'info',
-                source: 'builder',
-                title: 'Prompt ja enviado',
-                description: 'O desafio diario dessa data ja tinha sido concluido.',
-            });
-            setFeedback({ type: 'info', text: 'Prompt de hoje jÃ¡ havia sido concluÃ­do.' });
-            return;
-        }
-
-        publishMilestone({
-            kind: 'success',
-            source: 'builder',
-            title: 'Prompt diario concluido',
-            description: 'As frases do dia foram registradas no seu progresso.',
-        });
         resetFeedback();
     };
 
@@ -300,6 +283,25 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
             setResult('incorrect');
             setAnswerTokens(expectedTokens);
             setAvailableTokens([]);
+            
+            // Fetch explanation from AI
+            if (config?.provider) {
+                const answerStr = answerTokens.map((token) => token.text).join(' ');
+                setIsExplaining(true);
+                import('../../services/ai.js').then(({ explainGrammarError }) => {
+                    explainGrammarError({
+                        expected: exercise.sentence.english,
+                        userAnswer: answerStr,
+                        userLevel: config.userLevel,
+                        config
+                    }).then(res => {
+                        setExplanation(res.text);
+                    }).catch(err => {
+                        console.error("AI Explanation failed", err);
+                    }).finally(() => setIsExplaining(false));
+                });
+            }
+
             applyGuidedPracticeResult({
                 config,
                 setConfig,
@@ -472,6 +474,21 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
                     <div className="builder-feedback-text">
                         A frase correta era: <strong>{exercise.sentence.english}</strong>
                     </div>
+
+                    {isExplaining && (
+                        <div className="mt-4 p-3 bg-red-50/50 rounded-lg border border-red-100/50 flex items-center gap-3">
+                            <span className="w-4 h-4 rounded-full border-2 border-red-300 border-t-red-600 animate-spin"></span>
+                            <span className="text-xs text-red-600 font-medium">Analisando o erro com IA...</span>
+                        </div>
+                    )}
+                    {explanation && (
+                        <div className="mt-4 p-4 bg-white/60 rounded-xl border border-red-100 shadow-sm">
+                            <h4 className="flex items-center gap-2 text-[11px] font-bold text-red-600 uppercase tracking-widest mb-2">
+                                <SparkIcon size={14} /> Sugestão da IA
+                            </h4>
+                            <p className="text-sm font-medium text-neutral-700 leading-relaxed">{explanation}</p>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -523,7 +540,7 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
                     <button className="btn btn-primary" onClick={handleSave} disabled={saved}>
                         {saved ? 'Salvo no Flashcard' : 'Salvar no Flashcard'}
                     </button>
-                    <button className="btn btn-outline" onClick={onComplete}>Próxima →</button>
+                    <button className="btn btn-outline" onClick={() => onComplete(result === 'correct', exercise.wordId, attempts === 1)}>Próxima →</button>
                 </div>
             )}
         </div>
@@ -537,6 +554,8 @@ function TransformExercise({ exercise, onComplete }) {
     const [answer, setAnswer] = useState('');
     const [attempts, setAttempts] = useState(0);
     const [result, setResult] = useState(null);
+    const [explanation, setExplanation] = useState(null);
+    const [isExplaining, setIsExplaining] = useState(false);
     const maxAttempts = 3;
 
     const finalizeAttempt = (success, nextAttempts) => {
@@ -558,6 +577,24 @@ function TransformExercise({ exercise, onComplete }) {
 
         if (nextAttempts >= maxAttempts) {
             setResult('incorrect');
+            
+            // Fetch explanation from AI
+            if (config?.provider) {
+                setIsExplaining(true);
+                import('../../services/ai.js').then(({ explainGrammarError }) => {
+                    explainGrammarError({
+                        expected: exercise.expectedSentence,
+                        userAnswer: answer,
+                        userLevel: config.userLevel,
+                        config
+                    }).then(res => {
+                        setExplanation(res.text);
+                    }).catch(err => {
+                        console.error("AI Explanation failed", err);
+                    }).finally(() => setIsExplaining(false));
+                });
+            }
+
             applyGuidedPracticeResult({
                 config,
                 setConfig,
@@ -628,6 +665,21 @@ function TransformExercise({ exercise, onComplete }) {
                 <div className="builder-feedback builder-feedback-error mt-lg">
                     <div className="builder-feedback-title">❌ Tentativas encerradas</div>
                     <div className="builder-feedback-text">{exercise.expectedSentence}</div>
+                    
+                    {isExplaining && (
+                        <div className="mt-4 p-3 bg-red-50/50 rounded-lg border border-red-100/50 flex items-center gap-3">
+                            <span className="w-4 h-4 rounded-full border-2 border-red-300 border-t-red-600 animate-spin"></span>
+                            <span className="text-xs text-red-600 font-medium">Analisando o erro com IA...</span>
+                        </div>
+                    )}
+                    {explanation && (
+                        <div className="mt-4 p-4 bg-white/60 rounded-xl border border-red-100 shadow-sm">
+                            <h4 className="flex items-center gap-2 text-[11px] font-bold text-red-600 uppercase tracking-widest mb-2">
+                                <SparkIcon size={14} /> Sugestão da IA
+                            </h4>
+                            <p className="text-sm font-medium text-neutral-700 leading-relaxed">{explanation}</p>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -640,7 +692,7 @@ function TransformExercise({ exercise, onComplete }) {
 
             {result && result !== 'try_again' && (
                 <div className="flex gap-sm mt-lg">
-                    <button className="btn btn-outline" onClick={onComplete}>Próxima →</button>
+                    <button className="btn btn-outline" onClick={() => onComplete(result === 'correct', exercise.wordId, attempts === 1)}>Próxima →</button>
                 </div>
             )}
         </div>
@@ -654,6 +706,8 @@ function ClozeExercise({ exercise, onComplete }) {
     const [answer, setAnswer] = useState('');
     const [attempts, setAttempts] = useState(0);
     const [result, setResult] = useState(null);
+    const [explanation, setExplanation] = useState(null);
+    const [isExplaining, setIsExplaining] = useState(false);
     const maxAttempts = 3;
 
     const finalizeAttempt = (success, nextAttempts) => {
@@ -675,6 +729,24 @@ function ClozeExercise({ exercise, onComplete }) {
 
         if (nextAttempts >= maxAttempts) {
             setResult('incorrect');
+            
+            // Fetch explanation from AI
+            if (config?.provider) {
+                setIsExplaining(true);
+                import('../../services/ai.js').then(({ explainGrammarError }) => {
+                    explainGrammarError({
+                        expected: exercise.expectedText,
+                        userAnswer: answer,
+                        userLevel: config.userLevel,
+                        config
+                    }).then(res => {
+                        setExplanation(res.text);
+                    }).catch(err => {
+                        console.error("AI Explanation failed", err);
+                    }).finally(() => setIsExplaining(false));
+                });
+            }
+
             applyGuidedPracticeResult({
                 config,
                 setConfig,
@@ -743,6 +815,21 @@ function ClozeExercise({ exercise, onComplete }) {
                 <div className="builder-feedback builder-feedback-error mt-lg">
                     <div className="builder-feedback-title">❌ Resposta correta</div>
                     <div className="builder-feedback-text">{exercise.expectedText}</div>
+
+                    {isExplaining && (
+                        <div className="mt-4 p-3 bg-red-50/50 rounded-lg border border-red-100/50 flex items-center gap-3">
+                            <span className="w-4 h-4 rounded-full border-2 border-red-300 border-t-red-600 animate-spin"></span>
+                            <span className="text-xs text-red-600 font-medium">Analisando o erro com IA...</span>
+                        </div>
+                    )}
+                    {explanation && (
+                        <div className="mt-4 p-4 bg-white/60 rounded-xl border border-red-100 shadow-sm">
+                            <h4 className="flex items-center gap-2 text-[11px] font-bold text-red-600 uppercase tracking-widest mb-2">
+                                <SparkIcon size={14} /> Sugestão da IA
+                            </h4>
+                            <p className="text-sm font-medium text-neutral-700 leading-relaxed">{explanation}</p>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -755,7 +842,7 @@ function ClozeExercise({ exercise, onComplete }) {
 
             {result && result !== 'try_again' && (
                 <div className="flex gap-sm mt-lg">
-                    <button className="btn btn-outline" onClick={onComplete}>Próxima →</button>
+                    <button className="btn btn-outline" onClick={() => onComplete(result === 'correct', exercise.wordId, attempts === 1)}>Próxima →</button>
                 </div>
             )}
         </div>
@@ -896,20 +983,17 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
     const [mode, setMode] = useState(initialMode);
     const [practiceData, setPracticeData] = useState({
         selectedWords: [],
-        assemblyExercises: [],
-        transformExercises: [],
-        clozeExercises: [],
+        mixedExercises: [],
         promptTargets: [],
     });
     const [saved, setSaved] = useState([]);
     const [error, setError] = useState(null);
-    const [assemblyIndex, setAssemblyIndex] = useState(0);
-    const [transformIndex, setTransformIndex] = useState(0);
-    const [clozeIndex, setClozeIndex] = useState(0);
+    const [exerciseIndex, setExerciseIndex] = useState(0);
+    const [sessionStats, setSessionStats] = useState({ correct: 0, incorrect: 0, xpEarned: 0, wordErrors: {} });
     const didInitRef = useRef(false);
     const warmControllersRef = useRef([]);
     const workspaceRef = useRef(null);
-    const completionFlagsRef = useRef({ assembly: false, transform: false, cloze: false });
+    const completionFlagsRef = useRef({ practice: false });
     const autoAdjustMarkerRef = useRef(null);
     const builderConfig = useMemo(() => config.builder || {}, [config.builder]);
 
@@ -939,17 +1023,7 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
 
             const nextData = {
                 selectedWords,
-                assemblyExercises: buildBuilderExercises({
-                    selectedWords,
-                    recentSentencesByWord,
-                    builderConfig,
-                }),
-                transformExercises: buildTransformExercises({
-                    selectedWords,
-                    recentSentencesByWord,
-                    builderConfig,
-                }),
-                clozeExercises: buildClozeExercises({
+                mixedExercises: buildMixedExercises({
                     selectedWords,
                     recentSentencesByWord,
                     builderConfig,
@@ -963,10 +1037,9 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
 
             setPracticeData(nextData);
             setSaved([]);
-            setAssemblyIndex(0);
-            setTransformIndex(0);
-            setClozeIndex(0);
-            completionFlagsRef.current = { assembly: false, transform: false, cloze: false };
+            setExerciseIndex(0);
+            setSessionStats({ correct: 0, incorrect: 0, xpEarned: 0, wordErrors: {} });
+            completionFlagsRef.current = { practice: false };
             setPhase('ready');
 
             if (config.provider) {
@@ -1008,9 +1081,7 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
             setError(caughtError.message);
             setPracticeData({
                 selectedWords: [],
-                assemblyExercises: [],
-                transformExercises: [],
-                clozeExercises: [],
+                mixedExercises: [],
                 promptTargets: [],
             });
             setPhase('ready');
@@ -1024,7 +1095,7 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
     }, [prepare]);
 
     useEffect(() => {
-        setMode(initialMode || 'assembly');
+        setMode(initialMode === 'prompt' ? 'prompt' : 'practice');
     }, [initialMode]);
 
     useEffect(() => () => {
@@ -1088,42 +1159,30 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
 
     useEffect(() => {
         if (phase !== 'ready') return;
-        if (practiceData.assemblyExercises.length > 0 && assemblyIndex >= practiceData.assemblyExercises.length && !completionFlagsRef.current.assembly) {
-            completionFlagsRef.current.assembly = true;
+        if (practiceData.mixedExercises.length > 0 && exerciseIndex >= practiceData.mixedExercises.length && !completionFlagsRef.current.practice) {
+            completionFlagsRef.current.practice = true;
             publishMilestone({
                 kind: 'success',
                 source: 'builder',
-                title: 'Montagem concluida',
-                description: `${practiceData.assemblyExercises.length} exercicios finalizados nesta sessao.`,
+                title: 'Sessão concluída',
+                description: `${practiceData.mixedExercises.length} exercícios finalizados nesta sessão.`,
             });
         }
-    }, [assemblyIndex, phase, practiceData.assemblyExercises.length, publishMilestone]);
+    }, [exerciseIndex, phase, practiceData.mixedExercises.length, publishMilestone]);
 
-    useEffect(() => {
-        if (phase !== 'ready') return;
-        if (practiceData.transformExercises.length > 0 && transformIndex >= practiceData.transformExercises.length && !completionFlagsRef.current.transform) {
-            completionFlagsRef.current.transform = true;
-            publishMilestone({
-                kind: 'success',
-                source: 'builder',
-                title: 'Transform concluido',
-                description: `${practiceData.transformExercises.length} exercicios de reescrita finalizados.`,
-            });
-        }
-    }, [phase, practiceData.transformExercises.length, publishMilestone, transformIndex]);
-
-    useEffect(() => {
-        if (phase !== 'ready') return;
-        if (practiceData.clozeExercises.length > 0 && clozeIndex >= practiceData.clozeExercises.length && !completionFlagsRef.current.cloze) {
-            completionFlagsRef.current.cloze = true;
-            publishMilestone({
-                kind: 'success',
-                source: 'builder',
-                title: 'Cloze concluido',
-                description: `${practiceData.clozeExercises.length} lacunas foram encerradas.`,
-            });
-        }
-    }, [clozeIndex, phase, practiceData.clozeExercises.length, publishMilestone]);
+    const handleExerciseComplete = useCallback((success, wordId, isFirstTry) => {
+        setSessionStats(prev => {
+            const next = { ...prev };
+            if (success) next.correct++;
+            else {
+                next.incorrect++;
+                next.wordErrors[wordId] = (next.wordErrors[wordId] || 0) + 1;
+            }
+            next.xpEarned += (isFirstTry && success) ? 20 : (success ? 10 : 0);
+            return next;
+        });
+        setExerciseIndex(v => v + 1);
+    }, []);
 
     if (phase === 'loading') {
         return (
@@ -1143,9 +1202,7 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
         );
     }
 
-    const allModesEmpty = practiceData.assemblyExercises.length === 0
-        && practiceData.transformExercises.length === 0
-        && practiceData.clozeExercises.length === 0
+    const allModesEmpty = practiceData.mixedExercises.length === 0
         && practiceData.promptTargets.length === 0;
 
     if (allModesEmpty) {
@@ -1178,20 +1235,13 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
     }
 
     const modeMeta = {
-        assembly: {
-            count: practiceData.assemblyExercises.length,
-            index: assemblyIndex,
-            title: 'Montagem',
-        },
-        transform: {
-            count: practiceData.transformExercises.length,
-            index: transformIndex,
-            title: 'Transform',
-        },
-        cloze: {
-            count: practiceData.clozeExercises.length,
-            index: clozeIndex,
-            title: 'Cloze',
+        practice: {
+            count: practiceData.mixedExercises.length,
+            index: exerciseIndex,
+            title: builderConfig.preferredMode === 'assembly' ? 'Montagem' 
+                 : builderConfig.preferredMode === 'transform' ? 'Transformação' 
+                 : builderConfig.preferredMode === 'cloze' ? 'Lacunas' 
+                 : 'Prática',
         },
         prompt: {
             count: practiceData.promptTargets.length,
@@ -1201,33 +1251,31 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
     };
 
     const currentModeMeta = modeMeta[mode];
-    const progress = currentModeMeta.count > 0 && mode !== 'prompt'
+    const progress = currentModeMeta && currentModeMeta.count > 0 && mode !== 'prompt'
         ? Math.round(((currentModeMeta.index + 1) / currentModeMeta.count) * 100)
         : 0;
 
-    const currentExercise = mode === 'assembly'
-        ? practiceData.assemblyExercises[assemblyIndex]
-        : mode === 'transform'
-            ? practiceData.transformExercises[transformIndex]
-            : mode === 'cloze'
-                ? practiceData.clozeExercises[clozeIndex]
-                : null;
+    const currentExerciseObj = mode === 'practice'
+        ? practiceData.mixedExercises[exerciseIndex]
+        : null;
 
-    const currentContext = mode === 'assembly'
+    const currentExercise = currentExerciseObj?.exercise;
+    
+    const currentContext = currentExerciseObj?.type === 'assembly'
         ? currentExercise?.sentence?.portuguese || currentExercise?.sentence?.english
-        : mode === 'transform'
+        : currentExerciseObj?.type === 'transform'
             ? currentExercise?.sourceSentence
-            : mode === 'cloze'
+            : currentExerciseObj?.type === 'cloze'
                 ? currentExercise?.english
                 : practiceData.promptTargets.map((target) => target.wordText).join(', ');
 
     const currentFocus = currentExercise?.wordText || practiceData.selectedWords.slice(0, 3).map((word) => word.wordText).join(', ');
     const completedCount = mode === 'prompt'
         ? Number(Boolean(useProgressStore.getState().dailyPromptHistory?.[new Date().toLocaleDateString('en-CA')]))
-        : Math.min(currentModeMeta.index, currentModeMeta.count);
+        : Math.min(currentModeMeta?.index || 0, currentModeMeta?.count || 0);
     const remainingCount = mode === 'prompt'
         ? Math.max(0, 1 - completedCount)
-        : Math.max(currentModeMeta.count - currentModeMeta.index, 0);
+        : Math.max((currentModeMeta?.count || 0) - (currentModeMeta?.index || 0), 0);
 
     return (
         <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
@@ -1300,98 +1348,93 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
                     </div>
                 )}
 
-                {mode === 'assembly' && (
-                    practiceData.assemblyExercises.length === 0 ? (
+                {mode === 'practice' && (
+                    practiceData.mixedExercises.length === 0 ? (
                         <div className="empty-state">
                             <div className="empty-icon">🧩</div>
-                            <h3>Nenhuma montagem disponível</h3>
+                            <h3>Nenhum exercício disponível</h3>
                             <p>Importe seed ou clique em palavras no Reader para montar novas frases.</p>
                         </div>
-                    ) : assemblyIndex >= practiceData.assemblyExercises.length ? (
-                        <div className="page-content builder-page builder-summary-page">
-                            <div className="builder-summary-hero">
-                                <div className="builder-summary-icon"><SparkIcon size={28} /></div>
-                                <h2 className="builder-summary-title">Montagem concluída</h2>
-                                <p className="builder-summary-copy">
-                                    Você completou {practiceData.assemblyExercises.length} exercícios · {saved.length} frases salvas no flashcard
+                    ) : exerciseIndex >= practiceData.mixedExercises.length ? (
+                        <div className="page-content builder-page builder-summary-page bg-white rounded-3xl p-8 lg:p-12 shadow-soft border border-neutral-100 flex flex-col items-center">
+                            <div className="builder-summary-hero mb-8 flex flex-col items-center">
+                                <div className="w-20 h-20 bg-green-50 flex justify-center items-center rounded-full text-green-500 mb-6 border border-green-100 shadow-inner-soft animate-bounce">
+                                    <TrophyIcon size={40} />
+                                </div>
+                                <h2 className="text-3xl font-extrabold text-neutral-900 tracking-tight text-center mb-2">Sessão Concluída!</h2>
+                                <p className="text-neutral-500 text-center max-w-md mx-auto">
+                                    Excelente trabalho. Aqui está o seu desempenho nesta sessão.
                                 </p>
                             </div>
-
-                            {saved.length > 0 && (
-                                <div className="card mb-lg">
-                                    <div className="section-label mb-sm">Frases salvas</div>
-                                    {saved.map((item, index) => (
-                                        <div key={`${item.back}_${index}`} className="builder-saved-row">
-                                            <div className="builder-saved-front">{item.front}</div>
-                                            <div className="builder-saved-back">{item.back}</div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 w-full max-w-3xl">
+                                <div className="bg-neutral-50 p-6 rounded-2xl border border-neutral-100 shadow-sm text-center">
+                                    <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-2">Exercícios</div>
+                                    <div className="text-3xl font-black text-neutral-900">{practiceData.mixedExercises.length}</div>
+                                </div>
+                                <div className="bg-green-50 p-6 rounded-2xl border border-green-100 shadow-sm text-center">
+                                    <div className="text-[11px] font-bold text-green-600 uppercase tracking-widest mb-2">Acertos</div>
+                                    <div className="text-3xl font-black text-green-700">{sessionStats.correct}</div>
+                                </div>
+                                <div className="bg-red-50 p-6 rounded-2xl border border-red-100 shadow-sm text-center">
+                                    <div className="text-[11px] font-bold text-red-600 uppercase tracking-widest mb-2">Erros</div>
+                                    <div className="text-3xl font-black text-red-700">{sessionStats.incorrect}</div>
+                                </div>
+                                <div className="bg-yellow-50 p-6 rounded-2xl border border-yellow-100 shadow-sm text-center flex flex-col items-center justify-center relative overflow-hidden">
+                                    <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-yellow-200/30 to-transparent pointer-events-none"></div>
+                                    <div className="text-[11px] font-bold text-yellow-600 uppercase tracking-widest mb-2 z-10 flex items-center gap-1.5"><SparkIcon size={12}/> XP Ganho</div>
+                                    <div className="text-3xl font-black text-yellow-700 z-10">+{sessionStats.xpEarned}</div>
+                                </div>
+                            </div>
+                            
+                            {Object.keys(sessionStats.wordErrors).length > 0 && (
+                                <div className="bg-orange-50/80 p-6 rounded-2xl border border-orange-100 text-center mb-8 w-full max-w-3xl flex items-center justify-between">
+                                    <div className="text-left">
+                                        <div className="text-[11px] font-bold text-orange-600/80 uppercase tracking-widest mb-1.5 flex items-center gap-2">Maior dificuldade na sessão</div>
+                                        <div className="text-xl font-bold text-orange-900">
+                                            {Object.entries(sessionStats.wordErrors).sort((a,b) => b[1]-a[1])[0][0]}
                                         </div>
-                                    ))}
+                                    </div>
+                                    <div className="text-4xl">🎯</div>
                                 </div>
                             )}
 
-                            <div className="flex gap-md flex-wrap">
-                                <button className="btn btn-primary" onClick={() => { setAssemblyIndex(0); setSaved([]); }}>
-                                    <span className="btn-icon"><ReloadIcon size={15} /></span>
-                                    <span>Refazer montagem</span>
+                            {saved.length > 0 && (
+                                <div className="w-full max-w-3xl mb-8">
+                                    <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Frases salvas no Flashcard</div>
+                                    <div className="flex flex-col gap-3">
+                                        {saved.map((item, index) => (
+                                            <div key={`${item.back}_${index}`} className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 text-sm">
+                                                <div className="font-bold text-neutral-800 mb-1">{item.front}</div>
+                                                <div className="text-neutral-500 font-medium">{item.back}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex justify-center gap-4 flex-wrap mt-4">
+                                <button className="bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-8 py-3.5 rounded-full font-bold transition-all flex items-center gap-2" onClick={prepare}>
+                                    <ReloadIcon size={18} />
+                                    Refazer Prática
                                 </button>
                                 {secondaryAction}
                             </div>
                         </div>
                     ) : (
-                        <SentenceExercise
-                            key={practiceData.assemblyExercises[assemblyIndex].sentence.id}
-                            exercise={practiceData.assemblyExercises[assemblyIndex]}
-                            onComplete={() => setAssemblyIndex((value) => value + 1)}
-                            onSave={handleSave}
-                        />
-                    )
-                )}
-
-                {mode === 'transform' && (
-                    practiceData.transformExercises.length === 0 ? (
-                        <div className="empty-state">
-                            <div className="empty-icon">🔁</div>
-                            <h3>Nenhuma transformação disponível</h3>
-                            <p>As frases desta sessão ainda não geraram pares suficientes para transformação.</p>
-                        </div>
-                    ) : transformIndex >= practiceData.transformExercises.length ? (
-                        renderModeSummary({
-                            title: 'Transform concluído',
-                            copy: `Você completou ${practiceData.transformExercises.length} exercícios de reescrita.`,
-                            actionLabel: 'Refazer Transform',
-                            onReset: () => setTransformIndex(0),
-                            secondaryAction,
-                        })
-                    ) : (
-                        <TransformExercise
-                            key={practiceData.transformExercises[transformIndex].id}
-                            exercise={practiceData.transformExercises[transformIndex]}
-                            onComplete={() => setTransformIndex((value) => value + 1)}
-                        />
-                    )
-                )}
-
-                {mode === 'cloze' && (
-                    practiceData.clozeExercises.length === 0 ? (
-                        <div className="empty-state">
-                            <div className="empty-icon">🕳️</div>
-                            <h3>Nenhum cloze disponível</h3>
-                            <p>Adicione mais itens ao banco para abrir lacunas contextualizadas.</p>
-                        </div>
-                    ) : clozeIndex >= practiceData.clozeExercises.length ? (
-                        renderModeSummary({
-                            title: 'Cloze concluído',
-                            copy: `Você completou ${practiceData.clozeExercises.length} exercícios de lacuna.`,
-                            actionLabel: 'Refazer Cloze',
-                            onReset: () => setClozeIndex(0),
-                            secondaryAction,
-                        })
-                    ) : (
-                        <ClozeExercise
-                            key={practiceData.clozeExercises[clozeIndex].id}
-                            exercise={practiceData.clozeExercises[clozeIndex]}
-                            onComplete={() => setClozeIndex((value) => value + 1)}
-                        />
+                        (() => {
+                            const currentObj = practiceData.mixedExercises[exerciseIndex];
+                            if (currentObj.type === 'assembly') {
+                                return <SentenceExercise key={currentObj.id} exercise={currentObj.exercise} onComplete={(success, wordId, isFirstTry) => handleExerciseComplete(success, wordId, isFirstTry)} onSave={handleSave} />;
+                            }
+                            if (currentObj.type === 'transform') {
+                                return <TransformExercise key={currentObj.id} exercise={currentObj.exercise} onComplete={(success, wordId, isFirstTry) => handleExerciseComplete(success, wordId, isFirstTry)} />;
+                            }
+                            if (currentObj.type === 'cloze') {
+                                return <ClozeExercise key={currentObj.id} exercise={currentObj.exercise} onComplete={(success, wordId, isFirstTry) => handleExerciseComplete(success, wordId, isFirstTry)} />;
+                            }
+                            return null;
+                        })()
                     )
                 )}
 

@@ -84,9 +84,11 @@ export async function fetchYouTubeTranscript(input, fetchImpl = fetch) {
     { lang: 'en', kind: '' },
     { lang: 'en-US', kind: '' },
     { lang: 'en-GB', kind: '' },
-    { lang: 'en', kind: 'asr' },
-    { lang: 'en-US', kind: 'asr' },
-    { lang: 'en-GB', kind: 'asr' },
+    { lang: 'en', kind: 'asr' }, // Auto-generated English
+    { lang: 'pt-BR', kind: '' },
+    { lang: 'pt', kind: '' },
+    { lang: 'pt-BR', kind: 'asr' }, // Auto-generated Portuguese
+    { lang: 'pt', kind: 'asr' },
   ];
 
   for (const attempt of attempts) {
@@ -105,7 +107,10 @@ export async function fetchYouTubeTranscript(input, fetchImpl = fetch) {
     }
   }
 
-  throw new Error(YOUTUBE_FALLBACK_MESSAGE);
+  // If we reach here, no transcript was found in the common languages.
+  // We could potentially try to fetch the list of available languages, 
+  // but many videos simply don't have secondary languages or auto-captions enabled.
+  throw new Error('Não encontramos legendas em Inglês ou Português para este vídeo. Verifique se o vídeo possui legendas ativadas no YouTube.');
 }
 
 export { YOUTUBE_FALLBACK_MESSAGE };

@@ -1,4 +1,4 @@
-import { ACHIEVEMENT_META, MISSION_META } from '../../constants/learning.js';
+import { ACHIEVEMENT_META, CEFR_VOCAB_THRESHOLDS, MISSION_META } from '../../constants/learning.js';
 import { getDayKey } from '../../store/useProgressStore.js';
 
 const ACHIEVEMENT_RULES = [
@@ -79,6 +79,28 @@ function getStudyDaysInLast(days, dailyStats = {}, minSessionMinutes = 5) {
   }
 
   return count;
+}
+
+export function computePeriodXp(dailyStats = {}, days = 7) {
+  const today = new Date();
+  let total = 0;
+  for (let i = 0; i < days; i += 1) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const day = dailyStats[getDayKey(date)];
+    if (day) {
+      total += (day.xp || 0) + (day.streakBonus || 0);
+    }
+  }
+  return total;
+}
+
+export function estimateCefrVocab(activeWords = 0, masteredWords = 0) {
+  const total = activeWords + masteredWords;
+  for (const threshold of CEFR_VOCAB_THRESHOLDS) {
+    if (total >= threshold.min) return { label: threshold.label, total };
+  }
+  return { label: 'A1', total };
 }
 
 export function buildRange(days = 7) {
@@ -354,32 +376,64 @@ export function resolveNextStudyStep({
   hasRecentReaderActivity = false,
   recentSessionWords = 0,
   pendingPrompt = false,
+  retentionRate = 100,
+  streakRisk = false,
 } = {}) {
+  // Priority 1: Streak at risk (if it's late and no activity today)
+  if (streakRisk) {
+    return {
+      id: 'practice',
+      title: 'Salve sua Ofensiva!',
+      description: 'Faça uma sessão rápida no Builder para manter seu ritmo de estudos.',
+      cta: 'Ir para o Builder',
+      route: '/practice',
+      priority: 'high',
+    };
+  }
+
+  // Priority 2: Too many due cards or low retention
+  if (dueCards > 20 || (dueCards > 0 && retentionRate < 80)) {
+    return {
+      id: 'flashcards',
+      title: 'Atenção às Revisões',
+      description: `Você tem ${dueCards} cards pendentes e sua retenção está caindo. Revisar agora é essencial.`,
+      cta: 'Abrir Revisão',
+      route: '/flashcards',
+      priority: 'high',
+    };
+  }
+
+  // Priority 3: Normal due cards
   if (dueCards > 0) {
     return {
       id: 'flashcards',
       title: 'Revisar cards pendentes',
       description: `${dueCards} ${dueCards === 1 ? 'card pendente' : 'cards pendentes'} para hoje.`,
-      cta: 'Abrir revisao',
+      cta: 'Abrir revisão',
       route: '/flashcards',
+      priority: 'normal',
     };
   }
 
+  // Priority 4: Has words to practice or pending prompt
   if (hasRecentReaderActivity || recentSessionWords > 0 || pendingPrompt) {
     return {
       id: 'practice',
-      title: 'Transformar leitura em pratica',
-      description: 'Use as capturas recentes para abrir uma sessao guiada.',
-      cta: 'Continuar pratica',
+      title: 'Transformar leitura em prática',
+      description: 'Use as palavras capturadas recentemente para consolidar no Builder.',
+      cta: 'Continuar prática',
       route: '/practice',
+      priority: 'normal',
     };
   }
 
+  // Priority 5: Fallback to reading
   return {
     id: 'reader',
-    title: 'Capturar vocabulario em contexto',
+    title: 'Capturar vocabulário em contexto',
     description: 'Importe um texto ou legenda para iniciar o ciclo de estudo de hoje.',
     cta: 'Abrir reader',
     route: '/reader',
+    priority: 'low',
   };
 }

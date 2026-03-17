@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { XP_PER_LEVEL } from '../constants/learning.js';
+import { XP_PER_LEVEL, DAILY_XP_CAP, CEFR_MASTERY_LEVELS, STREAK_BONUS_TABLE, MASTERY_XP } from '../constants/learning.js';
 import { persistStorage } from '../utils/persistStorage.js';
 
-const STORE_VERSION = 4;
+const STORE_VERSION = 5;
 const DEFAULT_MIN_SESSION_MINUTES = 5;
 const AUTO_ADJUST_WINDOW = 20;
 const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1'];
@@ -37,6 +37,7 @@ function emptyDailyStats() {
         savedCards: 0,
         perfectBuilds: 0,
         xp: 0,
+        streakBonus: 0,
         studySeconds: 0,
         firstActionAt: null,
         lastActionAt: null,
@@ -47,10 +48,34 @@ function emptyDailyStats() {
     };
 }
 
+export function getStreakBonus(streak = 0) {
+    for (const entry of STREAK_BONUS_TABLE) {
+        if (streak >= entry.minDays) return entry.bonus;
+    }
+    return 0;
+}
+
+export function computeMasteryLevel(masteryXp = 0) {
+    let current = CEFR_MASTERY_LEVELS[0];
+    for (const level of CEFR_MASTERY_LEVELS) {
+        if (masteryXp >= level.mpStart) current = level;
+        else break;
+    }
+    const currentIndex = CEFR_MASTERY_LEVELS.indexOf(current);
+    const next = CEFR_MASTERY_LEVELS[currentIndex + 1] || null;
+    const progressInLevel = Math.max(0, masteryXp - current.mpStart);
+    const levelRange = current.mpEnd - current.mpStart;
+    const progressPct = next
+        ? Math.min(100, Math.round((progressInLevel / levelRange) * 100))
+        : 100;
+    return { current, next, index: currentIndex, progressInLevel, levelRange, progressPct };
+}
+
 function createInitialState() {
     return {
         xp: 0,
         level: 1,
+        masteryXp: 0,
         currentStreak: 0,
         longestStreak: 0,
         lastActiveDay: null,
@@ -263,17 +288,33 @@ function addXpToState(state, amount, dayKey, source) {
         },
     };
 
-    const xp = next.xp + amount;
+    const dayRecord = next.dailyStats[dayKey];
+    const alreadyEarnedToday = dayRecord.xp || 0;
+
+    // Enforce daily AP cap
+    const cappedAmount = Math.max(0, Math.min(amount, DAILY_XP_CAP - alreadyEarnedToday));
+
+    // Award streak bonus once per day (first action of the day)
+    const isFirstAction = !dayRecord.firstActionAt || alreadyEarnedToday === 0;
+    const streakBonusAlreadyAwarded = (dayRecord.streakBonus || 0) > 0;
+    const bonusAmount = (isFirstAction && !streakBonusAlreadyAwarded)
+        ? getStreakBonus(next.currentStreak)
+        : 0;
+
+    const totalAwarded = cappedAmount + bonusAmount;
+
+    const xp = next.xp + totalAwarded;
     next = {
         ...next,
         xp,
         level: computeLevel(xp),
-        lastXpGain: { amount, source, at: timestamp },
+        lastXpGain: { amount: cappedAmount, source, at: timestamp },
         dailyStats: {
             ...next.dailyStats,
             [dayKey]: {
                 ...next.dailyStats[dayKey],
-                xp: next.dailyStats[dayKey].xp + amount,
+                xp: alreadyEarnedToday + cappedAmount,
+                streakBonus: (dayRecord.streakBonus || 0) + bonusAmount,
             },
         },
     };
@@ -391,6 +432,15 @@ function maybeResolveAutoAdjust(state, { currentLevel, autoAdjustEnabled }) {
     };
 }
 
+function normalizeDailyStatsWithStreakBonus(dailyStats = {}) {
+    return Object.fromEntries(
+        Object.entries(normalizeDailyStats(dailyStats)).map(([dayKey, value]) => [
+            dayKey,
+            { streakBonus: 0, ...value },
+        ])
+    );
+}
+
 function migrateProgress(persistedState) {
     const base = createInitialState();
     const next = {
@@ -398,7 +448,7 @@ function migrateProgress(persistedState) {
         ...(persistedState || {}),
     };
 
-    next.dailyStats = normalizeDailyStats(persistedState?.dailyStats || {});
+    next.dailyStats = normalizeDailyStatsWithStreakBonus(persistedState?.dailyStats || {});
     next.totals = {
         ...base.totals,
         ...(persistedState?.totals || {}),
@@ -417,6 +467,13 @@ function migrateProgress(persistedState) {
         ...base.autoAdjustMeta,
         ...(persistedState?.autoAdjustMeta || {}),
     };
+
+    // Initialize masteryXp from existing word progress (credit for already-mastered words)
+    if (!persistedState?.masteryXp) {
+        const masteredWords = next.totals.masteredWords || 0;
+        const activeWords = Math.max(0, (next.totals.activeWords || 0) - masteredWords);
+        next.masteryXp = (masteredWords * (MASTERY_XP.ativa + MASTERY_XP.dominada)) + (activeWords * MASTERY_XP.ativa);
+    }
 
     return syncStoredStreakMetrics(next);
 }
@@ -469,7 +526,7 @@ export const useProgressStore = create(
                         },
                     };
 
-                    next = addXpToState(next, isNewWord ? 5 : 3, dayKey, isNewWord ? 'reader:new-word' : 'reader:revisit');
+                    next = addXpToState(next, isNewWord ? 10 : 3, dayKey, isNewWord ? 'reader:new-word' : 'reader:revisit');
                     return { ...next, achievements: buildAchievements(next) };
                 });
             },
@@ -517,7 +574,7 @@ export const useProgressStore = create(
                         },
                     };
 
-                    next = addXpToState(next, firstTry ? 20 : 10, dayKey, firstTry ? 'builder:first-try' : 'builder:complete');
+                    next = addXpToState(next, firstTry ? 15 : 5, dayKey, firstTry ? 'builder:first-try' : 'builder:complete');
                     const resolved = maybeResolveAutoAdjust(next, { currentLevel, autoAdjustEnabled });
                     adjustment = resolved.adjustment;
                     next = resolved.state;
@@ -556,7 +613,7 @@ export const useProgressStore = create(
                         },
                     };
 
-                    next = addXpToState(next, 12, dayKey, 'builder:production');
+                    next = addXpToState(next, 12, dayKey, 'builder:production'); // used by Builder prompt mode
                     return { ...next, achievements: buildAchievements(next) };
                 });
             },
@@ -649,7 +706,7 @@ export const useProgressStore = create(
                         },
                     };
 
-                    next = addXpToState(next, 5, dayKey, 'builder:save-card');
+                    next = addXpToState(next, 8, dayKey, 'builder:save-card');
                     return { ...next, achievements: buildAchievements(next) };
                 });
             },
@@ -657,10 +714,10 @@ export const useProgressStore = create(
             recordFlashcardReview: ({ wordId, rating }) => {
                 const dayKey = getDayKey();
                 const xpByRating = {
-                    nao_lembro: 8,
-                    dificil: 9,
-                    bom: 10,
-                    facil: 12,
+                    nao_lembro: 0,
+                    dificil: 1,
+                    bom: 2,
+                    facil: 3,
                 };
 
                 set((state) => {
@@ -721,6 +778,13 @@ export const useProgressStore = create(
                     };
                     return { ...updated, achievements: buildAchievements(updated) };
                 });
+            },
+
+            awardMasteryXp: (amount, source = 'mastery') => {
+                set((state) => ({
+                    masteryXp: (state.masteryXp || 0) + amount,
+                    lastXpGain: { amount, source, at: Date.now() },
+                }));
             },
 
             resetProgress: () => set(createInitialState()),

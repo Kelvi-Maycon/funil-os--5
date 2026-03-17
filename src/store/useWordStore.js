@@ -4,8 +4,9 @@ import { uuid } from '../utils/shuffle.js';
 import { getStatusAfterBuilder, getStatusAfterReader, getStatusAfterReview } from '../services/srs.js';
 import { persistStorage } from '../utils/persistStorage.js';
 import { inferEntryType, normalizeLexiconText } from '../utils/lexicon.js';
+import { MASTERY_XP } from '../constants/learning.js';
 
-const STORE_VERSION = 3;
+const STORE_VERSION = 4;
 
 function createWord(wordStr, {
     originalSentence = '',
@@ -40,7 +41,32 @@ function createWord(wordStr, {
         easeFactor: 2.5,
         reviewCount: 0,
         recentLapses: 0,
+        masteryAwarded: { ativa: false, dominada: false },
     };
+}
+
+function awardMasteryIfFirstTime(word, newStatus) {
+    const awarded = { ...(word.masteryAwarded || { ativa: false, dominada: false }) };
+    let mp = 0;
+
+    if (newStatus === 'ativa' && !awarded.ativa) {
+        awarded.ativa = true;
+        mp += MASTERY_XP.ativa;
+    }
+    if (newStatus === 'dominada' && !awarded.dominada) {
+        if (!awarded.ativa) { awarded.ativa = true; mp += MASTERY_XP.ativa; }
+        awarded.dominada = true;
+        mp += MASTERY_XP.dominada;
+    }
+
+    if (mp > 0) {
+        // Lazy import to avoid circular dependency
+        import('./useProgressStore.js').then(({ useProgressStore }) => {
+            useProgressStore.getState().awardMasteryXp(mp, `mastery:${newStatus}`);
+        });
+    }
+
+    return awarded;
 }
 
 function hasMeaningfulProgress(word = {}) {
@@ -83,6 +109,10 @@ function normalizeWordRecord(word) {
         easeFactor: word.easeFactor ?? 2.5,
         reviewCount: word.reviewCount ?? 0,
         recentLapses: word.recentLapses ?? 0,
+        masteryAwarded: word.masteryAwarded ?? {
+            ativa: word.status === 'ativa' || word.status === 'dominada',
+            dominada: word.status === 'dominada',
+        },
     };
 }
 
@@ -237,7 +267,9 @@ export const useWordStore = create(
                 }
 
                 const merged = { ...word, ...updates };
-                updates.status = getStatusAfterBuilder(merged, { correct });
+                const newStatus = getStatusAfterBuilder(merged, { correct });
+                updates.status = newStatus;
+                updates.masteryAwarded = awardMasteryIfFirstTime(word, newStatus);
                 updateWord(wordId, updates);
             },
 
@@ -251,12 +283,14 @@ export const useWordStore = create(
                 const easeFactor = srsResult?.easeFactor ?? word.easeFactor;
                 const newStatus = getStatusAfterReview({ ...word, reviewCount, easeFactor, recentLapses }, srsResult?.lastReviewResult);
 
+                const masteryAwarded = awardMasteryIfFirstTime(word, newStatus);
                 updateWord(wordId, {
                     status: newStatus,
                     reviewCount,
                     recentLapses,
                     easeFactor,
                     lastReviewedAt: Date.now(),
+                    masteryAwarded,
                 });
             },
 

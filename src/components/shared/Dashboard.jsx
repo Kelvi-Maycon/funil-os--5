@@ -1,12 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ACHIEVEMENT_META, XP_PER_LEVEL } from '../../constants/learning.js';
+import { generateTranslationSentences, evaluateTranslation } from '../../services/ai.js';
+import { ACHIEVEMENT_META, XP_PER_LEVEL, DAILY_XP_CAP } from '../../constants/learning.js';
 import { isDueToday } from '../../services/srs.js';
 import { useCardStore } from '../../store/useCardStore.js';
 import {
   calculateRetentionRate,
   calculateStreakStats,
+  computeMasteryLevel,
   getDayKey,
+  getStreakBonus,
   useProgressStore,
 } from '../../store/useProgressStore.js';
 import { useConfig } from '../../store/useConfig.js';
@@ -19,6 +22,7 @@ import {
   buildRange,
   buildSmoothCurve,
   buildTopDashboardStats,
+  computePeriodXp,
   resolveNextStudyStep,
 } from './dashboardMetrics.js';
 import { selectDailyPromptTargets } from '../Builder/practiceModes.js';
@@ -121,7 +125,7 @@ export default function Dashboard() {
   const { config } = useConfig();
   const { words } = useWordStore();
   const { flashcards } = useCardStore();
-  const { dailyStats, dailyPromptHistory, totals, xp, achievements } = useProgressStore();
+  const { dailyStats, dailyPromptHistory, totals, xp, masteryXp = 0, achievements } = useProgressStore();
 
   const todayKey = getDayKey();
   const todayStats = dailyStats[todayKey] || {};
@@ -146,6 +150,71 @@ export default function Dashboard() {
 
   const pendingPrompt = !dailyPromptHistory?.[todayKey] && promptTargets.length > 0;
   
+  const [dailyPromptData, setDailyPromptData] = useState(null);
+  const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
+  const [promptAnswer, setPromptAnswer] = useState('');
+  const [promptResult, setPromptResult] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (pendingPrompt && !dailyPromptData && !isLoadingPrompt) {
+      setIsLoadingPrompt(true);
+      async function fetchPrompt() {
+        try {
+          const wordsToGenerate = promptTargets.map(t => ({ word: t.wordText }));
+          const sentences = await generateTranslationSentences({
+            words: wordsToGenerate,
+            cefrLevel: config.userLevel,
+            config
+          });
+          
+          if (isMounted) {
+            if (sentences && sentences.length > 0) {
+              setDailyPromptData(sentences[0]);
+            } else {
+              setDailyPromptData({
+                portuguese: `Eu não sei como usar "${promptTargets[0]?.wordText}" ainda.`,
+                english: `I don't know how to use "${promptTargets[0]?.wordText}" yet.`,
+                alternatives: [],
+                targetWord: promptTargets[0]?.wordText
+              });
+            }
+          }
+        } catch (err) {
+          if (isMounted) {
+            setDailyPromptData({
+              portuguese: `Eu não sei como usar "${promptTargets[0]?.wordText}" ainda.`,
+              english: `I don't know how to use "${promptTargets[0]?.wordText}" yet.`,
+              alternatives: [],
+              targetWord: promptTargets[0]?.wordText
+            });
+          }
+        } finally {
+          if (isMounted) setIsLoadingPrompt(false);
+        }
+      }
+      fetchPrompt();
+    }
+    return () => { isMounted = false; };
+  }, [pendingPrompt, promptTargets, config, dailyPromptData]);
+  
+  const submitPrompt = () => {
+    if (!promptAnswer.trim() || !dailyPromptData) return;
+    const { recordDailyPromptCompletion } = useProgressStore.getState();
+    const evaluation = evaluateTranslation(promptAnswer, dailyPromptData.english, dailyPromptData.alternatives);
+    
+    setPromptResult({
+      correct: evaluation.correct,
+      expected: dailyPromptData.english
+    });
+    
+    recordDailyPromptCompletion({
+      wordIds: [promptTargets.find(t => t.wordText === dailyPromptData.targetWord)?.wordId || promptTargets[0]?.wordId],
+      answers: [{ answer: promptAnswer, expected: dailyPromptData.english, correct: evaluation.correct }],
+      targets: [dailyPromptData.targetWord]
+    });
+  };
+  
   const promptState = buildPromptCardState({
     promptTargets,
     pendingPrompt,
@@ -156,6 +225,8 @@ export default function Dashboard() {
     hasRecentReaderActivity: (todayStats.readerWords || 0) > 0,
     recentSessionWords: promptTargets.length,
     pendingPrompt,
+    retentionRate: retention.rate,
+    streakRisk: !dailyStats[todayKey] && (new Date().getHours() >= 20 || streakStats.currentStreak > 0),
   });
   
   const heroMeta = STEP_META[nextStep.id] || STEP_META.reader;
@@ -220,6 +291,17 @@ export default function Dashboard() {
   const levelProgressPct = Math.round((levelProgress / XP_PER_LEVEL) * 100);
   const currentDate = formatDashboardDate();
 
+  // Mastery level (A1 → B2+) — progressInLevel/levelRange/progressPct come from the function
+  const masteryInfo = computeMasteryLevel(masteryXp);
+  const { progressInLevel: masteryProgressInLevel, levelRange: masteryRangeSize, progressPct: masteryProgressPct } = masteryInfo;
+
+  // XP period stats
+  const xpToday = (todayStats.xp || 0) + (todayStats.streakBonus || 0);
+  const xpWeek = computePeriodXp(dailyStats, 7);
+  const xpMonth = computePeriodXp(dailyStats, 30);
+  const todayStreakBonus = getStreakBonus(streakStats.currentStreak);
+  const todayCapRemaining = Math.max(0, DAILY_XP_CAP - (todayStats.xp || 0));
+
   const handlePromptAction = () => {
     if (promptState.action === 'reader') {
       navigate('/reader');
@@ -262,21 +344,38 @@ export default function Dashboard() {
         <div className="grid grid-cols-12 gap-6">
           
           {/* Hero Widget */}
-          <section className="col-span-12 relative bg-white rounded-3xl p-6 md:p-10 shadow-soft border border-neutral-100 overflow-hidden flex items-center justify-between min-h-[400px]">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-violet-300/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
-            <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-pink-100/60 rounded-full blur-3xl translate-y-1/2 opacity-60"></div>
+          {/* Hero Widget with Priority Styling */}
+          <section className={`col-span-12 relative bg-white rounded-3xl p-6 md:p-10 shadow-soft border ${nextStep.priority === 'high' ? 'border-orange-300 shadow-orange-500/10' : 'border-neutral-100'} overflow-hidden flex items-center justify-between min-h-[400px]`}>
+            {nextStep.priority === 'high' ? (
+               <>
+                 <div className="absolute top-0 right-0 w-96 h-96 bg-orange-300/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
+                 <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-red-100/60 rounded-full blur-3xl translate-y-1/2 opacity-60"></div>
+               </>
+            ) : (
+               <>
+                 <div className="absolute top-0 right-0 w-96 h-96 bg-violet-300/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
+                 <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-pink-100/60 rounded-full blur-3xl translate-y-1/2 opacity-60"></div>
+               </>
+            )}
 
             <div className="relative z-10 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-200 mb-6">
-                <span className="w-2 h-2 rounded-full bg-pink-500"></span>
-                <span className="text-[11px] font-bold text-neutral-500 uppercase tracking-widest">{heroMeta.label}</span>
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${nextStep.priority === 'high' ? 'bg-orange-50 border-orange-200' : 'bg-neutral-100 border-neutral-200'} mb-6`}>
+                <span className={`w-2 h-2 rounded-full ${nextStep.priority === 'high' ? 'bg-orange-500 animate-pulse' : 'bg-pink-500'}`}></span>
+                <span className={`text-[11px] font-bold ${nextStep.priority === 'high' ? 'text-orange-600' : 'text-neutral-500'} uppercase tracking-widest`}>
+                    {nextStep.priority === 'high' ? 'Ação Prioritária' : heroMeta.label}
+                </span>
               </div>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-neutral-900 leading-tight tracking-tight mb-4 hidden md:block">
-                {heroMeta.headline} <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600 text-gradient-animated">{heroMeta.accent}</span>
+                {nextStep.title || heroMeta.headline} <br />
+                {heroMeta.accent && nextStep.priority !== 'high' && (
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600 text-gradient-animated">{heroMeta.accent}</span>
+                )}
               </h2>
               <h2 className="text-4xl font-extrabold text-neutral-900 leading-tight tracking-tight mb-4 md:hidden">
-                {heroMeta.headline} <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600">{heroMeta.accent}</span>
+                {nextStep.title || heroMeta.headline} 
+                {heroMeta.accent && nextStep.priority !== 'high' && (
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600">{heroMeta.accent}</span>
+                )}
               </h2>
               <p className="text-neutral-500 text-lg md:text-xl mb-8 leading-relaxed max-w-md">
                 {nextStep.description || 'Importe um texto ou legenda para iniciar o ciclo de estudo de hoje.'}
@@ -284,7 +383,11 @@ export default function Dashboard() {
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => navigate(nextStep.route)}
-                  className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white font-semibold px-8 py-3.5 rounded-full shadow-lg shadow-pink-500/25 transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
+                  className={`font-semibold px-8 py-3.5 rounded-full text-white shadow-lg transition-all flex items-center gap-2 transform hover:-translate-y-0.5 ${
+                      nextStep.priority === 'high' 
+                        ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-orange-500/25'
+                        : 'bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 shadow-pink-500/25'
+                  }`}
                 >
                   <PlayIcon size={20} />
                   {nextStep.cta}
@@ -293,12 +396,12 @@ export default function Dashboard() {
             </div>
 
             <div className="hidden md:block relative z-10 w-72 h-72 mr-12">
-              <div className="absolute inset-0 bg-white rounded-3xl shadow-xl shadow-violet-600/10 border border-neutral-100 rotate-12 transform hover:rotate-6 transition-transform duration-500 flex items-center justify-center">
-                 <div className="w-24 h-24 bg-violet-300/30 rounded-2xl flex items-center justify-center text-violet-600">
+              <div className={`absolute inset-0 bg-white rounded-3xl shadow-xl border border-neutral-100 rotate-12 transform hover:rotate-6 transition-transform duration-500 flex items-center justify-center ${nextStep.priority === 'high' ? 'shadow-orange-600/10' : 'shadow-violet-600/10'}`}>
+                 <div className={`w-24 h-24 rounded-2xl flex items-center justify-center ${nextStep.priority === 'high' ? 'bg-orange-300/30 text-orange-600' : 'bg-violet-300/30 text-violet-600'}`}>
                      <HeroIcon size={40} />
                  </div>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-600 to-fuchsia-500 rounded-3xl shadow-lg rotate-[-8deg] -z-10 opacity-20"></div>
+              <div className={`absolute inset-0 rounded-3xl shadow-lg rotate-[-8deg] -z-10 opacity-20 ${nextStep.priority === 'high' ? 'bg-gradient-to-br from-orange-600 to-red-500' : 'bg-gradient-to-br from-violet-600 to-fuchsia-500'}`}></div>
             </div>
           </section>
 
@@ -307,61 +410,77 @@ export default function Dashboard() {
             <div className="absolute top-4 right-4 flex gap-2">
               <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 text-[10px] font-bold uppercase tracking-widest border border-violet-100 shadow-inner-soft">🏆 Rank: {config.userLevel}</span>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8 mt-4 lg:mt-0">
               <div className="flex items-center gap-5">
                 <div className="w-16 h-16 rounded-2xl bg-neutral-50 border border-neutral-100 flex items-center justify-center shadow-inner-soft text-neutral-400">
                   <ShieldIcon size={32} />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Panorama do nivel</p>
-                  <h3 className="text-3xl font-extrabold text-neutral-900 tracking-tight">Nivel atual {config.userLevel}</h3>
-                  <p className="text-sm font-medium text-neutral-500 mt-1">{activeWords} palavras ativas e {masteredWords} dominadas.</p>
+                  <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Nível de Vocabulário</p>
+                  <h3 className="text-3xl font-extrabold text-neutral-900 tracking-tight">{masteryInfo.current.id}</h3>
+                  <p className="text-sm font-medium text-neutral-500 mt-1">{activeWords} palavras ativas · {masteredWords} dominadas</p>
                 </div>
               </div>
               <div className="text-right">
                 <div className="flex items-baseline justify-end gap-1">
-                  <span className="text-5xl font-black text-neutral-900 tracking-tight">{xp}</span>
+                  <span className="text-5xl font-black text-neutral-900 tracking-tight">{xpToday}</span>
                 </div>
-                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">XP Acumulado</p>
+                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">XP Hoje {todayCapRemaining > 0 ? `· ${todayCapRemaining} restam` : '· cap ✓'}</p>
               </div>
             </div>
-            
+
             <div className="space-y-4 mb-8">
               <div className="w-full bg-neutral-100 rounded-full h-4 overflow-hidden border border-neutral-200 shadow-inner-soft">
-                <div className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 h-full rounded-full xp-bar-fill relative overflow-hidden" style={{ width: `${levelProgressPct}%` }}>
-                    <div className="absolute inset-0 bg-white/20 -skew-x-12 translate-x-full animate-[shimmer_2s_infinite]"></div>
+                <div className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 h-full rounded-full xp-bar-fill relative overflow-hidden transition-all duration-1000" style={{ width: `${masteryProgressPct}%` }}>
+                  <div className="absolute inset-0 bg-white/20 -skew-x-12 translate-x-full animate-[shimmer_2s_infinite]"></div>
                 </div>
               </div>
               <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-neutral-500">
-                <span>{levelProgress}/{XP_PER_LEVEL} XP</span>
-                <span>{XP_PER_LEVEL - levelProgress} XP → proximo nivel</span>
+                <span>{masteryProgressInLevel.toLocaleString('pt-BR')} / {masteryRangeSize.toLocaleString('pt-BR')} MP</span>
+                {masteryInfo.next
+                  ? <span>{masteryInfo.next.id} →</span>
+                  : <span>Nível máximo 🎉</span>
+                }
               </div>
             </div>
-            
+
+            {/* 3 awards for current CEFR level */}
             <div className="flex items-center gap-6 mt-auto pt-6 border-t border-neutral-100">
-              <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest w-16">Marcos</span>
-              <div className="flex items-center justify-between flex-1 relative mr-2">
-                {/* Background line for milestones */}
-                <div className="absolute left-4 right-4 top-5 h-1.5 bg-neutral-100 -z-10 rounded-full"></div>
-                
-                <div className="flex flex-col items-center gap-2.5 z-10">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-200 to-orange-400 flex items-center justify-center shadow-sm text-xl border-[3px] border-white text-orange-800">🥉</div>
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Bronze</span>
-                </div>
-                <div className="flex flex-col items-center gap-2.5 z-10">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-neutral-200 to-neutral-400 flex items-center justify-center shadow-sm text-xl border-[3px] border-white text-neutral-700">🥈</div>
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Prata</span>
-                </div>
-                <div className="flex flex-col items-center gap-2.5 z-10">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center shadow-sm text-xl border-[3px] border-white text-yellow-800">🥇</div>
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Ouro</span>
-                </div>
-                <div className="flex flex-col items-center gap-2.5 z-10">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-violet-400 to-fuchsia-400 flex items-center justify-center shadow-lg text-xl border-[3px] border-white text-white">💎</div>
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Platina</span>
-                </div>
+              <div className="shrink-0">
+                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Marcos</p>
+                <p className="text-[10px] text-neutral-300 font-bold uppercase tracking-widest mt-0.5">{masteryInfo.current.id}</p>
               </div>
+              <div className="flex items-center justify-between flex-1 relative">
+                <div className="absolute left-5 right-5 top-5 h-1.5 bg-neutral-100 -z-10 rounded-full"></div>
+                {masteryInfo.current.awards.map((award, i) => {
+                  const unlocked = masteryXp >= award.mp;
+                  const awardStyle = i === 0
+                    ? 'bg-gradient-to-br from-orange-200 to-orange-400 text-orange-800'
+                    : i === 1
+                      ? 'bg-gradient-to-br from-neutral-200 to-neutral-400 text-neutral-700'
+                      : 'bg-gradient-to-br from-yellow-300 to-yellow-500 text-yellow-800';
+                  return (
+                    <div key={award.name} className="flex flex-col items-center gap-2.5 z-10">
+                      <div className={`w-11 h-11 rounded-full flex items-center justify-center shadow-sm text-xl border-[3px] border-white transition-all
+                        ${unlocked ? awardStyle : 'bg-neutral-100 text-neutral-300 border-neutral-200'}`}>
+                        {unlocked ? award.icon : '🔒'}
+                      </div>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${unlocked ? 'text-neutral-600' : 'text-neutral-300'}`}>
+                        {award.name}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* XP semana/mês */}
+            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-neutral-100 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">
+              <span>Semana: <span className="text-neutral-700">{xpWeek} XP</span></span>
+              <span className="text-neutral-200">|</span>
+              <span>Mês: <span className="text-neutral-700">{xpMonth} XP</span></span>
+              {todayStreakBonus > 0 && <span className="text-orange-500">🔥 +{todayStreakBonus} streak</span>}
             </div>
           </section>
 
@@ -375,16 +494,59 @@ export default function Dashboard() {
             </div>
             
             <div className="mb-auto mt-4 lg:mt-6">
-              <h3 className="text-2xl md:text-3xl font-extrabold text-neutral-900 mb-3 tracking-tight leading-tight">{promptState.title || 'Pronto para o desafio?'}</h3>
-              <p className="text-base font-medium text-neutral-500 mb-8 leading-relaxed max-w-sm">{promptState.challenge || promptState.description || 'Capture vocabulário no reader para liberar um desafio contextual amanhã.'}</p>
+              <h3 className="text-2xl md:text-3xl font-extrabold text-neutral-900 mb-3 tracking-tight leading-tight">
+                {pendingPrompt ? 'Desafio Diário' : promptState.title}
+              </h3>
+              {!pendingPrompt && (
+                <p className="text-base font-medium text-neutral-500 mb-8 leading-relaxed max-w-sm">{promptState.challenge || promptState.description || 'Capture vocabulário no reader para liberar um desafio contextual amanhã.'}</p>
+              )}
+              {pendingPrompt && (
+                <div className="mt-4">
+                  <p className="text-sm font-bold text-neutral-500 mb-2">Traduza para o inglês:</p>
+                  {isLoadingPrompt ? (
+                    <div className="animate-pulse bg-neutral-100 h-10 w-full rounded-lg mb-4"></div>
+                  ) : dailyPromptData ? (
+                    <p className="text-lg font-medium text-neutral-800 mb-4">{dailyPromptData.portuguese}</p>
+                  ) : null}
+                  
+                  {promptResult ? (
+                    <div className={`p-4 rounded-xl border ${promptResult.correct ? 'bg-green-50 border-green-200 text-green-800' : 'bg-orange-50 border-orange-200 text-orange-800'} mb-4`}>
+                      <p className="font-bold mb-1">{promptResult.correct ? '🎉 Excelente!' : 'Quase lá!'}</p>
+                      {!promptResult.correct && <p className="text-sm">A tradução esperada era: <strong>{promptResult.expected}</strong></p>}
+                    </div>
+                  ) : (
+                    <input 
+                      type="text" 
+                      value={promptAnswer}
+                      onChange={(e) => setPromptAnswer(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && submitPrompt()}
+                      placeholder="Sua tradução em inglês..."
+                      className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 mb-4"
+                      disabled={isLoadingPrompt || !dailyPromptData}
+                    />
+                  )}
+                </div>
+              )}
             </div>
             
-            <button
-               onClick={handlePromptAction} 
-               className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 w-full mt-auto shadow-md shadow-violet-600/20 transform hover:-translate-y-0.5">
-              <SparkIcon size={18} />
-              {promptState.ctaLabel || 'Abrir reader para capturar'}
-            </button>
+            {pendingPrompt ? (
+               !promptResult && (
+                 <button
+                    onClick={submitPrompt} 
+                    disabled={isLoadingPrompt || !dailyPromptData || !promptAnswer.trim()}
+                    className="bg-violet-600 border border-transparent disabled:opacity-50 hover:bg-violet-700 text-white text-sm font-semibold px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 w-full mt-auto shadow-md shadow-violet-600/20 transform hover:-translate-y-0.5">
+                   <SparkIcon size={18} />
+                   Verificar Resposta
+                 </button>
+               )
+            ) : (
+               <button
+                  onClick={handlePromptAction} 
+                  className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 w-full mt-auto shadow-md shadow-violet-600/20 transform hover:-translate-y-0.5">
+                 <SparkIcon size={18} />
+                 {promptState.ctaLabel || 'Abrir reader para capturar'}
+               </button>
+            )}
           </section>
 
           {/* Learn Rhythm Chart */}

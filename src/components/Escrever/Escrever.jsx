@@ -8,8 +8,8 @@ import { selectTranslationWords } from './translationSession.js';
 import { Button } from '../ui/button.jsx';
 import { WriteIcon } from '../shared/icons.jsx';
 
-const XP_CORRECT = 10;
-const XP_ATTEMPT = 3;
+const XP_CORRECT = 12;
+const XP_ATTEMPT = 4;
 
 export default function Escrever() {
   const navigate = useNavigate();
@@ -63,15 +63,48 @@ export default function Escrever() {
     }
   }, [words, config]);
 
-  const handleVerify = useCallback(() => {
+  const handleVerify = useCallback(async () => {
     if (!userAnswer.trim()) return;
     const sentence = sentences[currentIndex];
-    const { correct } = evaluateTranslation(userAnswer, sentence.english, sentence.alternatives);
-    const xp = correct ? XP_CORRECT : XP_ATTEMPT;
-    awardXp(xp, correct ? 'translation:correct' : 'translation:attempt');
-    setXpEarned(prev => prev + xp);
-    setFeedback({ correct, expected: sentence.english, alternatives: sentence.alternatives });
-  }, [sentences, currentIndex, userAnswer, awardXp]);
+    const { correct: exactCorrect } = evaluateTranslation(userAnswer, sentence.english, sentence.alternatives);
+    
+    // Se não for exato, tentar avaliação semântica
+    if (!exactCorrect && config?.provider) {
+        setPhase('verifying');
+        try {
+            const aiResult = await evaluateSemanticTranslation({
+                original: sentence.portuguese,
+                expected: sentence.english,
+                userAnswer: userAnswer,
+                userLevel: config.userLevel,
+                config,
+            });
+            const xp = aiResult.correct ? XP_CORRECT : XP_ATTEMPT;
+            awardXp(xp, aiResult.correct ? 'translation:correct' : 'translation:attempt');
+            setXpEarned(prev => prev + xp);
+            setFeedback({ 
+                correct: aiResult.correct, 
+                expected: sentence.english, 
+                alternatives: sentence.alternatives,
+                note: aiResult.note
+            });
+        } catch (err) {
+            console.error(err);
+            // Fallback para erro normal caso falhe a IA
+            const xp = XP_ATTEMPT;
+            awardXp(xp, 'translation:attempt');
+            setXpEarned(prev => prev + xp);
+            setFeedback({ correct: false, expected: sentence.english, alternatives: sentence.alternatives });
+        } finally {
+            setPhase('session');
+        }
+    } else {
+        const xp = exactCorrect ? XP_CORRECT : XP_ATTEMPT;
+        awardXp(xp, exactCorrect ? 'translation:correct' : 'translation:attempt');
+        setXpEarned(prev => prev + xp);
+        setFeedback({ correct: exactCorrect, expected: sentence.english, alternatives: sentence.alternatives });
+    }
+  }, [sentences, currentIndex, userAnswer, awardXp, config]);
 
   const handleNext = useCallback(() => {
     const newResults = [...results, feedback.correct];
@@ -235,16 +268,22 @@ export default function Escrever() {
               }
             }}
             placeholder="Digite a tradução em inglês…"
-            className="w-full rounded-xl border border-neutral-200 bg-white p-4 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100 resize-none shadow-sm"
+            className="w-full rounded-xl border border-neutral-200 bg-white p-4 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100 resize-none shadow-sm disabled:opacity-50"
             rows={3}
             autoFocus
+            disabled={phase === 'verifying'}
           />
           <Button
             onClick={handleVerify}
-            disabled={!userAnswer.trim()}
-            className="w-full rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 shadow-sm"
+            disabled={!userAnswer.trim() || phase === 'verifying'}
+            className="w-full rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 shadow-sm flex items-center justify-center gap-2"
           >
-            Verificar
+            {phase === 'verifying' ? (
+                <>
+                    <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
+                    Analisando...
+                </>
+            ) : 'Verificar'}
           </Button>
         </div>
       )}
@@ -276,7 +315,14 @@ export default function Escrever() {
                 <span className="italic">&ldquo;{userAnswer}&rdquo;</span>
               </p>
             )}
-            <p className="text-neutral-700">
+            {feedback.note ? (
+              <div className="mt-3 p-3 bg-white/50 rounded-xl border border-white/40 shadow-sm">
+                <p className="text-sm font-medium text-neutral-700 leading-relaxed">
+                   <strong>Nota do IA:</strong> {feedback.note}
+                </p>
+              </div>
+            ) : null}
+            <p className="text-neutral-700 mt-2">
               <span className="font-medium">→ Esperado:</span>{' '}
               <span className="font-semibold">&ldquo;{feedback.expected}&rdquo;</span>
             </p>

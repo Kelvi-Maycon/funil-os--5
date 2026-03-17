@@ -380,3 +380,108 @@ export async function generateSentences({ word, originalSentence, userLevel, con
         sentences: parsed.sentences,
     };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Explica um erro gramatical ou de construção de frase (M3/Builder)
+ */
+export async function explainGrammarError({ expected, userAnswer, userLevel, config, signal }) {
+    if (!config?.provider) {
+        return { text: 'Verifique a ordem das palavras e tente novamente.', fromAI: false };
+    }
+
+    const systemPrompt = `You are a friendly English grammar tutor. Correct the user's mistake.
+The user's English level is ${userLevel || 'B1'}.
+Explain briefly (1-2 sentences) why their answer is wrong and why the expected answer is correct.
+Speak directly to the user in Portuguese, but keep English words in quotes. Be encouraging.`;
+
+    const userPrompt = `Expected correct phrase: "${expected}"
+User typed: "${userAnswer}"
+Explain the mistake.`;
+
+    const text = await callAI(config, systemPrompt, userPrompt, signal);
+    return { text, fromAI: true };
+}
+
+/**
+ * Avalia se uma tradução está semanticamente correta, mesmo que não seja a string exata (M4/Escrever)
+ */
+export async function evaluateSemanticTranslation({ original, expected, userAnswer, userLevel, config, signal }) {
+    if (!config?.provider) {
+       // Fallback: se não tem IA, a resposta tem que conter a maior parte das palavras esperadas.
+       const normalizedExpected = normalize(expected).split(' ');
+       const normalizedUser = normalize(userAnswer);
+       const matches = normalizedExpected.filter(w => normalizedUser.includes(w)).length;
+       const correct = matches >= normalizedExpected.length * 0.7; // Exige 70% de match no fallback local
+       
+       return { 
+           correct, 
+           note: correct ? 'Correto segundo os critérios básicos salvos offline.' : 'Incorreto. Tente usar as palavras da frase esperada.',
+           fromAI: false 
+       };
+    }
+
+    const systemPrompt = `You are an English teacher evaluating a translation from Portuguese to English.
+Your goal is to accept valid variations of translations, as long as the core meaning, tense, and target terminology are preserved.
+
+Reply ONLY in valid JSON format:
+{
+  "correct": boolean, // true if the user's translation is semantically accurate and grammatically sound
+  "note": string // A short (1 sentence), encouraging explanation or minor correction in Portuguese. Empty string if perfect.
+}`;
+
+    const userPrompt = `Portuguese original: "${original}"
+Expected strictly correct English: "${expected}"
+User's translation attempt: "${userAnswer}"
+
+Is the user's translation an acceptable and correct way to say this in English? Respond in JSON.`;
+
+    if (config.provider === 'openai') {
+        try {
+            const parsed = await callOpenAIStructured({
+                apiKey: config.openaiKey,
+                model: config.openaiModel || 'gpt-5-mini',
+                systemPrompt,
+                userPrompt,
+                schemaName: 'langflow_translation_eval',
+                schema: {
+                    type: "object",
+                    properties: {
+                        correct: { type: "boolean" },
+                        note: { type: "string" }
+                    },
+                    required: ["correct", "note"],
+                    additionalProperties: false
+                },
+                signal,
+            });
+            return {
+                correct: Boolean(parsed.correct),
+                note: parsed.note || '',
+                fromAI: true
+            };
+        } catch (e) {
+            console.error("OpenAI Struct Eval failed, falling back", e);
+            // fallback handled down below
+        }
+    }
+
+    try {
+       const text = await callAI(config, systemPrompt, userPrompt, signal);
+       // Attempt to parse out basic JSON from the raw text
+       let jsonText = text;
+       const match = text.match(/\{[\s\S]*\}/);
+       if (match) jsonText = match[0];
+       
+       const parsed = JSON.parse(jsonText);
+       return {
+           correct: Boolean(parsed.correct),
+           note: parsed.note || '',
+           fromAI: true
+       };
+    } catch (e) {
+        console.error("Fallback AI Eval failed", e);
+        return { correct: false, note: 'Não foi possível validar a tradução agora.', fromAI: false };
+    }
+}

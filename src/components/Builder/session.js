@@ -1,4 +1,5 @@
 import { buildLocalSentenceSet } from '../../services/ai.js';
+import { buildTransformExercises, buildClozeExercises } from './practiceModes.js';
 
 const STATUS_RANK = {
     ativa: 0,
@@ -123,4 +124,52 @@ export function buildBuilderExercises({ selectedWords, recentSentencesByWord, bu
             sentence,
         }));
     });
+}
+
+export function buildMixedExercises({ selectedWords, recentSentencesByWord, builderConfig = {} }) {
+    const assemblyAll = buildBuilderExercises({ selectedWords, recentSentencesByWord, builderConfig });
+    const transformAll = buildTransformExercises({ selectedWords, recentSentencesByWord, builderConfig });
+    const clozeAll = buildClozeExercises({ selectedWords, recentSentencesByWord, builderConfig });
+    
+    const prefMode = builderConfig.preferredMode || 'mixed';
+    
+    if (prefMode === 'assembly') return assemblyAll.map(e => ({ type: 'assembly', id: `asm_${e.sentence.id}`, exercise: e }));
+    if (prefMode === 'transform') return transformAll.map(e => ({ type: 'transform', id: `trn_${e.id}`, exercise: e }));
+    if (prefMode === 'cloze') return clozeAll.map(e => ({ type: 'cloze', id: `clz_${e.id}`, exercise: e }));
+
+    const mixed = [];
+    const usedWords = new Set();
+    
+    // We want ~40% assembly, ~40% transform, ~20% cloze per word
+    // Let's iterate over selectedWords
+    for (const word of selectedWords) {
+        if (usedWords.has(word.wordId)) continue;
+        
+        // Find valid exercises for this word
+        const trn = transformAll.find(e => e.wordId === word.wordId);
+        const clz = clozeAll.find(e => e.wordId === word.wordId);
+        const asm = assemblyAll.find(e => e.wordId === word.wordId);
+        
+        // Randomly pick based on availability and desired distribution
+        const r = Math.random();
+        if (r < 0.2 && clz) {
+            mixed.push({ type: 'cloze', id: `clz_${clz.id}`, exercise: clz });
+            usedWords.add(word.wordId);
+        } else if (r < 0.6 && trn) {
+            mixed.push({ type: 'transform', id: `trn_${trn.id}`, exercise: trn });
+            usedWords.add(word.wordId);
+        } else if (asm) {
+            mixed.push({ type: 'assembly', id: `asm_${asm.sentence.id}`, exercise: asm });
+            usedWords.add(word.wordId);
+        } else if (clz) {
+            mixed.push({ type: 'cloze', id: `clz_${clz.id}`, exercise: clz });
+            usedWords.add(word.wordId);
+        } else if (trn) {
+            mixed.push({ type: 'transform', id: `trn_${trn.id}`, exercise: trn });
+            usedWords.add(word.wordId);
+        }
+    }
+    
+    // If we couldn't get one per word, just return what we have (fallback to assembly mostly)
+    return mixed;
 }

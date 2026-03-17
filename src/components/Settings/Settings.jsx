@@ -364,6 +364,19 @@ export default function Settings() {
                     onChange={(event) => setConfig({ builder: { ...config.builder, difficultWordsWeight: Number(event.target.value) } })}
                   />
                 </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label className="input-label">Modo Preferido (Builder)</label>
+                  <select
+                     className="input"
+                     value={config.builder?.preferredMode || 'mixed'}
+                     onChange={(event) => setConfig({ builder: { ...config.builder, preferredMode: event.target.value } })}
+                  >
+                     <option value="mixed">Misto (Montagem, Transform e Cloze)</option>
+                     <option value="assembly">Apenas Montagem</option>
+                     <option value="transform">Apenas Transformação</option>
+                     <option value="cloze">Apenas Lacunas</option>
+                  </select>
+                </div>
               </div>
             </div>
 
