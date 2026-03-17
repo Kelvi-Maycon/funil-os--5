@@ -165,6 +165,147 @@ Rules:
     return { systemPrompt, userPrompt };
 }
 
+// ── Translation Exercise (Escrever) ──────────────────────────────────────────
+
+const TRANSLATION_SESSION_SCHEMA = {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+        sentences: {
+            type: 'array',
+            minItems: 1,
+            maxItems: 10,
+            items: {
+                type: 'object',
+                additionalProperties: false,
+                properties: {
+                    portuguese: { type: 'string' },
+                    english: { type: 'string' },
+                    alternatives: { type: 'array', items: { type: 'string' } },
+                    targetWord: { type: 'string' },
+                },
+                required: ['portuguese', 'english', 'alternatives', 'targetWord'],
+            },
+        },
+    },
+    required: ['sentences'],
+};
+
+function buildTranslationPrompts(words, cefrLevel) {
+    const wordList = words.map(w => w.word).join(', ');
+
+    const systemPrompt = `You generate Portuguese→English translation exercises for a Brazilian English learner.
+Return only valid JSON. No markdown. No commentary. Follow the exact schema.
+Target CEFR level: ${cefrLevel || 'B1'}.`;
+
+    const userPrompt = `Vocabulary words to include (use at least some): ${wordList}
+
+Generate ${words.length} natural, everyday Brazilian Portuguese sentences. Each sentence must:
+- Use one of the vocabulary words naturally in context
+- Be a realistic everyday situation (shopping, work, family, travel, hobbies, etc.)
+- Match CEFR level ${cefrLevel || 'B1'} (not too simple, not too complex)
+- Have a clear English translation and 1-2 alternative valid English phrasings
+
+Return exactly:
+{
+  "sentences": [
+    {
+      "portuguese": "Ela vai ao mercado toda semana para comprar frutas frescas.",
+      "english": "She goes to the market every week to buy fresh fruit.",
+      "alternatives": ["She visits the market every week to buy fresh fruit.", "She goes to the market weekly to buy fresh fruit."],
+      "targetWord": "market"
+    }
+  ]
+}`;
+
+    return { systemPrompt, userPrompt };
+}
+
+function normalizeTranslationSentences(sentences) {
+    return (sentences || [])
+        .filter(s => s?.portuguese && s?.english)
+        .map(s => ({
+            portuguese: String(s.portuguese).trim(),
+            english: String(s.english).trim(),
+            alternatives: Array.isArray(s.alternatives)
+                ? s.alternatives.map(a => String(a).trim()).filter(Boolean)
+                : [],
+            targetWord: String(s.targetWord || '').trim(),
+        }));
+}
+
+function parseTranslationPayload(raw) {
+    const normalized = raw.replace(/```json?/gi, '').replace(/```/g, '').trim();
+    const firstBrace = normalized.indexOf('{');
+    const lastBrace = normalized.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace <= firstBrace) throw new Error('No JSON found');
+    const parsed = JSON.parse(normalized.slice(firstBrace, lastBrace + 1));
+    if (!Array.isArray(parsed?.sentences)) throw new Error('Invalid translation payload');
+    return normalizeTranslationSentences(parsed.sentences);
+}
+
+/**
+ * Gera frases em português para exercícios de tradução PT→EN (Escrever).
+ * Retorna array de { portuguese, english, alternatives, targetWord } ou null se falhar.
+ */
+export async function generateTranslationSentences({ words, cefrLevel, config, signal }) {
+    if (!config?.provider || !words?.length) return null;
+
+    const { systemPrompt, userPrompt } = buildTranslationPrompts(words, cefrLevel);
+
+    try {
+        if (config.provider === 'openai') {
+            try {
+                const parsed = await callOpenAIStructured({
+                    apiKey: config.openaiKey,
+                    model: config.openaiModel || 'gpt-4o-mini',
+                    systemPrompt,
+                    userPrompt,
+                    schemaName: 'langflow_translation_session',
+                    schema: TRANSLATION_SESSION_SCHEMA,
+                    signal,
+                });
+                return normalizeTranslationSentences(parsed.sentences);
+            } catch {
+                const raw = await callOpenAI({
+                    apiKey: config.openaiKey,
+                    model: config.openaiModel || 'gpt-4o-mini',
+                    systemPrompt,
+                    userPrompt,
+                    maxTokens: 1200,
+                    signal,
+                });
+                return parseTranslationPayload(raw);
+            }
+        }
+
+        const raw = await callAI(config, systemPrompt, userPrompt, signal);
+        return parseTranslationPayload(raw);
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Avalia localmente se a tradução do usuário está correta.
+ * Compara (case-insensitive, sem pontuação) contra o esperado + alternativas.
+ */
+export function evaluateTranslation(userAnswer, expected, alternatives = []) {
+    const normalize = (str) =>
+        String(str || '')
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+    const normalizedUser = normalize(userAnswer);
+    const allExpected = [expected, ...alternatives].map(normalize);
+    const correct = allExpected.some(exp => exp === normalizedUser);
+    return { correct };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
  * Gera explicação contextual de uma palavra (Tooltip M2)
  */

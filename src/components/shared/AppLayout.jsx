@@ -13,7 +13,7 @@ import { getDayKey, useProgressStore } from '../../store/useProgressStore.js';
 import { isDueToday } from '../../services/srs.js';
 import { selectDailyPromptTargets } from '../Builder/practiceModes.js';
 import NotificationsPopover from './NotificationsPopover.jsx';
-import { BoltIcon, BookIcon, GridIcon, LayersIcon, ReviewIcon, TrendIcon } from './icons.jsx';
+import { BoltIcon, BookIcon, GridIcon, LayersIcon, ReviewIcon, TrendIcon, WriteIcon } from './icons.jsx';
 
 const BASE_NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: GridIcon },
@@ -22,6 +22,7 @@ const BASE_NAV_ITEMS = [
   { to: '/flashcards', label: 'Revisar', icon: ReviewIcon },
   { to: '/vocabulary', label: 'Vocabulario', icon: LayersIcon },
   { to: '/evolution', label: 'Evolucao', icon: TrendIcon },
+  { to: '/escrever', label: 'Escrever', icon: WriteIcon },
 ];
 
 function SidebarNavItem({ to, label, icon: Icon, badge, onClick }) {
@@ -209,6 +210,14 @@ export default function AppLayout() {
         description: 'Visualize seu progresso, histórico de vocabulário e crescimento geral.',
         icon: TrendIcon,
         action: null 
+      };
+    }
+    if (location.pathname.startsWith('/escrever')) {
+      return {
+        title: 'Escrever',
+        description: 'Traduza frases do cotidiano PT→EN',
+        icon: WriteIcon,
+        action: null,
       };
     }
     if (location.pathname.startsWith('/settings')) {

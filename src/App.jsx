@@ -14,6 +14,7 @@ import Reader from './components/Reader/Reader.jsx';
 import Builder from './components/Builder/Builder.jsx';
 import Flashcard from './components/Flashcard/Flashcard.jsx';
 import Vocabulary from './components/Vocabulary/Vocabulary.jsx';
+import Escrever from './components/Escrever/Escrever.jsx';
 import AppLayout from './components/shared/AppLayout.jsx';
 import ToastViewport from './components/shared/ToastViewport.jsx';
 import { useWordStore } from './store/useWordStore.js';
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/practice" element={<PracticeRoute />} />
           <Route path="/flashcards" element={<Flashcard />} />
           <Route path="/evolution" element={<Evolution />} />
+          <Route path="/escrever" element={<Escrever />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
