@@ -1,12 +1,27 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWordStore } from '../../store/useWordStore.js';
+import { useCardStore } from '../../store/useCardStore.js';
 import { useConfig } from '../../store/useConfig.js';
 import { useProgressStore } from '../../store/useProgressStore.js';
-import { generateTranslationSentences, evaluateTranslation } from '../../services/ai.js';
+import { generateTranslationSentences, evaluateTranslation, evaluateSemanticTranslation } from '../../services/ai.js';
 import { selectTranslationWords } from './translationSession.js';
 import { Button } from '../ui/button.jsx';
 import { WriteIcon } from '../shared/icons.jsx';
+
+function buildOfflineSessions(flashcards = [], words = [], limit = 5) {
+  const eligible = flashcards
+    .filter((card) => card.front && card.back && card.back.trim().length > 5)
+    .slice(0, limit * 4);
+  if (eligible.length === 0) return [];
+  return eligible.slice(0, limit).map((card) => ({
+    id: card.id,
+    portuguese: card.front,
+    english: card.back,
+    alternatives: [],
+    targetWord: words.find((w) => w.id === card.wordId)?.word || '',
+  }));
+}
 
 const XP_CORRECT = 12;
 const XP_ATTEMPT = 4;
@@ -14,6 +29,7 @@ const XP_ATTEMPT = 4;
 export default function Escrever() {
   const navigate = useNavigate();
   const { words } = useWordStore();
+  const { flashcards } = useCardStore();
   const { config } = useConfig();
   const { awardXp } = useProgressStore();
 
@@ -29,7 +45,20 @@ export default function Escrever() {
 
   const handleStart = useCallback(async () => {
     if (!config?.provider) {
-      setError('Configure sua IA nas Configurações para usar esta funcionalidade.');
+      // Fallback offline: usar flashcards existentes como exercícios de tradução
+      const offline = buildOfflineSessions(flashcards, words);
+      if (offline.length >= 2) {
+        setSentences(offline);
+        setCurrentIndex(0);
+        setResults([]);
+        setXpEarned(0);
+        setUserAnswer('');
+        setFeedback(null);
+        setError(null);
+        setPhase('session');
+      } else {
+        setPhase('offline-empty');
+      }
       return;
     }
     setPhase('loading');
@@ -129,6 +158,34 @@ export default function Escrever() {
     setError(null);
   }, []);
 
+  // ── Offline sem flashcards suficientes ───────────────────────────────────
+  if (phase === 'offline-empty') {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-6 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-orange-50 text-orange-400 border border-orange-100">
+          📚
+        </div>
+        <div>
+          <h2 className="text-2xl font-extrabold text-neutral-900 tracking-tight">Sem material suficiente</h2>
+          <p className="mt-2 text-sm text-neutral-500 max-w-xs mx-auto">
+            Configure uma IA para gerar exercícios personalizados, ou salve pelo menos 2 flashcards durante a prática para usar o Escrever offline.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <Button onClick={() => navigate('/settings')} className="rounded-xl bg-violet-600 hover:bg-violet-700 text-white px-6 font-bold">
+            Configurar IA
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/flashcards')} className="rounded-xl px-6">
+            Ver flashcards
+          </Button>
+        </div>
+        <button onClick={() => setPhase('idle')} className="text-sm text-neutral-400 underline underline-offset-2">
+          Voltar
+        </button>
+      </div>
+    );
+  }
+
   // ── Estado vazio / carregando ─────────────────────────────────────────────
   if (phase === 'idle' || phase === 'loading') {
     return (
@@ -160,12 +217,12 @@ export default function Escrever() {
         </Button>
 
         {!config?.provider && (
-          <button
-            onClick={() => navigate('/settings')}
-            className="text-sm text-violet-600 underline underline-offset-2"
-          >
-            Configurar IA nas Configurações
-          </button>
+          <p className="text-xs text-neutral-400 max-w-xs">
+            Sem IA configurada: serão usados seus flashcards salvos como exercícios.{' '}
+            <button onClick={() => navigate('/settings')} className="text-violet-500 underline underline-offset-2">
+              Configurar IA
+            </button>
+          </p>
         )}
       </div>
     );

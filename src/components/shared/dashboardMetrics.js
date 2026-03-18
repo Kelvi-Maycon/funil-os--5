@@ -118,6 +118,35 @@ export function buildRange(days = 7) {
   return rows;
 }
 
+export function buildLearningCurveSeries(dailyStats = {}, range = []) {
+  return range.map((day) => ((dailyStats?.[day.key]?.xp || 0) + (dailyStats?.[day.key]?.streakBonus || 0)));
+}
+
+export function buildZeroBasedYAxisLabels(values = [], steps = 4) {
+  const max = Math.max(0, ...values);
+  const step = max <= 1
+    ? 0.25
+    : max <= 2
+      ? 0.5
+      : max <= 4
+        ? 1
+        : max <= 8
+          ? 2
+          : Math.ceil(max / steps);
+  const maxLabel = Math.max(step * steps, Math.ceil(max / step) * step);
+
+  return Array.from({ length: steps + 1 }, (_, index) => Number((maxLabel - (step * index)).toFixed(2)));
+}
+
+export function buildSpacedXAxisLabels(range = [], maxLabels = 12) {
+  if (range.length <= maxLabels) {
+    return range;
+  }
+
+  const step = Math.max(1, Math.ceil((range.length - 1) / (maxLabels - 1)));
+  return range.filter((_, index) => index % step === 0 || index === range.length - 1);
+}
+
 export function buildSmoothCurve(values, width = 600, height = 180) {
   if (values.length === 0) return '';
   if (values.length === 1) return `M 0,${height} L ${width},${height}`;

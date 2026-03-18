@@ -47,26 +47,51 @@ async function callAI(config, systemPrompt, userPrompt, signal) {
     throw new Error('Unknown provider');
 }
 
+const LOCAL_SENTENCE_TEMPLATES = {
+    positive: [
+        { en: 'The presentation had {word} elements that impressed the audience.', pt: 'A apresentação tinha elementos {word} que impressionaram o público.' },
+        { en: 'She gave a clear and {word} explanation of the topic.', pt: 'Ela deu uma explicação clara e {word} sobre o assunto.' },
+        { en: 'The results were {word}, exceeding all expectations.', pt: 'Os resultados foram {word}, superando todas as expectativas.' },
+        { en: 'He made a {word} decision that changed the outcome.', pt: 'Ele tomou uma decisão {word} que mudou o resultado.' },
+        { en: 'Learning {word} skills can open many career doors.', pt: 'Aprender habilidades {word} pode abrir muitas portas na carreira.' },
+        { en: 'The {word} approach helped solve the problem efficiently.', pt: 'A abordagem {word} ajudou a resolver o problema de forma eficiente.' },
+        { en: 'It is important to stay {word} when things get difficult.', pt: 'É importante permanecer {word} quando as coisas ficam difíceis.' },
+        { en: 'The team used a {word} strategy to meet the deadline.', pt: 'A equipe usou uma estratégia {word} para cumprir o prazo.' },
+    ],
+    negative: [
+        { en: 'Without a {word} plan, the project fell apart quickly.', pt: 'Sem um plano {word}, o projeto desmoronou rapidamente.' },
+        { en: 'She never expected such a {word} response from the team.', pt: 'Ela nunca esperou uma resposta tão {word} da equipe.' },
+        { en: 'The lack of {word} resources made everything harder.', pt: 'A falta de recursos {word} tornou tudo mais difícil.' },
+        { en: 'He was not {word} enough to handle the situation alone.', pt: 'Ele não era {word} o suficiente para lidar com a situação sozinho.' },
+        { en: 'The {word} feedback made it difficult to improve.', pt: 'O feedback {word} dificultou a melhora.' },
+    ],
+    past: [
+        { en: 'The team worked in a {word} way to finish the project.', pt: 'A equipe trabalhou de forma {word} para terminar o projeto.' },
+        { en: 'She had to make a {word} choice when the situation changed.', pt: 'Ela teve que fazer uma escolha {word} quando a situação mudou.' },
+        { en: 'The project succeeded because of their {word} effort.', pt: 'O projeto teve sucesso por causa do esforço {word} deles.' },
+        { en: 'He applied a {word} method that surprised his colleagues.', pt: 'Ele aplicou um método {word} que surpreendeu seus colegas.' },
+        { en: 'The manager explained the {word} strategy to the whole team.', pt: 'O gerente explicou a estratégia {word} para toda a equipe.' },
+    ],
+};
+
 export function buildLocalSentenceSet(word) {
     const cleanWord = String(word || '').trim() || 'word';
+    const seed = cleanWord.length % 5;
+
+    const pick = (templates, offset = 0) => {
+        const t = templates[(seed + offset) % templates.length];
+        return {
+            english: t.en.replace(/\{word\}/g, cleanWord),
+            portuguese: t.pt.replace(/\{word\}/g, cleanWord),
+        };
+    };
+
     return {
         word: cleanWord,
         sentences: [
-            {
-                english: `I learned the word "${cleanWord}" today.`,
-                portuguese: `Eu aprendi a palavra "${cleanWord}" hoje.`,
-                type: 'positive',
-            },
-            {
-                english: `I don't know how to use "${cleanWord}" yet.`,
-                portuguese: `Eu não sei como usar "${cleanWord}" ainda.`,
-                type: 'negative',
-            },
-            {
-                english: `We studied the word "${cleanWord}" yesterday.`,
-                portuguese: `Nós estudamos a palavra "${cleanWord}" ontem.`,
-                type: 'past',
-            },
+            { ...pick(LOCAL_SENTENCE_TEMPLATES.positive, 0), type: 'positive' },
+            { ...pick(LOCAL_SENTENCE_TEMPLATES.negative, 0), type: 'negative' },
+            { ...pick(LOCAL_SENTENCE_TEMPLATES.past, 1),     type: 'past' },
         ],
     };
 }
@@ -409,16 +434,17 @@ Explain the mistake.`;
  */
 export async function evaluateSemanticTranslation({ original, expected, userAnswer, userLevel, config, signal }) {
     if (!config?.provider) {
-       // Fallback: se não tem IA, a resposta tem que conter a maior parte das palavras esperadas.
-       const normalizedExpected = normalize(expected).split(' ');
-       const normalizedUser = normalize(userAnswer);
-       const matches = normalizedExpected.filter(w => normalizedUser.includes(w)).length;
-       const correct = matches >= normalizedExpected.length * 0.7; // Exige 70% de match no fallback local
-       
-       return { 
-           correct, 
-           note: correct ? 'Correto segundo os critérios básicos salvos offline.' : 'Incorreto. Tente usar as palavras da frase esperada.',
-           fromAI: false 
+       // Fallback: normalize definida localmente para não depender de escopo externo
+       const normalize = (s) => String(s || '').toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).filter(Boolean);
+       const expectedWords = normalize(expected);
+       const answerWords = new Set(normalize(userAnswer));
+       const matches = expectedWords.filter(w => answerWords.has(w)).length;
+       const correct = expectedWords.length > 0 && matches >= expectedWords.length * 0.7;
+
+       return {
+           correct,
+           note: correct ? 'Correto segundo os critérios básicos offline.' : 'Incorreto. Tente usar as palavras da frase esperada.',
+           fromAI: false,
        };
     }
 

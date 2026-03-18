@@ -141,6 +141,7 @@ export default function Reader({ onPractice }) {
     const existing = getWordByText(token.clean);
     const sentence = getSentenceForToken(tokens, tokenIdx);
 
+    // Apenas abre o tooltip — não salva nada ainda
     setTooltip({
       tokenIdx,
       word: token.raw,
@@ -148,36 +149,9 @@ export default function Reader({ onPractice }) {
       loading: true,
       text: '',
       exist: Boolean(existing),
+      existingId: existing?.id || null,
       sentence,
     });
-
-    let wordId = existing?.id;
-    if (!existing) {
-      const added = addWord(token.clean, {
-        originalSentence: sentence,
-        tag: 'contexto',
-        initialStatus: 'reconhecida',
-      });
-      wordId = added?.id;
-    } else if (wordId) {
-      markSeenInReader(wordId);
-    }
-
-    if (!sessionWords.find((sessionWord) => sessionWord.wordId === wordId)) {
-      setSessionWords((current) => [
-        ...current,
-        { wordId, wordText: token.clean, originalSentence: sentence },
-      ]);
-      recordReaderWord({
-        wordId,
-        isNewWord: !existing,
-        isRecycled: Boolean(existing),
-      });
-    }
-
-    if (existing && wordId) {
-      updateWord(wordId, { lastSeenAt: Date.now() });
-    }
 
     try {
       const aiConfig = config.provider ? config : null;
@@ -191,25 +165,12 @@ export default function Reader({ onPractice }) {
       setTooltip((current) => current?.tokenIdx === tokenIdx
         ? { ...current, loading: false, text: result.text, fromAI: result.fromAI }
         : current);
-
-      if (wordId && result.fromAI) {
-        updateWord(wordId, { tooltipExplanation: result.text, lastSeenAt: Date.now() });
-      }
     } catch (error) {
       setTooltip((current) => current?.tokenIdx === tokenIdx
         ? { ...current, loading: false, text: `Erro: ${error.message}` }
         : current);
     }
-  }, [
-    addWord,
-    config,
-    getWordByText,
-    markSeenInReader,
-    recordReaderWord,
-    sessionWords,
-    tokens,
-    updateWord,
-  ]);
+  }, [config, getWordByText, tokens]);
 
   const closeTooltip = useCallback((event) => {
     if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
@@ -219,18 +180,40 @@ export default function Reader({ onPractice }) {
 
   const addToBank = useCallback(() => {
     if (!tooltip) return;
+
     const existing = getWordByText(tooltip.clean);
+    let wordId = existing?.id;
+
     if (!existing) {
-      addWord(tooltip.clean, {});
+      const added = addWord(tooltip.clean, {
+        originalSentence: tooltip.sentence,
+        tag: 'contexto',
+        initialStatus: 'reconhecida',
+      });
+      wordId = added?.id;
+    }
+
+    if (wordId && !sessionWords.find((sw) => sw.wordId === wordId)) {
+      setSessionWords((current) => [
+        ...current,
+        { wordId, wordText: tooltip.clean, originalSentence: tooltip.sentence },
+      ]);
+      recordReaderWord({ wordId, isNewWord: !existing, isRecycled: Boolean(existing) });
       pushToast({
         kind: 'success',
         source: 'reader',
-        title: 'Item salvo',
-        description: `"${tooltip.clean}" foi adicionado ao banco.`,
+        title: 'Palavra capturada',
+        description: `"${tooltip.clean}" adicionada às capturas.`,
       });
     }
+
+    if (existing && wordId) {
+      markSeenInReader(wordId);
+      updateWord(wordId, { lastSeenAt: Date.now() });
+    }
+
     setTooltip(null);
-  }, [addWord, getWordByText, pushToast, tooltip]);
+  }, [addWord, getWordByText, markSeenInReader, pushToast, recordReaderWord, sessionWords, tooltip, updateWord]);
 
   const reset = useCallback(() => {
     setTokens(null);
@@ -276,20 +259,20 @@ export default function Reader({ onPractice }) {
       <main className="w-full mt-2 lg:mt-4">
         {tokens === null ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+
             {/* YouTube Entry Card */}
             <div className="bg-white rounded-3xl p-6 md:p-10 shadow-soft border border-neutral-100 flex flex-col relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-pink-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-70"></div>
-              
+
               <div className="relative z-10">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-200 mb-6 w-max">
                   <span className="w-2 h-2 rounded-full bg-pink-500"></span>
                   <span className="text-[11px] font-bold text-neutral-500 uppercase tracking-widest">Entrada rápida</span>
                 </div>
-                
+
                 <h3 className="text-3xl font-extrabold text-neutral-900 mb-2">Comece por um vídeo do YouTube</h3>
                 <p className="text-neutral-500 mb-8 max-w-sm">Use uma legenda real para trazer contexto natural antes de praticar.</p>
-                
+
                 <div className="mt-4 space-y-3">
                   <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">URL do vídeo</label>
                   <div className="flex flex-col sm:flex-row gap-3">
@@ -328,16 +311,16 @@ export default function Reader({ onPractice }) {
             {/* Text Entry Card */}
             <div className="bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-3xl p-6 md:p-10 shadow-soft border border-neutral-100 flex flex-col relative overflow-hidden text-white min-h-[450px]">
               <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl translate-y-1/3 translate-x-1/3"></div>
-              
+
               <div className="relative z-10 flex flex-col h-full">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 border border-white/10 mb-6 w-max">
                   <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
                   <span className="text-[11px] font-bold text-white/90 uppercase tracking-widest">Sessão de leitura</span>
                 </div>
-                
+
                 <h3 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Cole seu texto em inglês</h3>
                 <p className="text-white/70 mb-6 max-w-md">Reader, tooltip contextual e prática seguem o mesmo fluxo.</p>
-                
+
                 <div className="flex-1 flex flex-col">
                   <label className="text-[11px] font-bold text-white/60 uppercase tracking-widest mb-2">Texto da sessão</label>
                   <textarea
@@ -363,11 +346,11 @@ export default function Reader({ onPractice }) {
                     Iniciar leitura
                   </button>
                 </div>
-                
+
                 {!config.provider && (
-                   <div className="mt-4 p-3 bg-orange-500/20 text-orange-100 border border-orange-400/30 rounded-xl text-xs font-semibold">
-                     Nenhuma IA configurada. Fallback local ativo.
-                   </div>
+                  <div className="mt-4 p-3 bg-orange-500/20 text-orange-100 border border-orange-400/30 rounded-xl text-xs font-semibold">
+                    Nenhuma IA configurada. Fallback local ativo.
+                  </div>
                 )}
               </div>
             </div>
@@ -375,7 +358,7 @@ export default function Reader({ onPractice }) {
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-            
+
             {/* Workspace Header / Session Bar */}
             <div className="bg-white rounded-3xl p-4 md:p-6 shadow-soft border border-neutral-100 flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-6">
@@ -404,7 +387,7 @@ export default function Reader({ onPractice }) {
                   <SparkIcon size={16} />
                   <span>Praticar Capturas</span>
                 </button>
-                <button 
+                <button
                   className="flex-none bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-4 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center border border-neutral-200"
                   onClick={reset}
                 >
@@ -441,7 +424,7 @@ export default function Reader({ onPractice }) {
                   const inBank = bankWords.has(token.clean);
                   const inSession = clickedWords.has(token.clean);
                   const isActive = tooltip?.tokenIdx === index;
-                  
+
                   let bgClass = 'hover:bg-neutral-100 hover:text-neutral-900 rounded cursor-pointer transition-colors';
                   if (inBank) bgClass = 'bg-neutral-100 text-neutral-800 rounded cursor-pointer border border-neutral-200/50 shadow-sm';
                   if (inSession && !inBank) bgClass = 'bg-violet-100 text-violet-900 rounded font-medium cursor-pointer border border-violet-200 shadow-sm';
@@ -460,7 +443,7 @@ export default function Reader({ onPractice }) {
                       </span>
 
                       {isActive ? (
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[320px] bg-white rounded-2xl shadow-lg border border-neutral-100 z-50 overflow-hidden flex flex-col font-sans" ref={tooltipRef} onClick={(event) => event.stopPropagation()} style={{boxShadow: '0 8px 24px rgba(124, 58, 237, 0.14)'}}>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[320px] bg-white rounded-2xl shadow-lg border border-neutral-100 z-50 overflow-hidden flex flex-col font-sans" ref={tooltipRef} onClick={(event) => event.stopPropagation()} style={{ boxShadow: '0 8px 24px rgba(124, 58, 237, 0.14)' }}>
                           <div className="bg-neutral-50 border-b border-neutral-100 p-4">
                             <div className="text-[22px] font-bold text-neutral-900 mb-3 leading-none">{tooltip.word}</div>
                             <div className="flex gap-2">
@@ -497,8 +480,12 @@ export default function Reader({ onPractice }) {
                               <button className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-semibold py-2 rounded-xl text-xs transition-colors shadow-sm focus:ring-2 focus:ring-violet-400 focus:outline-none" onClick={addToBank}>
                                 + Salvar palavra
                               </button>
+                            ) : sessionWords.find((sw) => sw.wordId === tooltip.existingId) ? (
+                              <span className="flex-1 text-center py-2 text-xs font-semibold text-green-600 uppercase tracking-wider">✓ Na sessão</span>
                             ) : (
-                              <span className="flex-1 text-center py-2 text-xs font-semibold text-neutral-400 cursor-not-allowed uppercase tracking-wider">Já no deck</span>
+                              <button className="flex-1 bg-neutral-800 hover:bg-black text-white font-semibold py-2 rounded-xl text-xs transition-colors shadow-sm" onClick={addToBank}>
+                                + Adicionar à prática
+                              </button>
                             )}
                             <button className="px-4 bg-white border border-neutral-200 hover:bg-neutral-100 text-neutral-700 font-semibold py-2 rounded-xl text-xs transition-colors" onClick={() => setTooltip(null)}>
                               Fechar
@@ -533,7 +520,7 @@ export default function Reader({ onPractice }) {
                 <p className="text-sm text-neutral-500 max-w-sm mx-auto">Interaja com as palavras acima que você não conhece bem. Elas formarão a base do seu próximo exercício.</p>
               </div>
             )}
-            
+
           </div>
         )}
       </main>

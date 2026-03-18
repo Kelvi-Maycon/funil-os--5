@@ -47,19 +47,19 @@ function normalizeEnglishAnswer(value) {
         .toLowerCase();
 }
 
-function createOrderedTokenItems(sentenceId, english) {
+function createOrderedTokenItems(prefix, english) {
     return String(english || '')
         .replace(/[.,!?;:"]/g, '')
         .split(/\s+/)
         .filter(Boolean)
         .map((text, index) => ({
-            id: `${sentenceId}_${index}_${text.toLowerCase()}`,
+            id: `${prefix}_${index}_${text.toLowerCase()}`,
             text,
         }));
 }
 
-function createShuffledTokenItems(sentenceId, english) {
-    return shuffle(createOrderedTokenItems(sentenceId, english));
+function createShuffledTokenItems(prefix, english) {
+    return shuffle(createOrderedTokenItems(prefix, english));
 }
 
 function getTokenContainer(activeId, availableTokens, answerTokens) {
@@ -214,11 +214,14 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
     const { recordBuilderExercise, recordProductionWrite } = useProgressStore();
     const { config, setConfig } = useConfig();
 
+    // Prefixo único por instância de exercício — garante IDs únicos no DndContext
+    const tokenPrefixRef = useRef(`${exercise.sentence.id}_${Date.now()}`);
+
     const expectedTokens = useMemo(
-        () => createOrderedTokenItems(`expected_${exercise.sentence.id}`, exercise.sentence.english),
-        [exercise.sentence.english, exercise.sentence.id]
+        () => createOrderedTokenItems(`exp_${tokenPrefixRef.current}`, exercise.sentence.english),
+        [exercise.sentence.english]
     );
-    const [availableTokens, setAvailableTokens] = useState(() => createShuffledTokenItems(exercise.sentence.id, exercise.sentence.english));
+    const [availableTokens, setAvailableTokens] = useState(() => createShuffledTokenItems(tokenPrefixRef.current, exercise.sentence.english));
     const [answerTokens, setAnswerTokens] = useState([]);
     const [result, setResult] = useState(null);
     const [attempts, setAttempts] = useState(0);
@@ -241,23 +244,19 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
     };
 
     const moveToAnswer = (tokenId) => {
-        setAvailableTokens((currentAvailable) => {
-            const token = currentAvailable.find((item) => item.id === tokenId);
-            if (!token) return currentAvailable;
-            setAnswerTokens((currentAnswer) => [...currentAnswer, token]);
-            return currentAvailable.filter((item) => item.id !== tokenId);
-        });
-
+        // Não aninhar setState dentro de outro updater — em Strict Mode o updater roda 2x
+        const token = availableTokens.find((item) => item.id === tokenId);
+        if (!token) return;
+        setAvailableTokens((current) => current.filter((item) => item.id !== tokenId));
+        setAnswerTokens((current) => [...current, token]);
         resetFeedback();
     };
 
     const moveToAvailable = (tokenId) => {
-        setAnswerTokens((currentAnswer) => {
-            const token = currentAnswer.find((item) => item.id === tokenId);
-            if (!token) return currentAnswer;
-            setAvailableTokens((currentAvailable) => [...currentAvailable, token]);
-            return currentAnswer.filter((item) => item.id !== tokenId);
-        });
+        const token = answerTokens.find((item) => item.id === tokenId);
+        if (!token) return;
+        setAnswerTokens((current) => current.filter((item) => item.id !== tokenId));
+        setAvailableTokens((current) => [...current, token]);
         resetFeedback();
     };
 
@@ -501,7 +500,7 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
                     <button
                         className="btn btn-ghost"
                         onClick={() => {
-                            setAvailableTokens(createShuffledTokenItems(exercise.sentence.id, exercise.sentence.english));
+                            setAvailableTokens(createShuffledTokenItems(tokenPrefixRef.current, exercise.sentence.english));
                             setAnswerTokens([]);
                             resetFeedback();
                         }}

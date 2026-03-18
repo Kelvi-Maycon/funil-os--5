@@ -149,7 +149,7 @@ export default function Dashboard() {
   });
 
   const pendingPrompt = !dailyPromptHistory?.[todayKey] && promptTargets.length > 0;
-  
+
   const [dailyPromptData, setDailyPromptData] = useState(null);
   const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
   const [promptAnswer, setPromptAnswer] = useState('');
@@ -167,7 +167,7 @@ export default function Dashboard() {
             cefrLevel: config.userLevel,
             config
           });
-          
+
           if (isMounted) {
             if (sentences && sentences.length > 0) {
               setDailyPromptData(sentences[0]);
@@ -197,24 +197,24 @@ export default function Dashboard() {
     }
     return () => { isMounted = false; };
   }, [pendingPrompt, promptTargets, config, dailyPromptData]);
-  
+
   const submitPrompt = () => {
     if (!promptAnswer.trim() || !dailyPromptData) return;
     const { recordDailyPromptCompletion } = useProgressStore.getState();
     const evaluation = evaluateTranslation(promptAnswer, dailyPromptData.english, dailyPromptData.alternatives);
-    
+
     setPromptResult({
       correct: evaluation.correct,
       expected: dailyPromptData.english
     });
-    
+
     recordDailyPromptCompletion({
       wordIds: [promptTargets.find(t => t.wordText === dailyPromptData.targetWord)?.wordId || promptTargets[0]?.wordId],
       answers: [{ answer: promptAnswer, expected: dailyPromptData.english, correct: evaluation.correct }],
       targets: [dailyPromptData.targetWord]
     });
   };
-  
+
   const promptState = buildPromptCardState({
     promptTargets,
     pendingPrompt,
@@ -228,7 +228,7 @@ export default function Dashboard() {
     retentionRate: retention.rate,
     streakRisk: !dailyStats[todayKey] && (new Date().getHours() >= 20 || streakStats.currentStreak > 0),
   });
-  
+
   const heroMeta = STEP_META[nextStep.id] || STEP_META.reader;
   const HeroIcon = heroMeta.icon;
 
@@ -286,7 +286,7 @@ export default function Dashboard() {
   const chartPath = useMemo(() => buildSmoothCurve(activitySeries, 680, 220), [activitySeries]);
   const areaPath = useMemo(() => buildAreaPath(activitySeries, 680, 220), [activitySeries]);
   const totalActivity = activitySeries.reduce((sum, value) => sum + value, 0);
-  
+
   const levelProgress = xp % XP_PER_LEVEL;
   const levelProgressPct = Math.round((levelProgress / XP_PER_LEVEL) * 100);
   const currentDate = formatDashboardDate();
@@ -342,37 +342,37 @@ export default function Dashboard() {
 
       <main className="w-full mt-2 lg:mt-4">
         <div className="grid grid-cols-12 gap-6">
-          
+
           {/* Hero Widget */}
           {/* Hero Widget with Priority Styling */}
           <section className={`col-span-12 relative bg-white rounded-3xl p-6 md:p-10 shadow-soft border ${nextStep.priority === 'high' ? 'border-orange-300 shadow-orange-500/10' : 'border-neutral-100'} overflow-hidden flex items-center justify-between min-h-[400px]`}>
             {nextStep.priority === 'high' ? (
-               <>
-                 <div className="absolute top-0 right-0 w-96 h-96 bg-orange-300/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
-                 <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-red-100/60 rounded-full blur-3xl translate-y-1/2 opacity-60"></div>
-               </>
+              <>
+                <div className="absolute top-0 right-0 w-96 h-96 bg-orange-300/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
+                <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-red-100/60 rounded-full blur-3xl translate-y-1/2 opacity-60"></div>
+              </>
             ) : (
-               <>
-                 <div className="absolute top-0 right-0 w-96 h-96 bg-violet-300/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
-                 <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-pink-100/60 rounded-full blur-3xl translate-y-1/2 opacity-60"></div>
-               </>
+              <>
+                <div className="absolute top-0 right-0 w-96 h-96 bg-violet-300/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
+                <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-pink-100/60 rounded-full blur-3xl translate-y-1/2 opacity-60"></div>
+              </>
             )}
 
             <div className="relative z-10 max-w-2xl">
               <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${nextStep.priority === 'high' ? 'bg-orange-50 border-orange-200' : 'bg-neutral-100 border-neutral-200'} mb-6`}>
                 <span className={`w-2 h-2 rounded-full ${nextStep.priority === 'high' ? 'bg-orange-500 animate-pulse' : 'bg-pink-500'}`}></span>
                 <span className={`text-[11px] font-bold ${nextStep.priority === 'high' ? 'text-orange-600' : 'text-neutral-500'} uppercase tracking-widest`}>
-                    {nextStep.priority === 'high' ? 'Ação Prioritária' : heroMeta.label}
+                  {nextStep.priority === 'high' ? 'Ação Prioritária' : heroMeta.label}
                 </span>
               </div>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-neutral-900 leading-tight tracking-tight mb-4 hidden md:block">
                 {nextStep.title || heroMeta.headline} <br />
                 {heroMeta.accent && nextStep.priority !== 'high' && (
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600 text-gradient-animated">{heroMeta.accent}</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600 text-gradient-animated">{heroMeta.accent}</span>
                 )}
               </h2>
               <h2 className="text-4xl font-extrabold text-neutral-900 leading-tight tracking-tight mb-4 md:hidden">
-                {nextStep.title || heroMeta.headline} 
+                {nextStep.title || heroMeta.headline}
                 {heroMeta.accent && nextStep.priority !== 'high' && (
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600">{heroMeta.accent}</span>
                 )}
@@ -383,11 +383,10 @@ export default function Dashboard() {
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => navigate(nextStep.route)}
-                  className={`font-semibold px-8 py-3.5 rounded-full text-white shadow-lg transition-all flex items-center gap-2 transform hover:-translate-y-0.5 ${
-                      nextStep.priority === 'high' 
-                        ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-orange-500/25'
-                        : 'bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 shadow-pink-500/25'
-                  }`}
+                  className={`font-semibold px-8 py-3.5 rounded-full text-white shadow-lg transition-all flex items-center gap-2 transform hover:-translate-y-0.5 ${nextStep.priority === 'high'
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-orange-500/25'
+                    : 'bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 shadow-pink-500/25'
+                    }`}
                 >
                   <PlayIcon size={20} />
                   {nextStep.cta}
@@ -397,9 +396,9 @@ export default function Dashboard() {
 
             <div className="hidden md:block relative z-10 w-72 h-72 mr-12">
               <div className={`absolute inset-0 bg-white rounded-3xl shadow-xl border border-neutral-100 rotate-12 transform hover:rotate-6 transition-transform duration-500 flex items-center justify-center ${nextStep.priority === 'high' ? 'shadow-orange-600/10' : 'shadow-violet-600/10'}`}>
-                 <div className={`w-24 h-24 rounded-2xl flex items-center justify-center ${nextStep.priority === 'high' ? 'bg-orange-300/30 text-orange-600' : 'bg-violet-300/30 text-violet-600'}`}>
-                     <HeroIcon size={40} />
-                 </div>
+                <div className={`w-24 h-24 rounded-2xl flex items-center justify-center ${nextStep.priority === 'high' ? 'bg-orange-300/30 text-orange-600' : 'bg-violet-300/30 text-violet-600'}`}>
+                  <HeroIcon size={40} />
+                </div>
               </div>
               <div className={`absolute inset-0 rounded-3xl shadow-lg rotate-[-8deg] -z-10 opacity-20 ${nextStep.priority === 'high' ? 'bg-gradient-to-br from-orange-600 to-red-500' : 'bg-gradient-to-br from-violet-600 to-fuchsia-500'}`}></div>
             </div>
@@ -492,7 +491,7 @@ export default function Dashboard() {
                 {promptState.status === 'empty' ? 'Indisponivel' : 'Pronto'}
               </span>
             </div>
-            
+
             <div className="mb-auto mt-4 lg:mt-6">
               <h3 className="text-2xl md:text-3xl font-extrabold text-neutral-900 mb-3 tracking-tight leading-tight">
                 {pendingPrompt ? 'Desafio Diário' : promptState.title}
@@ -508,15 +507,15 @@ export default function Dashboard() {
                   ) : dailyPromptData ? (
                     <p className="text-lg font-medium text-neutral-800 mb-4">{dailyPromptData.portuguese}</p>
                   ) : null}
-                  
+
                   {promptResult ? (
                     <div className={`p-4 rounded-xl border ${promptResult.correct ? 'bg-green-50 border-green-200 text-green-800' : 'bg-orange-50 border-orange-200 text-orange-800'} mb-4`}>
                       <p className="font-bold mb-1">{promptResult.correct ? '🎉 Excelente!' : 'Quase lá!'}</p>
                       {!promptResult.correct && <p className="text-sm">A tradução esperada era: <strong>{promptResult.expected}</strong></p>}
                     </div>
                   ) : (
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={promptAnswer}
                       onChange={(e) => setPromptAnswer(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && submitPrompt()}
@@ -528,24 +527,24 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-            
+
             {pendingPrompt ? (
-               !promptResult && (
-                 <button
-                    onClick={submitPrompt} 
-                    disabled={isLoadingPrompt || !dailyPromptData || !promptAnswer.trim()}
-                    className="bg-violet-600 border border-transparent disabled:opacity-50 hover:bg-violet-700 text-white text-sm font-semibold px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 w-full mt-auto shadow-md shadow-violet-600/20 transform hover:-translate-y-0.5">
-                   <SparkIcon size={18} />
-                   Verificar Resposta
-                 </button>
-               )
+              !promptResult && (
+                <button
+                  onClick={submitPrompt}
+                  disabled={isLoadingPrompt || !dailyPromptData || !promptAnswer.trim()}
+                  className="bg-violet-600 border border-transparent disabled:opacity-50 hover:bg-violet-700 text-white text-sm font-semibold px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 w-full mt-auto shadow-md shadow-violet-600/20 transform hover:-translate-y-0.5">
+                  <SparkIcon size={18} />
+                  Verificar Resposta
+                </button>
+              )
             ) : (
-               <button
-                  onClick={handlePromptAction} 
-                  className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 w-full mt-auto shadow-md shadow-violet-600/20 transform hover:-translate-y-0.5">
-                 <SparkIcon size={18} />
-                 {promptState.ctaLabel || 'Abrir reader para capturar'}
-               </button>
+              <button
+                onClick={handlePromptAction}
+                className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 w-full mt-auto shadow-md shadow-violet-600/20 transform hover:-translate-y-0.5">
+                <SparkIcon size={18} />
+                {promptState.ctaLabel || 'Abrir reader para capturar'}
+              </button>
             )}
           </section>
 
@@ -562,29 +561,29 @@ export default function Dashboard() {
                 <button onClick={() => setChartWindow(90)} className={`px-3 py-1 text-xs ${chartWindow === 90 ? 'font-bold text-neutral-900 bg-white shadow-sm border border-neutral-200' : 'font-medium text-neutral-500 hover:text-neutral-800'} rounded-md`}>90d</button>
               </div>
             </div>
-            
+
             {totalActivity === 0 ? (
-                <div className="flex-1 bg-neutral-50/50 border border-neutral-100 rounded-2xl flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-                    <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-                    <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-neutral-200 flex items-center justify-center text-neutral-300 mb-4 z-10">
-                        <MapIcon size={24} />
-                    </div>
-                    <p className="font-bold text-neutral-700 mb-1 z-10">Sem atividade nesta janela</p>
-                    <p className="text-sm text-neutral-500 max-w-sm z-10">Inicie uma sessao para ver seu progresso aqui.</p>
+              <div className="flex-1 bg-neutral-50/50 border border-neutral-100 rounded-2xl flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-neutral-200 flex items-center justify-center text-neutral-300 mb-4 z-10">
+                  <MapIcon size={24} />
                 </div>
+                <p className="font-bold text-neutral-700 mb-1 z-10">Sem atividade nesta janela</p>
+                <p className="text-sm text-neutral-500 max-w-sm z-10">Inicie uma sessao para ver seu progresso aqui.</p>
+              </div>
             ) : (
-                <div className="flex-1 relative w-full h-[250px]">
-                   <svg viewBox="0 0 680 250" className="w-full h-full dashboard-chart-svg" preserveAspectRatio="none">
-                     <defs>
-                       <linearGradient id="dashboardChartGlowV4" x1="0" y1="0" x2="0" y2="1">
-                         <stop offset="0%" stopColor="rgba(124, 58, 237, 0.24)" />
-                         <stop offset="100%" stopColor="rgba(124, 58, 237, 0)" />
-                       </linearGradient>
-                     </defs>
-                     <path d={areaPath} fill="url(#dashboardChartGlowV4)" />
-                     <path d={chartPath} fill="none" stroke="hsl(var(--primary))" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-                   </svg>
-                </div>
+              <div className="flex-1 relative w-full h-[250px]">
+                <svg viewBox="0 0 680 250" className="w-full h-full dashboard-chart-svg" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="dashboardChartGlowV4" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="rgba(124, 58, 237, 0.24)" />
+                      <stop offset="100%" stopColor="rgba(124, 58, 237, 0)" />
+                    </linearGradient>
+                  </defs>
+                  <path d={areaPath} fill="url(#dashboardChartGlowV4)" />
+                  <path d={chartPath} fill="none" stroke="hsl(var(--primary))" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
             )}
           </section>
 
@@ -592,30 +591,30 @@ export default function Dashboard() {
           <div className="col-span-12 lg:col-span-4 grid grid-rows-2 gap-6">
             <section className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col">
               <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Capturas recentes</p>
-              
+
               <div className="flex-1 bg-neutral-50 border border-neutral-100 rounded-2xl flex flex-col items-center justify-center text-center p-4 overflow-y-auto">
-                 {recentCapturedWords.length > 0 ? (
-                    <div className="w-full h-full flex flex-col gap-3 text-left">
-                       {recentCapturedWords.map((word) => (
-                           <div key={word.id} className="flex justify-between items-center text-sm">
-                             <div className="min-w-0 pr-2">
-                               <strong className="text-neutral-800">{word.word}</strong>
-                               <p className="text-[11px] text-neutral-500 truncate mt-0.5">{word.originalSentence || 'Sem contexto salvo'}</p>
-                             </div>
-                             <Badge variant="outline" className="text-[9px] px-2 py-0.5 whitespace-nowrap bg-white border-neutral-200">
-                                {formatStatusLabel(word.status)}
-                             </Badge>
-                           </div>
-                       ))}
-                    </div>
-                 ) : (
-                    <>
-                        <div className="w-10 h-10 bg-white rounded-xl shadow-sm border border-neutral-200 flex items-center justify-center text-neutral-300 mb-3">
-                            <BookIcon size={20} />
+                {recentCapturedWords.length > 0 ? (
+                  <div className="w-full h-full flex flex-col gap-3 text-left">
+                    {recentCapturedWords.map((word) => (
+                      <div key={word.id} className="flex justify-between items-center text-sm">
+                        <div className="min-w-0 pr-2">
+                          <strong className="text-neutral-800">{word.word}</strong>
+                          <p className="text-[11px] text-neutral-500 truncate mt-0.5">{word.originalSentence || 'Sem contexto salvo'}</p>
                         </div>
-                        <p className="font-bold text-neutral-700 text-sm mb-1">Nenhuma captura hoje</p>
-                    </>
-                 )}
+                        <Badge variant="outline" className="text-[9px] px-2 py-0.5 whitespace-nowrap bg-white border-neutral-200">
+                          {formatStatusLabel(word.status)}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm border border-neutral-200 flex items-center justify-center text-neutral-300 mb-3">
+                      <BookIcon size={20} />
+                    </div>
+                    <p className="font-bold text-neutral-700 text-sm mb-1">Nenhuma captura hoje</p>
+                  </>
+                )}
               </div>
             </section>
 
@@ -630,12 +629,12 @@ export default function Dashboard() {
                 <div className="h-full bg-white rounded-full transition-all duration-1000" style={{ width: `${spotlight.percent}%` }}></div>
               </div>
               <p className="text-[10px] text-white/50 mt-2">{spotlight.current}/{spotlight.goal} completo</p>
-              
+
               <div className="mt-4 pt-4 border-t border-white/20 flex items-center gap-2">
-                 <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm">📚</div>
-                 <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm">⚡</div>
-                 <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm">🔥</div>
-                 <span className="text-[10px] text-white/50 ml-1">+ {achievements.length} conquistas bloqueadas</span>
+                <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm">📚</div>
+                <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm">⚡</div>
+                <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm">🔥</div>
+                <span className="text-[10px] text-white/50 ml-1">+ {achievements.length} conquistas bloqueadas</span>
               </div>
             </section>
           </div>
@@ -649,101 +648,101 @@ export default function Dashboard() {
               </div>
               <span className="text-xs font-bold text-neutral-400">{completedMissions}/{missions.length} completas</span>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-               {missions.slice(0, 4).map((mission, idx) => {
-                  const borderClasses = ['hover:border-violet-300 hover:bg-violet-300/10', 'hover:border-orange-300 hover:bg-orange-50/40', 'hover:border-fuchsia-300 hover:bg-fuchsia-50/40', 'hover:border-pink-300 hover:bg-pink-50/40'];
-                  const barClasses = ['bg-violet-600', 'bg-orange-400', 'bg-fuchsia-400', 'bg-pink-400'];
-                  const textClasses = ['text-violet-700', 'text-orange-600', 'text-fuchsia-600', 'text-pink-600'];
-                  const icons = ['📖', '🔁', '✍️', '🎯'];
-                  
-                  const hoverBorder = borderClasses[idx % 4];
-                  const barColor = barClasses[idx % 4];
-                  const textColor = textClasses[idx % 4];
-                  const iconMark = icons[idx % 4];
-                  
-                  const isDone = mission.done;
-                  const percent = Math.min(100, (mission.current / mission.goal) * 100);
 
-                  return (
-                     <div key={mission.key} className={`flex items-center gap-4 p-4 rounded-2xl border-2 border-dashed border-neutral-200 bg-neutral-50 ${hoverBorder} transition-all cursor-pointer ${isDone ? 'border-solid border-green-300 bg-green-50 shadow-sm' : ''}`}>
-                       <div className="w-10 h-10 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-xl shadow-sm">
-                         {iconMark}
-                       </div>
-                       <div className="flex-1">
-                         <p className="text-sm font-bold text-neutral-800">{mission.label}</p>
-                         <div className="flex items-center gap-2 mt-1">
-                           <div className="flex-1 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
-                             <div className={`h-full ${isDone ? 'bg-green-400' : barColor} rounded-full transition-all duration-1000`} style={{ width: `${percent}%` }}></div>
-                           </div>
-                           <span className={`text-[10px] font-bold ${isDone ? 'text-green-600' : textColor}`}>+{mission.xp || 10} XP</span>
-                         </div>
-                       </div>
-                     </div>
-                  )
-               })}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {missions.slice(0, 4).map((mission, idx) => {
+                const borderClasses = ['hover:border-violet-300 hover:bg-violet-300/10', 'hover:border-orange-300 hover:bg-orange-50/40', 'hover:border-fuchsia-300 hover:bg-fuchsia-50/40', 'hover:border-pink-300 hover:bg-pink-50/40'];
+                const barClasses = ['bg-violet-600', 'bg-orange-400', 'bg-fuchsia-400', 'bg-pink-400'];
+                const textClasses = ['text-violet-700', 'text-orange-600', 'text-fuchsia-600', 'text-pink-600'];
+                const icons = ['📖', '🔁', '✍️', '🎯'];
+
+                const hoverBorder = borderClasses[idx % 4];
+                const barColor = barClasses[idx % 4];
+                const textColor = textClasses[idx % 4];
+                const iconMark = icons[idx % 4];
+
+                const isDone = mission.done;
+                const percent = Math.min(100, (mission.current / mission.goal) * 100);
+
+                return (
+                  <div key={mission.key} className={`flex items-center gap-4 p-4 rounded-2xl border-2 border-dashed border-neutral-200 bg-neutral-50 ${hoverBorder} transition-all cursor-pointer ${isDone ? 'border-solid border-green-300 bg-green-50 shadow-sm' : ''}`}>
+                    <div className="w-10 h-10 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-xl shadow-sm">
+                      {iconMark}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-neutral-800">{mission.label}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex-1 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
+                          <div className={`h-full ${isDone ? 'bg-green-400' : barColor} rounded-full transition-all duration-1000`} style={{ width: `${percent}%` }}></div>
+                        </div>
+                        <span className={`text-[10px] font-bold ${isDone ? 'text-green-600' : textColor}`}>+{mission.xp || 10} XP</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </section>
 
           {/* KPIs Overview */}
           <section className="col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-12">
             <div className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col justify-between">
-               <div className="flex items-start justify-between mb-4">
-                 <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Meta Diária</p>
-                 <div className="p-2 bg-neutral-50 rounded-lg text-neutral-400">
-                    <TargetIcon size={16} />
-                 </div>
-               </div>
-               <div className="flex items-baseline gap-1">
-                 <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.dailyGoal.value}</span>
-                 <span className="text-lg font-medium text-neutral-400">/{topStats.dailyGoal.total}</span>
-               </div>
-               <div className="flex gap-1.5 mt-3">
-                 <div className="h-2 w-full rounded-full bg-neutral-100 overflow-hidden">
-                    <div className="h-full bg-violet-600" style={{ width: `${topStats.dailyGoal.percent}%` }}></div>
-                 </div>
-               </div>
+              <div className="flex items-start justify-between mb-4">
+                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Meta Diária</p>
+                <div className="p-2 bg-neutral-50 rounded-lg text-neutral-400">
+                  <TargetIcon size={16} />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.dailyGoal.value}</span>
+                <span className="text-lg font-medium text-neutral-400">/{topStats.dailyGoal.total}</span>
+              </div>
+              <div className="flex gap-1.5 mt-3">
+                <div className="h-2 w-full rounded-full bg-neutral-100 overflow-hidden">
+                  <div className="h-full bg-violet-600" style={{ width: `${topStats.dailyGoal.percent}%` }}></div>
+                </div>
+              </div>
             </div>
-            
+
             <div className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col justify-between">
-               <div className="flex items-start justify-between mb-4">
-                 <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Revisões</p>
-                 <div className="p-2 bg-orange-50 rounded-lg text-orange-500">
-                    <ReviewIcon size={16} />
-                 </div>
-               </div>
-               <div className="flex items-baseline gap-1">
-                 <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.pendingReviews.value}</span>
-               </div>
-               <p className="text-[10px] text-orange-500 font-bold mt-2 uppercase">Pendentes Hoje</p>
+              <div className="flex items-start justify-between mb-4">
+                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Revisões</p>
+                <div className="p-2 bg-orange-50 rounded-lg text-orange-500">
+                  <ReviewIcon size={16} />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.pendingReviews.value}</span>
+              </div>
+              <p className="text-[10px] text-orange-500 font-bold mt-2 uppercase">Pendentes Hoje</p>
             </div>
-            
+
             <div className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col justify-between">
-               <div className="flex items-start justify-between mb-4">
-                 <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Memória</p>
-                 <div className="p-2 bg-violet-300/20 rounded-lg text-violet-700">
-                    <BrainIcon size={16} />
-                 </div>
-               </div>
-               <div className="flex items-baseline gap-1">
-                 <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.retention.value}%</span>
-               </div>
-               <p className="text-[10px] text-violet-700 font-bold mt-2 uppercase">Taxa de Restenção</p>
+              <div className="flex items-start justify-between mb-4">
+                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Memória</p>
+                <div className="p-2 bg-violet-300/20 rounded-lg text-violet-700">
+                  <BrainIcon size={16} />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.retention.value}%</span>
+              </div>
+              <p className="text-[10px] text-violet-700 font-bold mt-2 uppercase">Taxa de Restenção</p>
             </div>
-            
+
             <div className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col justify-between relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-20 h-20 bg-pink-50 rounded-full -translate-y-6 translate-x-6 opacity-60"></div>
-               <div className="flex items-start justify-between mb-4">
-                 <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Ofensiva</p>
-                 <div className="p-2 bg-pink-50 rounded-lg text-pink-500 badge-bounce">
-                    <FlameIcon size={16} />
-                 </div>
-               </div>
-               <div className="flex items-baseline gap-1">
-                 <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.streak.value}</span>
-                 <span className="text-sm font-bold text-neutral-400 uppercase">Dias</span>
-               </div>
-               <p className="text-[10px] text-pink-400 font-bold mt-1 z-10">🎯 Recorde: {topStats.streak.longestStreak} dias</p>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-pink-50 rounded-full -translate-y-6 translate-x-6 opacity-60"></div>
+              <div className="flex items-start justify-between mb-4">
+                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Ofensiva</p>
+                <div className="p-2 bg-pink-50 rounded-lg text-pink-500 badge-bounce">
+                  <FlameIcon size={16} />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.streak.value}</span>
+                <span className="text-sm font-bold text-neutral-400 uppercase">Dias</span>
+              </div>
+              <p className="text-[10px] text-pink-400 font-bold mt-1 z-10">🎯 Recorde: {topStats.streak.longestStreak} dias</p>
             </div>
           </section>
 
