@@ -46,7 +46,7 @@ async function openAIRequest(apiKey, body, signal) {
 
 export async function callOpenAI({
     apiKey,
-    model = 'gpt-5-mini',
+    model = 'gpt-5.4-nano',
     systemPrompt,
     userPrompt,
     maxTokens = 400,
@@ -69,7 +69,7 @@ export async function callOpenAI({
 
 export async function callOpenAIStructured({
     apiKey,
-    model = 'gpt-5-mini',
+    model = 'gpt-5.4-nano',
     systemPrompt,
     userPrompt,
     schemaName,

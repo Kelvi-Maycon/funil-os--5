@@ -10,7 +10,7 @@ export const DEFAULT_CONFIG = {
     userLevel: 'B1',
     provider: '', // 'openai' | 'gemini' | ''
     openaiKey: '',
-    openaiModel: 'gpt-5-mini',
+    openaiModel: 'gpt-5.4-nano',
     geminiKey: '',
     geminiModel: 'gemini-2.0-flash',
     srs: {
@@ -21,11 +21,17 @@ export const DEFAULT_CONFIG = {
         difficultWordsWeight: 30,
         phrasesPerWord: 3,
         sessionWordLimit: 5,
+        dailyPromptWords: 3,
     },
     study: {
         minSessionMinutes: 5,
     },
+    onboardingDone: false,
     autoAdjustDifficulty: true,
+    tts: {
+        enabled: true,
+        rate: 1.0,
+    },
     missions: DEFAULT_MISSIONS,
 };
 
@@ -54,6 +60,13 @@ function mergeConfig(currentConfig, updates) {
         next.study = {
             ...currentConfig.study,
             ...updates.study,
+        };
+    }
+
+    if (updates.tts) {
+        next.tts = {
+            ...currentConfig.tts,
+            ...updates.tts,
         };
     }
 
@@ -94,6 +107,10 @@ function migrateConfig(persistedState) {
             study: {
                 ...DEFAULT_CONFIG.study,
                 ...(persistedConfig.study || {}),
+            },
+            tts: {
+                ...DEFAULT_CONFIG.tts,
+                ...(persistedConfig.tts || {}),
             },
             missions: {
                 ...DEFAULT_CONFIG.missions,

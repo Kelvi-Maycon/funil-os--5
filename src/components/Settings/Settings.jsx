@@ -11,7 +11,7 @@ import PageHeader from '../shared/PageHeader.jsx';
 import { BrainIcon, BoltIcon, GridIcon, SettingsIcon, SparkIcon } from '../shared/icons.jsx';
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
-const OAI_MODELS = ['gpt-5-mini', 'gpt-5-nano', 'gpt-5.2', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-4o-mini', 'gpt-4o'];
+const OAI_MODELS = ['gpt-5.4-nano', 'gpt-5-mini', 'gpt-5-nano', 'gpt-5.2', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-4o-mini', 'gpt-4o'];
 const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
 
 function StatusDot({ status }) {
@@ -33,7 +33,7 @@ export default function Settings() {
   const [form, setForm] = useState({
     provider: config.provider || '',
     openaiKey: config.openaiKey || '',
-    openaiModel: config.openaiModel || 'gpt-5-mini',
+    openaiModel: config.openaiModel || 'gpt-5.4-nano',
     geminiKey: config.geminiKey || '',
     geminiModel: config.geminiModel || 'gemini-2.0-flash',
   });
@@ -233,7 +233,7 @@ export default function Settings() {
                   />
                 </div>
                 <div>
-                  <label className="input-label">Palavras por sessao</label>
+                  <label className="input-label">Palavras por sessão</label>
                   <input
                     className="input"
                     type="number"
@@ -241,6 +241,17 @@ export default function Settings() {
                     max={10}
                     value={config.builder?.sessionWordLimit ?? 5}
                     onChange={(event) => setConfig({ builder: { ...config.builder, sessionWordLimit: Number(event.target.value) } })}
+                  />
+                </div>
+                <div>
+                  <label className="input-label">Palavras no prompt diário</label>
+                  <input
+                    className="input"
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={config.builder?.dailyPromptWords ?? 3}
+                    onChange={(event) => setConfig({ builder: { ...config.builder, dailyPromptWords: Number(event.target.value) } })}
                   />
                 </div>
               </div>

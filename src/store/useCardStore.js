@@ -104,6 +104,77 @@ export const useCardStore = create(
 
             getDueCardsSorted: (limit = Infinity) => sortDueCards(get().flashcards.filter(isDueToday)).slice(0, limit),
 
+            addContextualFlashcard: ({ wordId, wordText, originalSentence, config }) => {
+                if (!wordId || !originalSentence) return;
+                const { flashcards } = get();
+
+                // Avoid duplicates
+                if (flashcards.some(f => f.wordId === wordId && f.contextSentence === originalSentence)) return;
+
+                const sentenceId = uuid();
+                const sentenceRecord = {
+                    id: sentenceId,
+                    wordId,
+                    wordText,
+                    english: originalSentence,
+                    portuguese: '',
+                    type: 'context',
+                    words: originalSentence.split(' '),
+                    attempts: 0,
+                    maxAttempts: 3,
+                    savedToFlashcard: true,
+                    userProduction: '',
+                    generatedAt: Date.now(),
+                    isContextual: true,
+                };
+
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
+
+                const card = {
+                    id: uuid(),
+                    sentenceId,
+                    wordId,
+                    front: originalSentence,
+                    back: `[${wordText}] — ${originalSentence}`,
+                    contextSentence: originalSentence,
+                    isContextual: true,
+                    easeFactor: 2.5,
+                    interval: 1,
+                    nextReview: tomorrow.getTime(),
+                    reviewCount: 0,
+                    lapseCount: 0,
+                    lastReviewResult: null,
+                    createdAt: Date.now(),
+                };
+
+                set(state => ({
+                    sentences: [...state.sentences, sentenceRecord],
+                    flashcards: [...state.flashcards, card],
+                }));
+
+                // Translate async if AI available
+                if (config?.provider) {
+                    import('../services/ai.js').then(({ translateSentenceForContext }) => {
+                        translateSentenceForContext({ sentence: originalSentence, word: wordText, config })
+                            .then(portuguese => {
+                                if (portuguese) {
+                                    set(state => ({
+                                        sentences: state.sentences.map(s =>
+                                            s.id === sentenceId ? { ...s, portuguese } : s
+                                        ),
+                                        flashcards: state.flashcards.map(f =>
+                                            f.id === card.id ? { ...f, front: portuguese, back: originalSentence } : f
+                                        ),
+                                    }));
+                                }
+                            })
+                            .catch(() => { /* keep English-only card */ });
+                    });
+                }
+            },
+
             clearAll: () => set({ sentences: [], flashcards: [] }),
         }),
         { name: 'langflow_cards', storage: persistStorage, version: STORE_VERSION }

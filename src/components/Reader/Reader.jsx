@@ -7,6 +7,7 @@ import { parseText, getSentenceForToken } from '../../utils/parser.js';
 import { explainWord } from '../../services/ai.js';
 import { fetchYouTubeTranscript } from '../../services/youtube.js';
 import { BookIcon, PlayIcon, ReloadIcon, SearchIcon, SparkIcon } from '../shared/icons.jsx';
+import SpeakButton from '../shared/SpeakButton.jsx';
 import { Badge } from '../ui/badge.jsx';
 
 function estimateMinutes(tokens = []) {
@@ -191,6 +192,18 @@ export default function Reader({ onPractice }) {
         initialStatus: 'reconhecida',
       });
       wordId = added?.id;
+
+      // Sentence mining: auto-create contextual flashcard from original sentence
+      if (wordId && tooltip.sentence) {
+        import('../../store/useCardStore.js').then(({ useCardStore }) => {
+          useCardStore.getState().addContextualFlashcard({
+            wordId,
+            wordText: tooltip.clean,
+            originalSentence: tooltip.sentence,
+            config,
+          });
+        });
+      }
     }
 
     if (wordId && !sessionWords.find((sw) => sw.wordId === wordId)) {
@@ -445,7 +458,10 @@ export default function Reader({ onPractice }) {
                       {isActive ? (
                         <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[320px] bg-white rounded-2xl shadow-lg border border-neutral-100 z-50 overflow-hidden flex flex-col font-sans" ref={tooltipRef} onClick={(event) => event.stopPropagation()} style={{ boxShadow: '0 8px 24px rgba(124, 58, 237, 0.14)' }}>
                           <div className="bg-neutral-50 border-b border-neutral-100 p-4">
-                            <div className="text-[22px] font-bold text-neutral-900 mb-3 leading-none">{tooltip.word}</div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="text-[22px] font-bold text-neutral-900 leading-none">{tooltip.word}</div>
+                              <SpeakButton text={tooltip.word} size={14} />
+                            </div>
                             <div className="flex gap-2">
                               {tooltip.exist ? (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-neutral-200 text-neutral-600 border border-neutral-300/50">Já no banco</span>
@@ -469,7 +485,10 @@ export default function Reader({ onPractice }) {
                               <>
                                 <div className="text-[15px] font-medium text-neutral-800 mb-3 leading-snug">{tooltip.text}</div>
                                 {tooltip.sentence && (
-                                  <div className="text-[12px] italic text-neutral-500 bg-neutral-50/80 p-3 rounded-xl border border-neutral-100 leading-relaxed shadow-inner-soft">{tooltip.sentence}</div>
+                                  <div className="text-[12px] italic text-neutral-500 bg-neutral-50/80 p-3 rounded-xl border border-neutral-100 leading-relaxed shadow-inner-soft flex items-start gap-2">
+                                    <span className="flex-1">{tooltip.sentence}</span>
+                                    <SpeakButton text={tooltip.sentence} size={12} className="flex-shrink-0 mt-0.5" />
+                                  </div>
                                 )}
                               </>
                             )}

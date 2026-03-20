@@ -8,6 +8,7 @@ import { useUiStore } from '../../store/useUiStore.js';
 import { previewInterval, formatInterval } from '../../services/srs.js';
 import PageHeader from '../shared/PageHeader.jsx';
 import { BrainIcon, EyeIcon, PlayIcon } from '../shared/icons.jsx';
+import SpeakButton from '../shared/SpeakButton.jsx';
 import { Badge } from '../ui/badge.jsx';
 
 function FlashCard({ card, onRate }) {
@@ -25,7 +26,9 @@ function FlashCard({ card, onRate }) {
           style={{ transformStyle: 'preserve-3d', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
         >
           <div className="flashcard-face flashcard-front absolute inset-0 w-full h-full bg-white rounded-[2rem] border-2 border-neutral-100 flex flex-col p-8 md:p-12 items-center justify-center text-center shadow-soft" style={{ backfaceVisibility: 'hidden' }}>
-            <div className="text-[11px] font-bold text-violet-600 uppercase tracking-widest mb-6 px-3 py-1.5 bg-violet-50 rounded-lg border border-violet-100/50">Português → Lembre a frase em inglês</div>
+            <div className="text-[11px] font-bold text-violet-600 uppercase tracking-widest mb-6 px-3 py-1.5 bg-violet-50 rounded-lg border border-violet-100/50">
+              {card.isContextual ? '📖 Contexto original' : 'Português → Lembre a frase em inglês'}
+            </div>
             <div className="text-2xl md:text-3xl font-extrabold text-neutral-900 leading-snug mb-8">{card.front}</div>
             <div className="mt-auto text-xs font-semibold text-neutral-400 flex items-center gap-2 group-hover:text-violet-500 transition-colors"><EyeIcon size={14} /> Clique para revelar</div>
           </div>
@@ -33,7 +36,10 @@ function FlashCard({ card, onRate }) {
           <div className="flashcard-face flashcard-back absolute inset-0 w-full h-full bg-violet-600 rounded-[2rem] border-2 border-violet-500 flex flex-col p-8 md:p-12 items-center justify-center text-center shadow-xl overflow-hidden" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
              <div className="absolute top-0 right-0 w-64 h-64 bg-fuchsia-500 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-50 pointer-events-none"></div>
             <div className="text-[11px] font-bold text-violet-200 uppercase tracking-widest mb-6 px-3 py-1.5 bg-white/10 rounded-lg backdrop-blur-sm border border-white/10 relative z-10">Inglês → Frase completa</div>
-            <div className="text-2xl md:text-3xl font-extrabold text-white leading-snug mb-8 relative z-10">{card.back}</div>
+            <div className="flex items-center justify-center gap-3 mb-8 relative z-10">
+              <div className="text-2xl md:text-3xl font-extrabold text-white leading-snug">{card.back}</div>
+              <SpeakButton text={card.back} size={16} className="bg-white/20 hover:bg-white/30 text-white border-white/20 hover:text-white" />
+            </div>
             <div className="mt-auto text-xs font-semibold text-violet-300 relative z-10">Usar opções abaixo para classificar</div>
           </div>
         </div>

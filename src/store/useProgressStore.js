@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { XP_PER_LEVEL, DAILY_XP_CAP, CEFR_MASTERY_LEVELS, STREAK_BONUS_TABLE, MASTERY_XP } from '../constants/learning.js';
 import { persistStorage } from '../utils/persistStorage.js';
 
-const STORE_VERSION = 5;
+const STORE_VERSION = 6;
 const DEFAULT_MIN_SESSION_MINUTES = 5;
 const AUTO_ADJUST_WINDOW = 20;
 const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1'];
@@ -97,6 +97,7 @@ function createInitialState() {
         wordJourney: {},
         achievements: [],
         dailyPromptHistory: {},
+        errorPatterns: {},
         builderRecentResults: [],
         autoAdjustMeta: {
             lastAdjustedAt: null,
@@ -468,11 +469,23 @@ function migrateProgress(persistedState) {
         ...(persistedState?.autoAdjustMeta || {}),
     };
 
-    // Initialize masteryXp from existing word progress (credit for already-mastered words)
-    if (!persistedState?.masteryXp) {
+    // Recalculate masteryXp: credit word status transitions + past exercises retroactively
+    {
         const masteredWords = next.totals.masteredWords || 0;
         const activeWords = Math.max(0, (next.totals.activeWords || 0) - masteredWords);
-        next.masteryXp = (masteredWords * (MASTERY_XP.ativa + MASTERY_XP.dominada)) + (activeWords * MASTERY_XP.ativa);
+        const wordMp = (masteredWords * (MASTERY_XP.ativa + MASTERY_XP.dominada)) + (activeWords * MASTERY_XP.ativa);
+
+        // Credit past exercises (retroactive incremental MP)
+        const exerciseMp =
+            (next.totals.builderExercises || 0) * 2 +
+            (next.totals.flashcardReviews || 0) * 2 +
+            (next.totals.productionWrites || 0) * 3 +
+            (next.totals.dialogueTurns || 0) * 3;
+
+        const calculatedMp = wordMp + exerciseMp;
+
+        // Use the higher of persisted vs calculated (never lose progress)
+        next.masteryXp = Math.max(persistedState?.masteryXp || 0, calculatedMp);
     }
 
     return syncStoredStreakMetrics(next);
@@ -575,6 +588,13 @@ export const useProgressStore = create(
                     };
 
                     next = addXpToState(next, firstTry ? 15 : 5, dayKey, firstTry ? 'builder:first-try' : 'builder:complete');
+
+                    // MP incremental: exercício correto gera MP
+                    if (success) {
+                        const mpGain = firstTry ? 5 : 2;
+                        next = { ...next, masteryXp: (next.masteryXp || 0) + mpGain };
+                    }
+
                     const resolved = maybeResolveAutoAdjust(next, { currentLevel, autoAdjustEnabled });
                     adjustment = resolved.adjustment;
                     next = resolved.state;
@@ -614,6 +634,8 @@ export const useProgressStore = create(
                     };
 
                     next = addXpToState(next, 12, dayKey, 'builder:production'); // used by Builder prompt mode
+                    // MP incremental: produção escrita gera MP
+                    next = { ...next, masteryXp: (next.masteryXp || 0) + 3 };
                     return { ...next, achievements: buildAchievements(next) };
                 });
             },
@@ -752,6 +774,14 @@ export const useProgressStore = create(
                     };
 
                     next = addXpToState(next, xpByRating[rating] || 10, dayKey, `flashcard:${rating}`);
+
+                    // MP incremental: flashcard review gera MP
+                    const mpByRating = { nao_lembro: 0, dificil: 1, bom: 2, facil: 2 };
+                    const mpGain = mpByRating[rating] || 0;
+                    if (mpGain > 0) {
+                        next = { ...next, masteryXp: (next.masteryXp || 0) + mpGain };
+                    }
+
                     return { ...next, achievements: buildAchievements(next) };
                 });
             },
@@ -777,6 +807,72 @@ export const useProgressStore = create(
                         },
                     };
                     return { ...updated, achievements: buildAchievements(updated) };
+                });
+            },
+
+            recordErrorPattern: ({ category, wordId, mode = 'assembly' }) => {
+                if (!category || category === 'other') return;
+                set((state) => {
+                    const patterns = { ...(state.errorPatterns || {}) };
+                    const entry = patterns[category] || { count: 0, lastSeen: null, words: [], modes: {} };
+                    const wordSet = new Set(entry.words || []);
+                    if (wordId) wordSet.add(wordId);
+
+                    patterns[category] = {
+                        count: entry.count + 1,
+                        lastSeen: Date.now(),
+                        words: [...wordSet].slice(-20), // keep last 20 unique words
+                        modes: {
+                            ...entry.modes,
+                            [mode]: (entry.modes?.[mode] || 0) + 1,
+                        },
+                    };
+
+                    return { errorPatterns: patterns };
+                });
+            },
+
+            recordDialogueTurn: ({ correct }) => {
+                const dayKey = getDayKey();
+                set((state) => {
+                    let next = withDayRecord(state, dayKey);
+                    next = {
+                        ...next,
+                        totals: {
+                            ...next.totals,
+                            dialogueTurns: (next.totals.dialogueTurns || 0) + 1,
+                        },
+                        dailyStats: {
+                            ...next.dailyStats,
+                            [dayKey]: {
+                                ...next.dailyStats[dayKey],
+                                dialogueTurns: (next.dailyStats[dayKey].dialogueTurns || 0) + 1,
+                            },
+                        },
+                    };
+                    next = addXpToState(next, correct ? 10 : 4, dayKey, correct ? 'dialogue:correct' : 'dialogue:attempt');
+                    // MP incremental: diálogo correto gera MP
+                    if (correct) {
+                        next = { ...next, masteryXp: (next.masteryXp || 0) + 3 };
+                    }
+                    return { ...next, achievements: buildAchievements(next) };
+                });
+            },
+
+            recordDailySession: () => {
+                const dayKey = getDayKey();
+                set((state) => {
+                    const next = withDayRecord(state, dayKey);
+                    return {
+                        ...next,
+                        dailyStats: {
+                            ...next.dailyStats,
+                            [dayKey]: {
+                                ...next.dailyStats[dayKey],
+                                dailySessions: (next.dailyStats[dayKey].dailySessions || 0) + 1,
+                            },
+                        },
+                    };
                 });
             },
 

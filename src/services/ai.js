@@ -30,7 +30,7 @@ async function callAI(config, systemPrompt, userPrompt, signal) {
     if (config.provider === 'openai') {
         return callOpenAI({
             apiKey: config.openaiKey,
-            model: config.openaiModel || 'gpt-4o-mini',
+            model: config.openaiModel || 'gpt-5.4-nano',
             systemPrompt,
             userPrompt,
             signal,
@@ -157,35 +157,37 @@ const SENTENCE_SCHEMA = {
 };
 
 function buildSentencePrompts(word, originalSentence, userLevel) {
-    const systemPrompt = `You generate sentence exercises for an English learning app.
-Return only valid JSON.
-No markdown.
-No commentary.
-Follow the exact schema.
-Use natural English and natural Brazilian Portuguese.
-Keep the output suitable for level ${userLevel || 'B1'}.`;
+    const systemPrompt = `You generate sentence exercises for a Brazilian learner studying English.
+Return ONLY valid JSON. No markdown. No commentary.
+CEFR level: ${userLevel || 'B1'}.
 
-    const userPrompt = `Target word: "${word}"
-Original context: "${originalSentence || ''}"
+CRITICAL RULES:
+- The "english" field must be a natural English sentence that uses the target word.
+- The "portuguese" field must be a 100% NATURAL Brazilian Portuguese translation.
+- NEVER mix English words into the Portuguese translation. The Portuguese must be fully in Portuguese.
+- Example: if target word is "friends", the Portuguese should say "amigos", NOT "friends".
+- Keep sentences about everyday situations (work, school, shopping, food, travel, relationships).
+- Sentences must be short (5-10 words in English).`;
 
-Return exactly:
+    const userPrompt = `Target English word: "${word}"
+${originalSentence ? `Context where user found it: "${originalSentence}"` : ''}
+
+Generate 3 sentences using "${word}" in English with natural Portuguese translations.
+
 {
   "word": "${word}",
   "sentences": [
-    { "english": "...", "portuguese": "...", "type": "positive" },
-    { "english": "...", "portuguese": "...", "type": "negative" },
-    { "english": "...", "portuguese": "...", "type": "past" }
+    { "english": "I made new friends at school.", "portuguese": "Eu fiz novos amigos na escola.", "type": "positive" },
+    { "english": "He doesn't have many friends here.", "portuguese": "Ele não tem muitos amigos aqui.", "type": "negative" },
+    { "english": "We were good friends in college.", "portuguese": "Nós éramos bons amigos na faculdade.", "type": "past" }
   ]
 }
 
 Rules:
-- Exactly 3 sentences.
-- First item type must be "positive".
-- Second item type must be "negative".
-- Third item type must be "past".
-- Every English sentence must use the target word naturally.
-- Keep sentences short to medium length.
-- Do not leave any field empty.`;
+- Exactly 3 sentences: positive, negative, past.
+- "${word}" must appear naturally in every English sentence.
+- Portuguese translations must be 100% in Portuguese — NO English words mixed in.
+- Short everyday sentences matching ${userLevel || 'B1'} level.`;
 
     return { systemPrompt, userPrompt };
 }
@@ -219,29 +221,38 @@ const TRANSLATION_SESSION_SCHEMA = {
 function buildTranslationPrompts(words, cefrLevel) {
     const wordList = words.map(w => w.word).join(', ');
 
-    const systemPrompt = `You generate Portuguese→English translation exercises for a Brazilian English learner.
-Return only valid JSON. No markdown. No commentary. Follow the exact schema.
-Target CEFR level: ${cefrLevel || 'B1'}.`;
+    const systemPrompt = `You generate translation exercises for a Brazilian learner studying English.
+Return ONLY valid JSON. No markdown. No commentary.
+CEFR level: ${cefrLevel || 'B1'}.
 
-    const userPrompt = `Vocabulary words to include (use at least some): ${wordList}
+CRITICAL RULES:
+- "portuguese" field: 100% natural Brazilian Portuguese. NEVER include English words.
+- "english" field: the correct English translation using the target vocabulary word.
+- "alternatives": 1-2 other valid ways to say it in English.
+- "targetWord": the English vocabulary word being practiced.
+- Sentences must be everyday situations a Brazilian would actually say.`;
 
-Generate ${words.length} natural, everyday Brazilian Portuguese sentences. Each sentence must:
-- Use one of the vocabulary words naturally in context
-- Be a realistic everyday situation (shopping, work, family, travel, hobbies, etc.)
-- Match CEFR level ${cefrLevel || 'B1'} (not too simple, not too complex)
-- Have a clear English translation and 1-2 alternative valid English phrasings
+    const userPrompt = `English vocabulary to practice: ${wordList}
 
-Return exactly:
+Generate ${words.length} sentences. The user will see the Portuguese and must translate to English.
+
+Example:
 {
   "sentences": [
     {
       "portuguese": "Ela vai ao mercado toda semana para comprar frutas frescas.",
       "english": "She goes to the market every week to buy fresh fruit.",
-      "alternatives": ["She visits the market every week to buy fresh fruit.", "She goes to the market weekly to buy fresh fruit."],
+      "alternatives": ["She visits the market weekly to buy fresh fruit."],
       "targetWord": "market"
     }
   ]
-}`;
+}
+
+Rules:
+- Portuguese must be 100% in Portuguese — NO English words mixed in.
+- The English translation must naturally use one of these words: ${wordList}
+- Short everyday sentences (8-15 words).
+- Realistic situations: shopping, work, family, cooking, travel, health, hobbies.`;
 
     return { systemPrompt, userPrompt };
 }
@@ -270,6 +281,157 @@ function parseTranslationPayload(raw) {
 }
 
 /**
+ * Gera frases em INGLÊS para exercícios de tradução reversa EN→PT.
+ * O usuário recebe frase em inglês e precisa traduzir para português.
+ * Retorna array de { portuguese, english, alternatives, targetWord } ou null se falhar.
+ */
+function buildReverseTranslationPrompts(words, cefrLevel) {
+    const wordList = words.map(w => w.word).join(', ');
+
+    const systemPrompt = `You generate English→Portuguese translation exercises for a Brazilian learner.
+Return ONLY valid JSON. No markdown. No commentary.
+CEFR level: ${cefrLevel || 'B1'}.
+
+The user will see an English sentence and must translate it to Brazilian Portuguese.
+- "english": the prompt sentence the user sees (must use the target word).
+- "portuguese": the expected Portuguese translation (100% in Portuguese).
+- "alternatives": 1-2 other valid Portuguese phrasings.`;
+
+    const userPrompt = `English vocabulary to practice: ${wordList}
+
+Generate ${words.length} sentences. The user sees English and writes Portuguese.
+
+Example:
+{
+  "sentences": [
+    {
+      "english": "She goes to the market every week to buy fresh fruit.",
+      "portuguese": "Ela vai ao mercado toda semana para comprar frutas frescas.",
+      "alternatives": ["Ela vai à feira toda semana comprar frutas frescas."],
+      "targetWord": "market"
+    }
+  ]
+}
+
+Rules:
+- English sentences must naturally use one of: ${wordList}
+- Portuguese translations must be natural Brazilian Portuguese.
+- Be lenient with alternatives — accept informal and formal phrasings.
+- Short everyday sentences (8-15 words).`;
+
+    return { systemPrompt, userPrompt };
+}
+
+export async function generateReverseTranslationSentences({ words, cefrLevel, config, signal }) {
+    if (!config?.provider || !words?.length) return null;
+
+    const { systemPrompt, userPrompt } = buildReverseTranslationPrompts(words, cefrLevel);
+
+    try {
+        if (config.provider === 'openai') {
+            try {
+                const parsed = await callOpenAIStructured({
+                    apiKey: config.openaiKey,
+                    model: config.openaiModel || 'gpt-5.4-nano',
+                    systemPrompt,
+                    userPrompt,
+                    schemaName: 'langflow_reverse_translation_session',
+                    schema: TRANSLATION_SESSION_SCHEMA,
+                    signal,
+                });
+                return normalizeTranslationSentences(parsed.sentences);
+            } catch {
+                const raw = await callOpenAI({
+                    apiKey: config.openaiKey,
+                    model: config.openaiModel || 'gpt-5.4-nano',
+                    systemPrompt,
+                    userPrompt,
+                    maxTokens: 1200,
+                    signal,
+                });
+                return parseTranslationPayload(raw);
+            }
+        }
+
+        const raw = await callAI(config, systemPrompt, userPrompt, signal);
+        return parseTranslationPayload(raw);
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Avalia tradução reversa EN→PT semanticamente via IA.
+ */
+export async function evaluateSemanticReverseTranslation({ original, expected, userAnswer, userLevel, config, signal }) {
+    if (!config?.provider) {
+        const normalize = (s) => String(s || '').toLowerCase().replace(/[^a-záàâãéèêíïóôõúüç\s]/g, '').split(/\s+/).filter(Boolean);
+        const expectedWords = normalize(expected);
+        const answerWords = new Set(normalize(userAnswer));
+        const matches = expectedWords.filter(w => answerWords.has(w)).length;
+        const correct = expectedWords.length > 0 && matches >= expectedWords.length * 0.6;
+
+        return {
+            correct,
+            note: correct ? 'Correto segundo os critérios básicos offline.' : 'Incorreto. Tente usar as palavras da frase esperada.',
+            fromAI: false,
+        };
+    }
+
+    const systemPrompt = `You are a Portuguese teacher evaluating a translation from English to Brazilian Portuguese.
+Your goal is to accept valid variations of translations, as long as the core meaning, tense, and natural Portuguese phrasing are preserved.
+Be lenient with accent marks and minor spelling variations.
+
+Reply ONLY in valid JSON format:
+{
+  "correct": boolean,
+  "note": string
+}`;
+
+    const userPrompt = `English original: "${original}"
+Expected Portuguese: "${expected}"
+User's translation: "${userAnswer}"
+
+Is the user's translation an acceptable and correct way to say this in Brazilian Portuguese? Respond in JSON.`;
+
+    if (config.provider === 'openai') {
+        try {
+            const parsed = await callOpenAIStructured({
+                apiKey: config.openaiKey,
+                model: config.openaiModel || 'gpt-5.4-nano',
+                systemPrompt,
+                userPrompt,
+                schemaName: 'langflow_reverse_eval',
+                schema: {
+                    type: "object",
+                    properties: {
+                        correct: { type: "boolean" },
+                        note: { type: "string" }
+                    },
+                    required: ["correct", "note"],
+                    additionalProperties: false,
+                },
+                signal,
+            });
+            return { correct: !!parsed.correct, note: parsed.note || '', fromAI: true };
+        } catch {
+            // fall through to text-based
+        }
+    }
+
+    const raw = await callAI(config, systemPrompt, userPrompt, signal);
+    try {
+        const cleaned = raw.replace(/```json?/gi, '').replace(/```/g, '').trim();
+        const start = cleaned.indexOf('{');
+        const end = cleaned.lastIndexOf('}');
+        const parsed = JSON.parse(cleaned.slice(start, end + 1));
+        return { correct: !!parsed.correct, note: parsed.note || '', fromAI: true };
+    } catch {
+        return { correct: false, note: 'Não foi possível avaliar a tradução.', fromAI: false };
+    }
+}
+
+/**
  * Gera frases em português para exercícios de tradução PT→EN (Escrever).
  * Retorna array de { portuguese, english, alternatives, targetWord } ou null se falhar.
  */
@@ -283,7 +445,7 @@ export async function generateTranslationSentences({ words, cefrLevel, config, s
             try {
                 const parsed = await callOpenAIStructured({
                     apiKey: config.openaiKey,
-                    model: config.openaiModel || 'gpt-4o-mini',
+                    model: config.openaiModel || 'gpt-5.4-nano',
                     systemPrompt,
                     userPrompt,
                     schemaName: 'langflow_translation_session',
@@ -294,7 +456,7 @@ export async function generateTranslationSentences({ words, cefrLevel, config, s
             } catch {
                 const raw = await callOpenAI({
                     apiKey: config.openaiKey,
-                    model: config.openaiModel || 'gpt-4o-mini',
+                    model: config.openaiModel || 'gpt-5.4-nano',
                     systemPrompt,
                     userPrompt,
                     maxTokens: 1200,
@@ -367,7 +529,7 @@ export async function generateSentences({ word, originalSentence, userLevel, con
         try {
             const parsed = await callOpenAIStructured({
                 apiKey: config.openaiKey,
-                model: config.openaiModel || 'gpt-5-mini',
+                model: config.openaiModel || 'gpt-5.4-nano',
                 systemPrompt,
                 userPrompt,
                 schemaName: 'langflow_sentence_set',
@@ -382,7 +544,7 @@ export async function generateSentences({ word, originalSentence, userLevel, con
         } catch {
             const raw = await callOpenAI({
                 apiKey: config.openaiKey,
-                model: config.openaiModel || 'gpt-5-mini',
+                model: config.openaiModel || 'gpt-5.4-nano',
                 systemPrompt,
                 userPrompt,
                 maxTokens: 800,
@@ -411,22 +573,353 @@ export async function generateSentences({ word, originalSentence, userLevel, con
 /**
  * Explica um erro gramatical ou de construção de frase (M3/Builder)
  */
-export async function explainGrammarError({ expected, userAnswer, userLevel, config, signal }) {
+/**
+ * Error categories for tracking patterns.
+ * The AI will classify errors into one of these buckets.
+ */
+export const ERROR_CATEGORIES = [
+    'word_order',
+    'verb_tense',
+    'preposition',
+    'article',
+    'spelling',
+    'vocabulary',
+    'plural_singular',
+    'pronoun',
+    'conjunction',
+    'other',
+];
+
+/**
+ * Traduz uma frase EN→PT para contextual flashcards (sentence mining).
+ */
+export async function translateSentenceForContext({ sentence, word, config, signal }) {
+    if (!config?.provider) return null;
+
+    const systemPrompt = `You translate English sentences to natural Brazilian Portuguese.
+Return only the Portuguese translation, nothing else. No quotes, no explanation.`;
+
+    const userPrompt = `Translate to Brazilian Portuguese:
+"${sentence}"
+(Target vocabulary word: "${word}")`;
+
+    try {
+        const raw = await callAI(config, systemPrompt, userPrompt, signal);
+        return raw?.trim().replace(/^["']|["']$/g, '') || null;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Gera exercícios de reforço direcionado baseados em categorias fracas.
+ */
+export async function generateReinforcementExercises({ words, weakCategories, cefrLevel, config, signal }) {
+    if (!config?.provider || !words?.length || !weakCategories?.length) return null;
+
+    const categoryDescriptions = {
+        word_order: 'word order in sentences',
+        verb_tense: 'verb tense usage (past, present, future, perfect)',
+        preposition: 'preposition choice (in, on, at, for, to, with, by)',
+        article: 'article usage (a, an, the, zero article)',
+        spelling: 'common spelling mistakes',
+        vocabulary: 'vocabulary precision and word choice',
+        plural_singular: 'singular vs plural forms',
+        pronoun: 'pronoun usage (he/him/his, they/them)',
+        conjunction: 'connecting words (and, but, because, although)',
+    };
+
+    const focusAreas = weakCategories.map(cat => categoryDescriptions[cat] || cat).join('; ');
+    const wordList = words.map(w => w.word || w).join(', ');
+
+    const systemPrompt = `You generate targeted PT→EN translation exercises for a Brazilian English learner.
+These exercises specifically test weak grammar areas: ${focusAreas}.
+Return only valid JSON. No markdown. Target CEFR level: ${cefrLevel || 'B1'}.`;
+
+    const userPrompt = `Vocabulary words: ${wordList}
+Weak grammar areas to test: ${focusAreas}
+
+Generate ${Math.max(words.length, 2)} Portuguese sentences that specifically create opportunities for the listed grammar mistakes.
+
+Return:
+{
+  "sentences": [
+    {
+      "portuguese": "...",
+      "english": "...",
+      "alternatives": ["..."],
+      "targetWord": "...",
+      "focusCategory": "preposition"
+    }
+  ]
+}`;
+
+    try {
+        if (config.provider === 'openai') {
+            try {
+                const parsed = await callOpenAIStructured({
+                    apiKey: config.openaiKey,
+                    model: config.openaiModel || 'gpt-5.4-nano',
+                    systemPrompt,
+                    userPrompt,
+                    schemaName: 'langflow_reinforcement',
+                    schema: TRANSLATION_SESSION_SCHEMA,
+                    signal,
+                });
+                return normalizeTranslationSentences(parsed.sentences);
+            } catch {
+                const raw = await callOpenAI({
+                    apiKey: config.openaiKey,
+                    model: config.openaiModel || 'gpt-5.4-nano',
+                    systemPrompt,
+                    userPrompt,
+                    maxTokens: 1200,
+                    signal,
+                });
+                return parseTranslationPayload(raw);
+            }
+        }
+
+        const raw = await callAI(config, systemPrompt, userPrompt, signal);
+        return parseTranslationPayload(raw);
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Gera um micro-diálogo situacional para prática conversacional.
+ */
+export async function generateMicroDialogue({ words, cefrLevel, focusCategory, config, signal }) {
+    if (!config?.provider) return null;
+
+    const wordList = words?.length ? words.map(w => w.word || w).join(', ') : '';
+    const focusNote = focusCategory ? `Try to create situations that test ${focusCategory} usage.` : '';
+
+    const systemPrompt = `You create the FIRST message of a natural English conversation for a Brazilian ${cefrLevel || 'A2'} learner.
+Return ONLY valid JSON. No markdown.
+
+IMPORTANT: This is a CONVERSATIONAL exercise. The AI starts with ONE line, and the user will respond freely.
+The dialogue is NOT pre-scripted — the user responds naturally and the system continues the conversation dynamically.
+
+Rules:
+- Scene description in Portuguese (natural, informal).
+- The AI's first line must be simple, friendly, and invite a response.
+- Include a Portuguese translation of the AI line.
+- Use everyday vocabulary matching ${cefrLevel || 'A2'} level.
+- Scenarios: café, supermarket, airport, hotel, doctor, restaurant, bus, clothing store, gym, park, school, work, etc.`;
+
+    const userPrompt = `Create a conversation starter for level ${cefrLevel || 'A2'}.
+${wordList ? `Try to create a scenario where these words might come up: ${wordList}` : ''}
+${focusNote}
+
+Return ONLY the scene + the FIRST AI line. The rest of the conversation will happen dynamically.
+
+{
+  "scene": "Você está num café. Você encontra um colega de trabalho que não via há tempo.",
+  "turns": [
+    { "role": "ai", "text": "Hey! Long time no see! How have you been?", "textPT": "Oi! Quanto tempo! Como você tem passado?" }
+  ],
+  "targetWords": ["been", "time"]
+}
+
+Rules:
+- Only 1 AI turn (the opening line). The conversation continues dynamically.
+- The scene must be relatable and specific (not generic).
+- The AI line should be warm and naturally invite a response.
+- Keep the English simple for ${cefrLevel || 'A2'} level.`;
+
+    const DIALOGUE_SCHEMA = {
+        type: "object",
+        properties: {
+            scene: { type: "string" },
+            turns: {
+                type: "array",
+                items: {
+                    type: "object",
+                    properties: {
+                        role: { type: "string", enum: ["ai", "user"] },
+                        text: { type: "string" },
+                        textPT: { type: "string" },
+                        expectedEN: { type: "string" },
+                        alternatives: { type: "array", items: { type: "string" } },
+                    },
+                    required: ["role"],
+                    additionalProperties: false,
+                },
+            },
+            targetWords: { type: "array", items: { type: "string" } },
+        },
+        required: ["scene", "turns"],
+        additionalProperties: false,
+    };
+
+    try {
+        if (config.provider === 'openai') {
+            try {
+                return await callOpenAIStructured({
+                    apiKey: config.openaiKey,
+                    model: config.openaiModel || 'gpt-5.4-nano',
+                    systemPrompt,
+                    userPrompt,
+                    schemaName: 'langflow_dialogue',
+                    schema: DIALOGUE_SCHEMA,
+                    signal,
+                });
+            } catch {
+                // fall through
+            }
+        }
+
+        const raw = await callAI(config, systemPrompt, userPrompt, signal);
+        const cleaned = raw.replace(/```json?/gi, '').replace(/```/g, '').trim();
+        const start = cleaned.indexOf('{');
+        const end = cleaned.lastIndexOf('}');
+        return JSON.parse(cleaned.slice(start, end + 1));
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Avalia resposta do usuário em um micro-diálogo.
+ */
+/**
+ * Avalia resposta do usuário num micro-diálogo de forma conversacional.
+ * Retorna:
+ *   understandable: boolean — se a IA consegue entender e continuar
+ *   corrections: string — erros anotados (vazio se perfeito)
+ *   correctedVersion: string — versão corrigida da frase
+ *   nextAiLine: string — próxima fala da IA continuando a conversa
+ *   nextAiLinePT: string — tradução da próxima fala
+ */
+export async function evaluateDialogueResponse({ scene, aiLine, userResponse, conversationSoFar, userLevel, config, signal }) {
     if (!config?.provider) {
-        return { text: 'Verifique a ordem das palavras e tente novamente.', fromAI: false };
+        return { understandable: true, corrections: '', correctedVersion: '', nextAiLine: '', nextAiLinePT: '' };
     }
 
-    const systemPrompt = `You are a friendly English grammar tutor. Correct the user's mistake.
-The user's English level is ${userLevel || 'B1'}.
-Explain briefly (1-2 sentences) why their answer is wrong and why the expected answer is correct.
-Speak directly to the user in Portuguese, but keep English words in quotes. Be encouraging.`;
+    const EVAL_SCHEMA = {
+        type: "object",
+        properties: {
+            understandable: { type: "boolean" },
+            corrections: { type: "string" },
+            correctedVersion: { type: "string" },
+            nextAiLine: { type: "string" },
+            nextAiLinePT: { type: "string" },
+        },
+        required: ["understandable", "corrections", "correctedVersion", "nextAiLine", "nextAiLinePT"],
+        additionalProperties: false,
+    };
 
-    const userPrompt = `Expected correct phrase: "${expected}"
-User typed: "${userAnswer}"
-Explain the mistake.`;
+    const systemPrompt = `You are a friendly English conversation partner for a Brazilian ${userLevel || 'A2'} learner.
+Scene: ${scene}
 
-    const text = await callAI(config, systemPrompt, userPrompt, signal);
-    return { text, fromAI: true };
+You are having a NATURAL conversation. Your job:
+1. Decide if the user's reply makes sense in context (understandable = true/false)
+2. Silently note grammar errors (the user will see these LATER, not now)
+3. Continue the conversation naturally
+
+Rules:
+- understandable: false ONLY if completely incomprehensible or totally random/off-topic
+- corrections: brief notes in Portuguese about errors (e.g., "faltou 'the' antes de 'market'", "verbo deveria ser 'went' no passado"). Empty string "" if perfect.
+- correctedVersion: the user's sentence properly corrected. Copy user input exactly if perfect.
+- nextAiLine: YOUR next conversational line in English. Be natural, ask follow-up questions, react to what they said. Keep it simple for ${userLevel || 'A2'}.
+- nextAiLinePT: Brazilian Portuguese translation of your line.
+
+IMPORTANT: You are a conversation PARTNER, not a teacher. React to the CONTENT of what the user says, not to their grammar. If they say something interesting, engage with it!
+
+Reply ONLY in valid JSON.`;
+
+    const historyText = (conversationSoFar || [])
+        .map(t => `${t.role === 'ai' ? 'AI' : 'User'}: ${t.text}`)
+        .join('\n');
+
+    const userPrompt = `${historyText ? `Conversation:\n${historyText}\n` : ''}AI: ${aiLine}
+User: ${userResponse}
+
+Continue the conversation naturally. Reply in JSON.`;
+
+    try {
+        if (config.provider === 'openai') {
+            try {
+                const parsed = await callOpenAIStructured({
+                    apiKey: config.openaiKey,
+                    model: config.openaiModel || 'gpt-5.4-nano',
+                    systemPrompt,
+                    userPrompt,
+                    schemaName: 'langflow_dialogue_eval_v2',
+                    schema: EVAL_SCHEMA,
+                    signal,
+                });
+                return {
+                    understandable: parsed.understandable !== false,
+                    corrections: parsed.corrections || '',
+                    correctedVersion: parsed.correctedVersion || userResponse,
+                    nextAiLine: parsed.nextAiLine || '',
+                    nextAiLinePT: parsed.nextAiLinePT || '',
+                    fromAI: true,
+                };
+            } catch {
+                // fall through
+            }
+        }
+
+        const raw = await callAI(config, systemPrompt, userPrompt, signal);
+        const cleaned = raw.replace(/```json?/gi, '').replace(/```/g, '').trim();
+        const start = cleaned.indexOf('{');
+        const end = cleaned.lastIndexOf('}');
+        const parsed = JSON.parse(cleaned.slice(start, end + 1));
+        return {
+            understandable: parsed.understandable !== false,
+            corrections: parsed.corrections || '',
+            correctedVersion: parsed.correctedVersion || userResponse,
+            nextAiLine: parsed.nextAiLine || '',
+            nextAiLinePT: parsed.nextAiLinePT || '',
+            fromAI: true,
+        };
+    } catch {
+        return { understandable: true, corrections: '', correctedVersion: userResponse, nextAiLine: '', nextAiLinePT: '' };
+    }
+}
+
+export async function explainGrammarError({ expected, userAnswer, userLevel, config, signal }) {
+    if (!config?.provider) {
+        return { text: 'Verifique a ordem das palavras e tente novamente.', fromAI: false, errorCategory: 'other' };
+    }
+
+    const categoriesList = ERROR_CATEGORIES.join(', ');
+
+    const systemPrompt = `You are a friendly English tutor helping a Brazilian learner (level ${userLevel || 'B1'}).
+Explain the mistake in Portuguese. Be brief, specific, and encouraging.
+
+Format your response like this:
+1. What was wrong (1 sentence, be specific about the grammar rule)
+2. Why the correct version works (1 sentence)
+3. A simple tip to remember (1 sentence, practical)
+
+Keep English words in "quotes". Use informal Portuguese (você, não tu).
+
+IMPORTANT: On the VERY LAST line, write ONLY one error category from: ${categoriesList}
+Nothing else on that line — just the category tag.`;
+
+    const userPrompt = `Frase correta: "${expected}"
+O aluno escreveu: "${userAnswer}"
+
+Explique o erro de forma clara e curta.`;
+
+    const rawText = await callAI(config, systemPrompt, userPrompt, signal);
+
+    // Parse category from last line
+    const lines = rawText.trim().split('\n').filter(l => l.trim());
+    const lastLine = (lines.at(-1) || '').trim().toLowerCase().replace(/[^a-z_]/g, '');
+    const errorCategory = ERROR_CATEGORIES.includes(lastLine) ? lastLine : 'other';
+
+    // Remove category tag from displayed explanation
+    const text = errorCategory !== 'other' && lines.length > 1
+        ? lines.slice(0, -1).join('\n').trim()
+        : rawText.trim();
+
+    return { text, fromAI: true, errorCategory };
 }
 
 /**
@@ -467,7 +960,7 @@ Is the user's translation an acceptable and correct way to say this in English? 
         try {
             const parsed = await callOpenAIStructured({
                 apiKey: config.openaiKey,
-                model: config.openaiModel || 'gpt-5-mini',
+                model: config.openaiModel || 'gpt-5.4-nano',
                 systemPrompt,
                 userPrompt,
                 schemaName: 'langflow_translation_eval',

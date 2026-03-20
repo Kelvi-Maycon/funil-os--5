@@ -27,6 +27,7 @@ import { shuffle } from '../../utils/shuffle.js';
 import { buildBuilderExercises, selectBuilderWords, buildMixedExercises } from './session.js';
 import { buildClozeExercises, buildTransformExercises, selectDailyPromptTargets } from './practiceModes.js';
 import PageHeader from '../shared/PageHeader.jsx';
+import SpeakButton from '../shared/SpeakButton.jsx';
 import { EyeIcon, PencilIcon, PlayIcon, PuzzleIcon, RefreshCwIcon, ReloadIcon, SparkIcon, TypeIcon } from '../shared/icons.jsx';
 
 const AI_WARMUP_TIMEOUT_MS = 5000;
@@ -211,8 +212,9 @@ function applyGuidedPracticeResult({
 
 function SentenceExercise({ exercise, onComplete, onSave }) {
     const { markBuilderResult } = useWordStore();
-    const { recordBuilderExercise, recordProductionWrite } = useProgressStore();
+    const { recordBuilderExercise, recordProductionWrite, recordErrorPattern } = useProgressStore();
     const { config, setConfig } = useConfig();
+    const { pushToast } = useUiStore();
 
     // Prefixo único por instância de exercício — garante IDs únicos no DndContext
     const tokenPrefixRef = useRef(`${exercise.sentence.id}_${Date.now()}`);
@@ -295,8 +297,17 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
                         config
                     }).then(res => {
                         setExplanation(res.text);
+                        if (res.errorCategory) {
+                            recordErrorPattern({ category: res.errorCategory, wordId: exercise.wordId, mode: 'assembly' });
+                        }
                     }).catch(err => {
                         console.error("AI Explanation failed", err);
+                        pushToast({
+                            kind: 'warning',
+                            source: 'builder',
+                            title: 'Explicação indisponível',
+                            description: 'Não foi possível carregar a explicação. Tente novamente.',
+                        });
                     }).finally(() => setIsExplaining(false));
                 });
             }
@@ -454,7 +465,7 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
             {result === 'correct' && (
                 <div className="builder-feedback builder-feedback-success mt-lg">
                     <div className="builder-feedback-title">✅ Resposta correta</div>
-                    <div className="builder-feedback-text">{exercise.sentence.english}</div>
+                    <div className="builder-feedback-text flex items-center gap-2">{exercise.sentence.english} <SpeakButton text={exercise.sentence.english} size={14} /></div>
                 </div>
             )}
 
@@ -470,8 +481,8 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
             {result === 'incorrect' && (
                 <div className="builder-feedback builder-feedback-error mt-lg">
                     <div className="builder-feedback-title">❌ Resposta encerrada</div>
-                    <div className="builder-feedback-text">
-                        A frase correta era: <strong>{exercise.sentence.english}</strong>
+                    <div className="builder-feedback-text flex items-center gap-2">
+                        A frase correta era: <strong>{exercise.sentence.english}</strong> <SpeakButton text={exercise.sentence.english} size={14} />
                     </div>
 
                     {isExplaining && (
@@ -548,8 +559,9 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
 
 function TransformExercise({ exercise, onComplete }) {
     const { markBuilderResult } = useWordStore();
-    const { recordBuilderExercise } = useProgressStore();
+    const { recordBuilderExercise, recordErrorPattern } = useProgressStore();
     const { config, setConfig } = useConfig();
+    const { pushToast } = useUiStore();
     const [answer, setAnswer] = useState('');
     const [attempts, setAttempts] = useState(0);
     const [result, setResult] = useState(null);
@@ -588,8 +600,17 @@ function TransformExercise({ exercise, onComplete }) {
                         config
                     }).then(res => {
                         setExplanation(res.text);
+                        if (res.errorCategory) {
+                            recordErrorPattern({ category: res.errorCategory, wordId: exercise.wordId, mode: 'transform' });
+                        }
                     }).catch(err => {
                         console.error("AI Explanation failed", err);
+                        pushToast({
+                            kind: 'warning',
+                            source: 'builder',
+                            title: 'Explicação indisponível',
+                            description: 'Não foi possível carregar a explicação. Tente novamente.',
+                        });
                     }).finally(() => setIsExplaining(false));
                 });
             }
@@ -656,14 +677,14 @@ function TransformExercise({ exercise, onComplete }) {
             {result === 'correct' && (
                 <div className="builder-feedback builder-feedback-success mt-lg">
                     <div className="builder-feedback-title">✅ Transformação correta</div>
-                    <div className="builder-feedback-text">{exercise.expectedSentence}</div>
+                    <div className="builder-feedback-text flex items-center gap-2">{exercise.expectedSentence} <SpeakButton text={exercise.expectedSentence} size={14} /></div>
                 </div>
             )}
 
             {result === 'incorrect' && (
                 <div className="builder-feedback builder-feedback-error mt-lg">
                     <div className="builder-feedback-title">❌ Tentativas encerradas</div>
-                    <div className="builder-feedback-text">{exercise.expectedSentence}</div>
+                    <div className="builder-feedback-text flex items-center gap-2">{exercise.expectedSentence} <SpeakButton text={exercise.expectedSentence} size={14} /></div>
                     
                     {isExplaining && (
                         <div className="mt-4 p-3 bg-red-50/50 rounded-lg border border-red-100/50 flex items-center gap-3">
@@ -700,8 +721,9 @@ function TransformExercise({ exercise, onComplete }) {
 
 function ClozeExercise({ exercise, onComplete }) {
     const { markBuilderResult } = useWordStore();
-    const { recordBuilderExercise } = useProgressStore();
+    const { recordBuilderExercise, recordErrorPattern } = useProgressStore();
     const { config, setConfig } = useConfig();
+    const { pushToast } = useUiStore();
     const [answer, setAnswer] = useState('');
     const [attempts, setAttempts] = useState(0);
     const [result, setResult] = useState(null);
@@ -740,8 +762,17 @@ function ClozeExercise({ exercise, onComplete }) {
                         config
                     }).then(res => {
                         setExplanation(res.text);
+                        if (res.errorCategory) {
+                            recordErrorPattern({ category: res.errorCategory, wordId: exercise.wordId, mode: 'cloze' });
+                        }
                     }).catch(err => {
                         console.error("AI Explanation failed", err);
+                        pushToast({
+                            kind: 'warning',
+                            source: 'builder',
+                            title: 'Explicação indisponível',
+                            description: 'Não foi possível carregar a explicação. Tente novamente.',
+                        });
                     }).finally(() => setIsExplaining(false));
                 });
             }
@@ -806,14 +837,14 @@ function ClozeExercise({ exercise, onComplete }) {
             {result === 'correct' && (
                 <div className="builder-feedback builder-feedback-success mt-lg">
                     <div className="builder-feedback-title">✅ Lacuna correta</div>
-                    <div className="builder-feedback-text">{exercise.english}</div>
+                    <div className="builder-feedback-text flex items-center gap-2">{exercise.english} <SpeakButton text={exercise.english} size={14} /></div>
                 </div>
             )}
 
             {result === 'incorrect' && (
                 <div className="builder-feedback builder-feedback-error mt-lg">
                     <div className="builder-feedback-title">❌ Resposta correta</div>
-                    <div className="builder-feedback-text">{exercise.expectedText}</div>
+                    <div className="builder-feedback-text flex items-center gap-2">{exercise.expectedText} <SpeakButton text={exercise.expectedText} size={14} /></div>
 
                     {isExplaining && (
                         <div className="mt-4 p-3 bg-red-50/50 rounded-lg border border-red-100/50 flex items-center gap-3">
@@ -853,38 +884,65 @@ function DailyPromptPanel({ targets }) {
     const { publishMilestone, pushToast } = useUiStore();
     const todayKey = useMemo(() => new Date().toLocaleDateString('en-CA'), []);
     const existingSubmission = dailyPromptHistory?.[todayKey] || null;
+    const [currentIdx, setCurrentIdx] = useState(0);
     const [answers, setAnswers] = useState(() => targets.map(() => ''));
+    const [submitted, setSubmitted] = useState(() => targets.map(() => false));
     const [feedback, setFeedback] = useState(existingSubmission ? { type: 'info', text: 'Prompt de hoje já concluído.' } : null);
 
-    const handleSubmit = () => {
-        if (existingSubmission) {
-            setFeedback({ type: 'info', text: 'Prompt de hoje já foi enviado.' });
+    const allDone = submitted.every(Boolean) || Boolean(existingSubmission);
+    const target = targets[currentIdx];
+    const completedCount = submitted.filter(Boolean).length;
+
+    const handleSubmitWord = () => {
+        const answer = (answers[currentIdx] || '').trim();
+        if (!answer) {
+            setFeedback({ type: 'warning', text: 'Escreva uma frase antes de enviar.' });
             return;
         }
 
-        if (answers.some((answer) => !answer.trim())) {
-            setFeedback({ type: 'warning', text: 'Preencha as 3 frases antes de enviar.' });
+        // Validação mínima de qualidade
+        const wordCount = answer.split(/\s+/).filter(Boolean).length;
+        if (wordCount < 4) {
+            setFeedback({ type: 'warning', text: 'Escreva uma frase mais completa (pelo menos 4 palavras).' });
             return;
         }
 
-        const invalidIndex = answers.findIndex((answer, index) => !containsLexiconText(answer, targets[index]?.wordText));
-        if (invalidIndex !== -1) {
-            setFeedback({
-                type: 'warning',
-                text: `A frase ${invalidIndex + 1} precisa usar o termo "${targets[invalidIndex].wordText}".`,
+        // Rejeitar repetição da mesma palavra
+        const uniqueWords = new Set(answer.toLowerCase().split(/\s+/).filter(Boolean));
+        if (uniqueWords.size < 3) {
+            setFeedback({ type: 'warning', text: 'Use palavras variadas para formar uma frase natural.' });
+            return;
+        }
+
+        if (!containsLexiconText(answer, target?.wordText)) {
+            setFeedback({ type: 'warning', text: `Sua frase precisa usar a palavra "${target.wordText}".` });
+            return;
+        }
+
+        const nextSubmitted = [...submitted];
+        nextSubmitted[currentIdx] = true;
+        setSubmitted(nextSubmitted);
+        setFeedback({ type: 'success', text: `"${target.wordText}" ✓ concluída!` });
+
+        // Check if all words are done
+        if (nextSubmitted.every(Boolean)) {
+            const result = recordDailyPromptCompletion({
+                wordIds: targets.map((t) => t.wordId),
+                answers,
+                targets: targets.map((t) => t.wordText),
             });
-            return;
+            setFeedback(result.alreadyCompleted
+                ? { type: 'info', text: 'Prompt de hoje já havia sido concluído.' }
+                : { type: 'success', text: `Todas as ${targets.length} palavras concluídas! XP registrado.` });
+        } else {
+            // Auto-advance to next incomplete word after a short delay
+            setTimeout(() => {
+                const nextIncomplete = nextSubmitted.findIndex((s, i) => !s && i > currentIdx);
+                const fallback = nextSubmitted.findIndex((s) => !s);
+                setCurrentIdx(nextIncomplete !== -1 ? nextIncomplete : fallback);
+                setFeedback(null);
+            }, 800);
         }
-
-        const result = recordDailyPromptCompletion({
-            wordIds: targets.map((target) => target.wordId),
-            answers,
-            targets: targets.map((target) => target.wordText),
-        });
-
-        setFeedback(result.alreadyCompleted
-            ? { type: 'info', text: 'Prompt de hoje já havia sido concluído.' }
-            : { type: 'success', text: 'Prompt diário concluído. XP e progresso registrados.' });
     };
 
     if (targets.length === 0) {
@@ -900,56 +958,105 @@ function DailyPromptPanel({ targets }) {
     return (
         <div className="bg-white rounded-[2rem] p-6 lg:p-10 shadow-soft border border-neutral-100 mb-8 relative overflow-hidden">
             <div className="absolute right-0 top-0 bottom-0 w-64 bg-gradient-to-l from-violet-50/80 to-transparent pointer-events-none"></div>
-            
+
             <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-100 border border-violet-200 mb-6 w-max shadow-inner-soft">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-100 border border-violet-200 mb-4 w-max shadow-inner-soft">
                     <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></span>
                     <span className="text-[10px] font-bold text-violet-700 uppercase tracking-widest">Daily Prompt</span>
                 </div>
-                <h3 className="text-3xl font-extrabold text-neutral-900 mb-2 tracking-tight">Escreva 3 frases usando os termos do dia.</h3>
-                <p className="text-sm text-neutral-500 max-w-xl mb-8">Essa prática vale bastante XP e consolida o vocabulário recente.</p>
+
+                <h3 className="text-2xl font-extrabold text-neutral-900 mb-1 tracking-tight">
+                    Escreva uma frase com cada palavra do dia.
+                </h3>
+                <p className="text-sm text-neutral-500 mb-6">
+                    Palavra {currentIdx + 1} de {targets.length} · {completedCount} concluída{completedCount !== 1 ? 's' : ''}
+                </p>
+
+                {/* Progress dots */}
+                <div className="flex gap-2 mb-8">
+                    {targets.map((t, i) => (
+                        <button
+                            key={t.wordId}
+                            onClick={() => !allDone && setCurrentIdx(i)}
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                                i === currentIdx ? 'w-8 bg-violet-600' :
+                                submitted[i] ? 'w-4 bg-green-400' :
+                                'w-2 bg-neutral-200'
+                            } ${!allDone ? 'cursor-pointer hover:opacity-80' : ''}`}
+                        />
+                    ))}
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
-                {targets.map((target, index) => (
-                    <div key={target.wordId} className="bg-neutral-50/80 rounded-2xl p-6 border border-neutral-200/60 shadow-inner-soft hover:border-violet-200 transition-colors group">
-                        <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-1 group-hover:text-violet-500 transition-colors">Termo {index + 1}</div>
-                        <div className="text-xl font-bold text-neutral-900 group-hover:text-violet-700 transition-colors">{target.wordText}</div>
-                        <div className="mt-2 text-xs font-semibold text-neutral-500 bg-white px-3 py-1.5 rounded-lg border border-neutral-100 shadow-sm inline-block">
-                            {target.entryType === 'collocation' ? 'Use a expressão inteira na frase.' : 'Use a palavra em uma frase natural.'}
+            {/* Current word card */}
+            {!allDone && target && (
+                <div className="relative z-10 max-w-2xl">
+                    <div className="bg-neutral-50/80 rounded-2xl p-6 border border-neutral-200/60 shadow-inner-soft">
+                        <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-1">
+                            Palavra {currentIdx + 1}
+                        </div>
+                        <div className="text-3xl font-bold text-violet-700 mb-3">{target.wordText}</div>
+                        <div className="text-xs font-semibold text-neutral-500 bg-white px-3 py-1.5 rounded-lg border border-neutral-100 shadow-sm inline-block mb-4">
+                            {target.entryType === 'collocation' ? 'Use a expressão inteira na frase.' : 'Escreva uma frase em inglês usando esta palavra.'}
                         </div>
                         <textarea
-                            className="w-full mt-4 p-4 bg-white border border-neutral-200 hover:border-neutral-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-xl text-sm transition-all outline-none resize-none shadow-sm disabled:opacity-60 disabled:bg-neutral-50"
-                            style={{ minHeight: 110 }}
-                            disabled={Boolean(existingSubmission)}
-                            value={answers[index] || ''}
+                            className="w-full p-4 bg-white border border-neutral-200 hover:border-neutral-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-xl text-base transition-all outline-none resize-none shadow-sm"
+                            style={{ minHeight: 100 }}
+                            disabled={submitted[currentIdx]}
+                            value={answers[currentIdx] || ''}
                             onChange={(event) => {
                                 const nextAnswers = [...answers];
-                                nextAnswers[index] = event.target.value;
+                                nextAnswers[currentIdx] = event.target.value;
                                 setAnswers(nextAnswers);
                             }}
-                            placeholder={`Exemplo com "${target.wordText}"...`}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSubmitWord();
+                                }
+                            }}
+                            placeholder={`Use "${target.wordText}" em uma frase natural...`}
+                            autoFocus
                         />
+
+                        <div className="flex gap-3 mt-4">
+                            <button
+                                className="flex-1 bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-xl font-bold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                onClick={handleSubmitWord}
+                                disabled={submitted[currentIdx] || !answers[currentIdx]?.trim()}
+                            >
+                                <SparkIcon size={16} />
+                                Enviar
+                            </button>
+                        </div>
                     </div>
-                ))}
-            </div>
+                </div>
+            )}
+
+            {/* All done summary */}
+            {allDone && (
+                <div className="relative z-10 text-center py-6">
+                    <div className="text-4xl mb-3">🎉</div>
+                    <h4 className="text-xl font-bold text-neutral-900 mb-2">
+                        {targets.length} palavra{targets.length > 1 ? 's' : ''} concluída{targets.length > 1 ? 's' : ''}!
+                    </h4>
+                    <div className="flex flex-col gap-2 max-w-lg mx-auto mt-4">
+                        {targets.map((t, i) => (
+                            <div key={t.wordId} className="flex items-center gap-3 bg-green-50 rounded-xl p-3 border border-green-200 text-left">
+                                <span className="text-green-500 font-bold">✓</span>
+                                <span className="font-bold text-neutral-700">{t.wordText}</span>
+                                <span className="text-sm text-neutral-500 italic truncate flex-1">&ldquo;{answers[i]}&rdquo;</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {feedback && (
                 <div className={`mt-6 p-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm relative z-10 ${feedback.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : feedback.type === 'info' ? 'bg-violet-50 text-violet-700 border border-violet-200' : 'bg-orange-50 text-orange-700 border border-orange-200'}`}>
                     {feedback.text}
                 </div>
             )}
-
-            <div className="flex justify-center mt-8 relative z-10">
-                <button 
-                    className="bg-neutral-900 hover:bg-black text-white px-10 py-4 rounded-2xl font-bold shadow-lg transition-transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-3" 
-                    onClick={handleSubmit} 
-                    disabled={Boolean(existingSubmission)}
-                >
-                    <SparkIcon size={18} className={!existingSubmission ? 'text-violet-300' : ''} />
-                    Enviar Prompt do Dia
-                </button>
-            </div>
         </div>
     );
 }
@@ -1030,7 +1137,7 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
                 promptTargets: selectDailyPromptTargets({
                     words: bankWords,
                     userLevel: config.userLevel,
-                    limit: 3,
+                    limit: config.builder?.dailyPromptWords ?? 3,
                 }),
             };
 

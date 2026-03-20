@@ -122,7 +122,7 @@ function DashboardIcon({ achievementKey, size = 18 }) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const [chartWindow, setChartWindow] = useState(30);
-  const { config } = useConfig();
+  const { config, setConfig } = useConfig();
   const { words } = useWordStore();
   const { flashcards } = useCardStore();
   const { dailyStats, dailyPromptHistory, totals, xp, masteryXp = 0, achievements } = useProgressStore();
@@ -295,6 +295,19 @@ export default function Dashboard() {
   const masteryInfo = computeMasteryLevel(masteryXp);
   const { progressInLevel: masteryProgressInLevel, levelRange: masteryRangeSize, progressPct: masteryProgressPct } = masteryInfo;
 
+  // Auto-sync config.userLevel with computed mastery level (only upgrade, never downgrade)
+  useEffect(() => {
+    const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
+    const computedId = masteryInfo.current?.id;
+    if (computedId && computedId !== config.userLevel) {
+      const computedIdx = LEVELS.indexOf(computedId);
+      const currentIdx = LEVELS.indexOf(config.userLevel);
+      if (computedIdx > currentIdx) {
+        setConfig({ userLevel: computedId });
+      }
+    }
+  }, [masteryInfo.current?.id, config.userLevel, setConfig]);
+
   // XP period stats
   const xpToday = (todayStats.xp || 0) + (todayStats.streakBonus || 0);
   const xpWeek = computePeriodXp(dailyStats, 7);
@@ -380,7 +393,7 @@ export default function Dashboard() {
               <p className="text-neutral-500 text-lg md:text-xl mb-8 leading-relaxed max-w-md">
                 {nextStep.description || 'Importe um texto ou legenda para iniciar o ciclo de estudo de hoje.'}
               </p>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 flex-wrap">
                 <button
                   onClick={() => navigate(nextStep.route)}
                   className={`font-semibold px-8 py-3.5 rounded-full text-white shadow-lg transition-all flex items-center gap-2 transform hover:-translate-y-0.5 ${nextStep.priority === 'high'
@@ -390,6 +403,13 @@ export default function Dashboard() {
                 >
                   <PlayIcon size={20} />
                   {nextStep.cta}
+                </button>
+                <button
+                  onClick={() => navigate('/study')}
+                  className="font-semibold px-8 py-3.5 rounded-full text-white shadow-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/25 flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
+                >
+                  <PlayIcon size={20} />
+                  Estudar (15 min)
                 </button>
               </div>
             </div>
@@ -588,17 +608,17 @@ export default function Dashboard() {
           </section>
 
           {/* Captures & Achievement Panel */}
-          <div className="col-span-12 lg:col-span-4 grid grid-rows-2 gap-6">
-            <section className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col">
+          <div className="col-span-12 lg:col-span-4 grid grid-rows-2 gap-6 min-w-0">
+            <section className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col overflow-hidden min-w-0">
               <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Capturas recentes</p>
 
-              <div className="flex-1 bg-neutral-50 border border-neutral-100 rounded-2xl flex flex-col items-center justify-center text-center p-4 overflow-y-auto">
+              <div className="flex-1 bg-neutral-50 border border-neutral-100 rounded-2xl flex flex-col items-center justify-center text-center p-4 overflow-y-auto min-w-0">
                 {recentCapturedWords.length > 0 ? (
-                  <div className="w-full h-full flex flex-col gap-3 text-left">
+                  <div className="w-full h-full flex flex-col gap-3 text-left min-w-0">
                     {recentCapturedWords.map((word) => (
-                      <div key={word.id} className="flex justify-between items-center text-sm">
-                        <div className="min-w-0 pr-2">
-                          <strong className="text-neutral-800">{word.word}</strong>
+                      <div key={word.id} className="flex justify-between items-center text-sm min-w-0">
+                        <div className="min-w-0 pr-2 flex-1">
+                          <strong className="text-neutral-800 block truncate">{word.word}</strong>
                           <p className="text-[11px] text-neutral-500 truncate mt-0.5">{word.originalSentence || 'Sem contexto salvo'}</p>
                         </div>
                         <Badge variant="outline" className="text-[9px] px-2 py-0.5 whitespace-nowrap bg-white border-neutral-200">
@@ -618,7 +638,7 @@ export default function Dashboard() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-3xl p-6 shadow-soft flex flex-col text-white">
+            <section className="bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-3xl p-6 shadow-soft flex flex-col text-white overflow-hidden min-w-0">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-[11px] font-bold text-white/60 uppercase tracking-widest">Próxima Conquista</p>
                 <span className="text-lg">🏆</span>

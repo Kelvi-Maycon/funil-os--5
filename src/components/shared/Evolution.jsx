@@ -193,7 +193,7 @@ export default function Evolution() {
   const { words } = useWordStore();
   const { flashcards } = useCardStore();
   const { config } = useConfig();
-  const { xp, dailyStats, totals, achievements } = useProgressStore();
+  const { xp, dailyStats, totals, achievements, errorPatterns = {} } = useProgressStore();
 
   const learningRange = useMemo(() => buildRange(90), []);
   const learningSeries = useMemo(() => buildLearningCurveSeries(dailyStats, learningRange), [dailyStats, learningRange]);
@@ -497,6 +497,50 @@ export default function Evolution() {
             </div>
           </div>
         </div>
+        {/* Error Patterns Section */}
+        {Object.keys(errorPatterns).length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-lg font-bold text-neutral-900 mb-4 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-orange-500" />
+              Seus pontos fracos
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(errorPatterns)
+                .sort(([, a], [, b]) => b.count - a.count)
+                .slice(0, 6)
+                .map(([category, data]) => {
+                  const labels = {
+                    word_order: { name: 'Ordem das palavras', icon: '🔀', bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700' },
+                    verb_tense: { name: 'Tempos verbais', icon: '⏰', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700' },
+                    preposition: { name: 'Preposições', icon: '📍', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' },
+                    article: { name: 'Artigos (a/an/the)', icon: '📝', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' },
+                    spelling: { name: 'Ortografia', icon: '✏️', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+                    vocabulary: { name: 'Vocabulário', icon: '📚', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' },
+                    plural_singular: { name: 'Plural/Singular', icon: '🔢', bg: 'bg-pink-50', border: 'border-pink-200', text: 'text-pink-700' },
+                    pronoun: { name: 'Pronomes', icon: '👤', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700' },
+                    conjunction: { name: 'Conjunções', icon: '🔗', bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-700' },
+                    other: { name: 'Outros', icon: '❓', bg: 'bg-neutral-50', border: 'border-neutral-200', text: 'text-neutral-700' },
+                  };
+                  const meta = labels[category] || labels.other;
+
+                  return (
+                    <div key={category} className={`${meta.bg} ${meta.border} border rounded-2xl p-5 flex flex-col gap-2`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{meta.icon}</span>
+                          <span className={`text-sm font-bold ${meta.text}`}>{meta.name}</span>
+                        </div>
+                        <span className="text-2xl font-black text-neutral-900">{data.count}</span>
+                      </div>
+                      <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                        {data.count === 1 ? '1 erro' : `${data.count} erros`} · {(data.words || []).length} {(data.words || []).length === 1 ? 'palavra' : 'palavras'}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

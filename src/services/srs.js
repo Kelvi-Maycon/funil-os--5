@@ -60,7 +60,8 @@ function applyStudyMilestones(word, status) {
     const recentLapses = word.recentLapses ?? 0;
     const easeFactor = word.easeFactor ?? 2.5;
 
-    if (status === 'em_treino' && correctCount >= 2 && reviewCount >= 2 && recentLapses <= 1 && easeFactor >= 2) {
+    // Flexibilizado: Builder sozinho (4 acertos) OU Builder+Review (2+1) pode promover
+    if (status === 'em_treino' && correctCount >= 2 && (reviewCount >= 1 || correctCount >= 4) && recentLapses <= 1) {
         return 'ativa';
     }
 

@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWordStore } from '../../store/useWordStore.js';
 import { useCardStore } from '../../store/useCardStore.js';
 import { useConfig } from '../../store/useConfig.js';
 import { useProgressStore } from '../../store/useProgressStore.js';
-import { generateTranslationSentences, evaluateTranslation, evaluateSemanticTranslation } from '../../services/ai.js';
+import { generateTranslationSentences, generateReverseTranslationSentences, evaluateTranslation, evaluateSemanticTranslation, evaluateSemanticReverseTranslation } from '../../services/ai.js';
 import { selectTranslationWords } from './translationSession.js';
 import { Button } from '../ui/button.jsx';
 import { WriteIcon } from '../shared/icons.jsx';
@@ -33,6 +33,9 @@ export default function Escrever() {
   const { config } = useConfig();
   const { awardXp } = useProgressStore();
 
+  // 'pt-en' = user translates PT→EN, 'en-pt' = user translates EN→PT
+  const [direction, setDirection] = useState('pt-en');
+
   // phase: 'idle' | 'loading' | 'session' | 'done'
   const [phase, setPhase] = useState('idle');
   const [sentences, setSentences] = useState([]);
@@ -42,6 +45,11 @@ export default function Escrever() {
   const [results, setResults] = useState([]);
   const [xpEarned, setXpEarned] = useState(0);
   const [error, setError] = useState(null);
+  const abortRef = useRef(null);
+
+  useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
 
   const handleStart = useCallback(async () => {
     if (!config?.provider) {
@@ -61,16 +69,21 @@ export default function Escrever() {
       }
       return;
     }
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setPhase('loading');
     setError(null);
 
     try {
       const targetWords = selectTranslationWords(words, config.userLevel, 5);
-      const generated = await generateTranslationSentences({
+      const generateFn = direction === 'en-pt' ? generateReverseTranslationSentences : generateTranslationSentences;
+      const generated = await generateFn({
         words: targetWords,
         cefrLevel: config.userLevel,
         config,
-        signal: undefined,
+        signal: controller.signal,
       });
 
       if (!generated || generated.length === 0) {
@@ -86,24 +99,30 @@ export default function Escrever() {
       setUserAnswer('');
       setFeedback(null);
       setPhase('session');
-    } catch {
+    } catch (err) {
+      if (err.name === 'AbortError') return;
       setError('Erro ao gerar frases. Verifique sua chave de API.');
       setPhase('idle');
     }
-  }, [words, config]);
+  }, [words, config, direction]);
 
   const handleVerify = useCallback(async () => {
     if (!userAnswer.trim()) return;
     const sentence = sentences[currentIndex];
-    const { correct: exactCorrect } = evaluateTranslation(userAnswer, sentence.english, sentence.alternatives);
-    
+    const isReverse = direction === 'en-pt';
+    const expectedAnswer = isReverse ? sentence.portuguese : sentence.english;
+    const promptSentence = isReverse ? sentence.english : sentence.portuguese;
+
+    const { correct: exactCorrect } = evaluateTranslation(userAnswer, expectedAnswer, sentence.alternatives);
+
     // Se não for exato, tentar avaliação semântica
     if (!exactCorrect && config?.provider) {
         setPhase('verifying');
         try {
-            const aiResult = await evaluateSemanticTranslation({
-                original: sentence.portuguese,
-                expected: sentence.english,
+            const evaluateFn = isReverse ? evaluateSemanticReverseTranslation : evaluateSemanticTranslation;
+            const aiResult = await evaluateFn({
+                original: promptSentence,
+                expected: expectedAnswer,
                 userAnswer: userAnswer,
                 userLevel: config.userLevel,
                 config,
@@ -111,19 +130,18 @@ export default function Escrever() {
             const xp = aiResult.correct ? XP_CORRECT : XP_ATTEMPT;
             awardXp(xp, aiResult.correct ? 'translation:correct' : 'translation:attempt');
             setXpEarned(prev => prev + xp);
-            setFeedback({ 
-                correct: aiResult.correct, 
-                expected: sentence.english, 
+            setFeedback({
+                correct: aiResult.correct,
+                expected: expectedAnswer,
                 alternatives: sentence.alternatives,
                 note: aiResult.note
             });
         } catch (err) {
             console.error(err);
-            // Fallback para erro normal caso falhe a IA
             const xp = XP_ATTEMPT;
             awardXp(xp, 'translation:attempt');
             setXpEarned(prev => prev + xp);
-            setFeedback({ correct: false, expected: sentence.english, alternatives: sentence.alternatives });
+            setFeedback({ correct: false, expected: expectedAnswer, alternatives: sentence.alternatives });
         } finally {
             setPhase('session');
         }
@@ -131,9 +149,9 @@ export default function Escrever() {
         const xp = exactCorrect ? XP_CORRECT : XP_ATTEMPT;
         awardXp(xp, exactCorrect ? 'translation:correct' : 'translation:attempt');
         setXpEarned(prev => prev + xp);
-        setFeedback({ correct: exactCorrect, expected: sentence.english, alternatives: sentence.alternatives });
+        setFeedback({ correct: exactCorrect, expected: expectedAnswer, alternatives: sentence.alternatives });
     }
-  }, [sentences, currentIndex, userAnswer, awardXp, config]);
+  }, [sentences, currentIndex, userAnswer, awardXp, config, direction]);
 
   const handleNext = useCallback(() => {
     const newResults = [...results, feedback.correct];
@@ -195,11 +213,27 @@ export default function Escrever() {
         </div>
         <div>
           <h2 className="text-2xl font-extrabold text-neutral-900 tracking-tight">
-            Pratique tradução PT→EN
+            Pratique tradução
           </h2>
           <p className="mt-2 text-sm text-neutral-500 max-w-xs mx-auto">
-            Frases do cotidiano com suas palavras mais difíceis. Escreva a tradução em inglês e veja o feedback.
+            Frases do cotidiano com suas palavras mais difíceis. Escolha a direção e pratique!
           </p>
+        </div>
+
+        {/* Direction toggle */}
+        <div className="flex items-center gap-1 bg-neutral-100 rounded-xl p-1 w-fit">
+          <button
+            onClick={() => setDirection('pt-en')}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${direction === 'pt-en' ? 'bg-white text-violet-700 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
+          >
+            🇧🇷 → 🇺🇸 PT→EN
+          </button>
+          <button
+            onClick={() => setDirection('en-pt')}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${direction === 'en-pt' ? 'bg-white text-violet-700 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
+          >
+            🇺🇸 → 🇧🇷 EN→PT
+          </button>
         </div>
 
         {error && (
@@ -296,13 +330,13 @@ export default function Escrever() {
         />
       </div>
 
-      {/* Card da frase portuguesa */}
+      {/* Card da frase prompt */}
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-3">
-          Traduza para inglês
+          {direction === 'en-pt' ? 'Traduza para português' : 'Traduza para inglês'}
         </p>
         <p className="text-xl font-semibold text-neutral-900 leading-relaxed">
-          &ldquo;{sentence.portuguese}&rdquo;
+          &ldquo;{direction === 'en-pt' ? sentence.english : sentence.portuguese}&rdquo;
         </p>
         {sentence.targetWord && (
           <p className="mt-3 text-xs text-neutral-400">
@@ -324,7 +358,7 @@ export default function Escrever() {
                 handleVerify();
               }
             }}
-            placeholder="Digite a tradução em inglês…"
+            placeholder={direction === 'en-pt' ? 'Digite a tradução em português…' : 'Digite a tradução em inglês…'}
             className="w-full rounded-xl border border-neutral-200 bg-white p-4 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100 resize-none shadow-sm disabled:opacity-50"
             rows={3}
             autoFocus

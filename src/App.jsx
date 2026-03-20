@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -9,14 +9,18 @@ import {
 } from 'react-router-dom';
 import Dashboard from './components/shared/Dashboard.jsx';
 import Evolution from './components/shared/Evolution.jsx';
+import Onboarding from './components/shared/Onboarding.jsx';
 import Settings from './components/Settings/Settings.jsx';
 import Reader from './components/Reader/Reader.jsx';
 import Builder from './components/Builder/Builder.jsx';
 import Flashcard from './components/Flashcard/Flashcard.jsx';
 import Vocabulary from './components/Vocabulary/Vocabulary.jsx';
 import Escrever from './components/Escrever/Escrever.jsx';
+import Dialogue from './components/Dialogue/Dialogue.jsx';
+import DailySession from './components/DailySession/DailySession.jsx';
 import AppLayout from './components/shared/AppLayout.jsx';
 import ToastViewport from './components/shared/ToastViewport.jsx';
+import { useConfig } from './store/useConfig.js';
 import { useWordStore } from './store/useWordStore.js';
 import { useProgressStore } from './store/useProgressStore.js';
 
@@ -46,8 +50,10 @@ function PracticeRoute() {
 }
 
 export default function App() {
+  const { config } = useConfig();
   const { words } = useWordStore();
   const { syncWordStatusTotals } = useProgressStore();
+  const [showOnboarding, setShowOnboarding] = useState(!config.onboardingDone);
   const activeWords = words.filter((word) => ['ativa', 'dominada'].includes(word.status)).length;
   const masteredWords = words.filter((word) => word.status === 'dominada').length;
 
@@ -58,6 +64,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ToastViewport />
+      {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
       <Routes>
         <Route element={<AppLayout />}>
           <Route path="/" element={<DashboardRoute />} />
@@ -67,6 +74,8 @@ export default function App() {
           <Route path="/flashcards" element={<Flashcard />} />
           <Route path="/evolution" element={<Evolution />} />
           <Route path="/escrever" element={<Escrever />} />
+          <Route path="/dialogue" element={<Dialogue />} />
+          <Route path="/study" element={<DailySession />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

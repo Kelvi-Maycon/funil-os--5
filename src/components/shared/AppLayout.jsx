@@ -13,13 +13,15 @@ import { getDayKey, useProgressStore } from '../../store/useProgressStore.js';
 import { isDueToday } from '../../services/srs.js';
 import { selectDailyPromptTargets } from '../Builder/practiceModes.js';
 import NotificationsPopover from './NotificationsPopover.jsx';
-import { BoltIcon, BookIcon, GridIcon, LayersIcon, ReviewIcon, TrendIcon, WriteIcon } from './icons.jsx';
+import { BoltIcon, BookIcon, BrainIcon, GridIcon, LayersIcon, PlayIcon, ReviewIcon, TrendIcon, WriteIcon } from './icons.jsx';
 
 const BASE_NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: GridIcon },
+  { to: '/study', label: 'Estudar', icon: PlayIcon },
   { to: '/reader', label: 'Ler', icon: BookIcon },
   { to: '/practice', label: 'Praticar', icon: BoltIcon },
   { to: '/flashcards', label: 'Revisar', icon: ReviewIcon },
+  { to: '/dialogue', label: 'Dialogo', icon: BrainIcon },
   { to: '/vocabulary', label: 'Vocabulario', icon: LayersIcon },
   { to: '/evolution', label: 'Evolucao', icon: TrendIcon },
   { to: '/escrever', label: 'Escrever', icon: WriteIcon },
@@ -217,6 +219,22 @@ export default function AppLayout() {
         title: 'Escrever',
         description: 'Traduza frases do cotidiano PT→EN',
         icon: WriteIcon,
+        action: null,
+      };
+    }
+    if (location.pathname.startsWith('/study')) {
+      return {
+        title: 'Sessão de Estudo',
+        description: '15 minutos de prática focada',
+        icon: PlayIcon,
+        action: null,
+      };
+    }
+    if (location.pathname.startsWith('/dialogue')) {
+      return {
+        title: 'Micro-diálogo',
+        description: 'Pratique conversação em inglês',
+        icon: BrainIcon,
         action: null,
       };
     }
