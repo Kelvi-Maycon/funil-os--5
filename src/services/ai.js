@@ -1,6 +1,7 @@
 // services/ai.js — Serviço unificado de IA
 import { callOpenAI, callOpenAIStructured } from './openai.js';
 import { callGemini } from './gemini.js';
+import { supabase, isSupabaseConfigured } from './supabase.js';
 
 // Dicionário estático de fallback (sem IA)
 const STATIC_DICT = {
@@ -22,12 +23,48 @@ function staticDefinition(word) {
 }
 
 /**
- * Chama a IA configurada pelo usuário
+ * Smart wrapper: routes to Edge Function if Supabase is configured, else to local OpenAI.
+ * Matches the signature of callOpenAIStructured for drop-in replacement.
+ */
+async function smartStructuredCall({ apiKey, model, systemPrompt, userPrompt, schemaName, schema, signal }) {
+    if (isSupabaseConfigured()) {
+        return callEdgeFunctionStructured(systemPrompt, userPrompt, schemaName, schema);
+    }
+    return smartStructuredCall({ apiKey, model, systemPrompt, userPrompt, schemaName, schema, signal });
+}
+
+/**
+ * Chama Edge Function do Supabase como proxy de IA.
+ */
+async function callEdgeFunction(systemPrompt, userPrompt, { mode, schema, schemaName } = {}) {
+    const { data, error } = await supabase.functions.invoke('ai-proxy', {
+        body: { systemPrompt, userPrompt, mode, schema, schemaName },
+    });
+    if (error) throw new Error(error.message || 'Edge Function error');
+    if (data?.error) throw new Error(data.error);
+    return data?.result;
+}
+
+/**
+ * Chama Edge Function com structured output (JSON schema).
+ */
+async function callEdgeFunctionStructured(systemPrompt, userPrompt, schemaName, schema) {
+    return callEdgeFunction(systemPrompt, userPrompt, { mode: 'structured', schema, schemaName });
+}
+
+/**
+ * Chama a IA — Edge Function (Supabase) ou direta (local keys como fallback)
  */
 async function callAI(config, systemPrompt, userPrompt, signal) {
+    // Prefer Edge Function via Supabase
+    if (isSupabaseConfigured()) {
+        return callEdgeFunction(systemPrompt, userPrompt);
+    }
+
+    // Fallback to local keys
     if (!config) throw new Error('No AI configured');
 
-    if (config.provider === 'openai') {
+    if (config?.provider === 'openai' || isSupabaseConfigured()) {
         return callOpenAI({
             apiKey: config.openaiKey,
             model: config.openaiModel || 'gpt-5.4-nano',
@@ -328,9 +365,9 @@ export async function generateReverseTranslationSentences({ words, cefrLevel, co
     const { systemPrompt, userPrompt } = buildReverseTranslationPrompts(words, cefrLevel);
 
     try {
-        if (config.provider === 'openai') {
+        if (config?.provider === 'openai' || isSupabaseConfigured()) {
             try {
-                const parsed = await callOpenAIStructured({
+                const parsed = await smartStructuredCall({
                     apiKey: config.openaiKey,
                     model: config.openaiModel || 'gpt-5.4-nano',
                     systemPrompt,
@@ -364,14 +401,17 @@ export async function generateReverseTranslationSentences({ words, cefrLevel, co
  * Avalia tradução reversa EN→PT semanticamente via IA.
  */
 export async function evaluateSemanticReverseTranslation({ original, expected, userAnswer, userLevel, config, signal }) {
-    if (!config?.provider) {
+    if (!config?.provider && !isSupabaseConfigured()) {
         const normalize = (s) => String(s || '').toLowerCase().replace(/[^a-záàâãéèêíïóôõúüç\s]/g, '').split(/\s+/).filter(Boolean);
         const expectedWords = normalize(expected);
         const answerWords = new Set(normalize(userAnswer));
         const matches = expectedWords.filter(w => answerWords.has(w)).length;
-        const correct = expectedWords.length > 0 && matches >= expectedWords.length * 0.6;
+        const ratio = expectedWords.length > 0 ? matches / expectedWords.length : 0;
+        const score = Math.round(ratio * 10);
+        const correct = score >= 7;
 
         return {
+            score,
             correct,
             note: correct ? 'Correto segundo os critérios básicos offline.' : 'Incorreto. Tente usar as palavras da frase esperada.',
             fromAI: false,
@@ -379,12 +419,19 @@ export async function evaluateSemanticReverseTranslation({ original, expected, u
     }
 
     const systemPrompt = `You are a Portuguese teacher evaluating a translation from English to Brazilian Portuguese.
-Your goal is to accept valid variations of translations, as long as the core meaning, tense, and natural Portuguese phrasing are preserved.
+Your goal is to score the translation on a scale of 0-10 based on meaning accuracy, grammar, and naturalness.
 Be lenient with accent marks and minor spelling variations.
+
+Scoring guide:
+- 10: Perfect or near-perfect translation
+- 7-9: Correct meaning with minor issues
+- 4-6: Partially correct, core meaning understood but significant errors
+- 1-3: Major errors, meaning largely lost
+- 0: Completely wrong or unrelated
 
 Reply ONLY in valid JSON format:
 {
-  "correct": boolean,
+  "score": number,
   "note": string
 }`;
 
@@ -392,11 +439,11 @@ Reply ONLY in valid JSON format:
 Expected Portuguese: "${expected}"
 User's translation: "${userAnswer}"
 
-Is the user's translation an acceptable and correct way to say this in Brazilian Portuguese? Respond in JSON.`;
+Score the translation from 0-10 and explain briefly. Respond in JSON.`;
 
-    if (config.provider === 'openai') {
+    if (config?.provider === 'openai' || isSupabaseConfigured()) {
         try {
-            const parsed = await callOpenAIStructured({
+            const parsed = await smartStructuredCall({
                 apiKey: config.openaiKey,
                 model: config.openaiModel || 'gpt-5.4-nano',
                 systemPrompt,
@@ -405,15 +452,16 @@ Is the user's translation an acceptable and correct way to say this in Brazilian
                 schema: {
                     type: "object",
                     properties: {
-                        correct: { type: "boolean" },
+                        score: { type: "number" },
                         note: { type: "string" }
                     },
-                    required: ["correct", "note"],
+                    required: ["score", "note"],
                     additionalProperties: false,
                 },
                 signal,
             });
-            return { correct: !!parsed.correct, note: parsed.note || '', fromAI: true };
+            const score = Math.max(0, Math.min(10, Math.round(Number(parsed.score) || 0)));
+            return { score, correct: score >= 7, note: parsed.note || '', fromAI: true };
         } catch {
             // fall through to text-based
         }
@@ -425,9 +473,10 @@ Is the user's translation an acceptable and correct way to say this in Brazilian
         const start = cleaned.indexOf('{');
         const end = cleaned.lastIndexOf('}');
         const parsed = JSON.parse(cleaned.slice(start, end + 1));
-        return { correct: !!parsed.correct, note: parsed.note || '', fromAI: true };
+        const score = Math.max(0, Math.min(10, Math.round(Number(parsed.score) || 0)));
+        return { score, correct: score >= 7, note: parsed.note || '', fromAI: true };
     } catch {
-        return { correct: false, note: 'Não foi possível avaliar a tradução.', fromAI: false };
+        return { score: 0, correct: false, note: 'Não foi possível avaliar a tradução.', fromAI: false };
     }
 }
 
@@ -441,9 +490,9 @@ export async function generateTranslationSentences({ words, cefrLevel, config, s
     const { systemPrompt, userPrompt } = buildTranslationPrompts(words, cefrLevel);
 
     try {
-        if (config.provider === 'openai') {
+        if (config?.provider === 'openai' || isSupabaseConfigured()) {
             try {
-                const parsed = await callOpenAIStructured({
+                const parsed = await smartStructuredCall({
                     apiKey: config.openaiKey,
                     model: config.openaiModel || 'gpt-5.4-nano',
                     systemPrompt,
@@ -497,7 +546,7 @@ export function evaluateTranslation(userAnswer, expected, alternatives = []) {
  * Gera explicação contextual de uma palavra (Tooltip M2)
  */
 export async function explainWord({ word, sentence, userLevel, config }) {
-    if (!config?.provider) {
+    if (!config?.provider && !isSupabaseConfigured()) {
         return { text: staticDefinition(word), fromAI: false };
     }
 
@@ -519,15 +568,15 @@ Use simple English. Do not translate to Portuguese.`;
  * Retorna JSON: { word, sentences: [{english, portuguese, type}] }
  */
 export async function generateSentences({ word, originalSentence, userLevel, config, signal }) {
-    if (!config?.provider) {
+    if (!config?.provider && !isSupabaseConfigured()) {
         return buildLocalSentenceSet(word);
     }
 
     const { systemPrompt, userPrompt } = buildSentencePrompts(word, originalSentence, userLevel);
 
-    if (config.provider === 'openai') {
+    if (config?.provider === 'openai' || isSupabaseConfigured()) {
         try {
-            const parsed = await callOpenAIStructured({
+            const parsed = await smartStructuredCall({
                 apiKey: config.openaiKey,
                 model: config.openaiModel || 'gpt-5.4-nano',
                 systemPrompt,
@@ -594,7 +643,7 @@ export const ERROR_CATEGORIES = [
  * Traduz uma frase EN→PT para contextual flashcards (sentence mining).
  */
 export async function translateSentenceForContext({ sentence, word, config, signal }) {
-    if (!config?.provider) return null;
+    if (!config?.provider && !isSupabaseConfigured()) return null;
 
     const systemPrompt = `You translate English sentences to natural Brazilian Portuguese.
 Return only the Portuguese translation, nothing else. No quotes, no explanation.`;
@@ -609,6 +658,101 @@ Return only the Portuguese translation, nothing else. No quotes, no explanation.
     } catch {
         return null;
     }
+}
+
+/**
+ * Gera frases de contexto para palavras seed importadas em batch.
+ * Recebe array de words (strings), retorna map { word: { english, portuguese } }.
+ */
+export async function generateSeedContextSentences({ words, cefrLevel, config, signal }) {
+    if (!config?.provider || !words?.length) return {};
+
+    const BATCH_SIZE = 12;
+    const results = {};
+
+    for (let i = 0; i < words.length; i += BATCH_SIZE) {
+        const batch = words.slice(i, i + BATCH_SIZE);
+        const wordList = batch.join(', ');
+
+        const systemPrompt = `You generate example sentences for English vocabulary words for a Brazilian learner at CEFR ${cefrLevel || 'B1'} level.
+For each word, create ONE natural everyday sentence in English and its Brazilian Portuguese translation.
+
+Reply ONLY in valid JSON format:
+{
+  "sentences": [
+    { "word": "...", "english": "...", "portuguese": "..." }
+  ]
+}`;
+
+        const userPrompt = `Generate one example sentence for each word: ${wordList}
+
+Each sentence should:
+- Use the word naturally in an everyday context
+- Be appropriate for ${cefrLevel || 'B1'} level
+- Be 6-15 words long`;
+
+        try {
+            if (config?.provider === 'openai' || isSupabaseConfigured()) {
+                try {
+                    const parsed = await smartStructuredCall({
+                        apiKey: config.openaiKey,
+                        model: config.openaiModel || 'gpt-5.4-nano',
+                        systemPrompt,
+                        userPrompt,
+                        schemaName: 'langflow_seed_context',
+                        schema: {
+                            type: "object",
+                            properties: {
+                                sentences: {
+                                    type: "array",
+                                    items: {
+                                        type: "object",
+                                        properties: {
+                                            word: { type: "string" },
+                                            english: { type: "string" },
+                                            portuguese: { type: "string" }
+                                        },
+                                        required: ["word", "english", "portuguese"],
+                                        additionalProperties: false
+                                    }
+                                }
+                            },
+                            required: ["sentences"],
+                            additionalProperties: false
+                        },
+                        signal,
+                    });
+                    if (parsed?.sentences) {
+                        parsed.sentences.forEach(s => {
+                            if (s.word && s.english) {
+                                results[s.word.toLowerCase()] = { english: s.english, portuguese: s.portuguese || '' };
+                            }
+                        });
+                    }
+                    continue;
+                } catch {
+                    // fall through to generic
+                }
+            }
+
+            const raw = await callAI(config, systemPrompt, userPrompt, signal);
+            const match = raw.match(/\{[\s\S]*\}/);
+            if (match) {
+                const parsed = JSON.parse(match[0]);
+                if (parsed?.sentences) {
+                    parsed.sentences.forEach(s => {
+                        if (s.word && s.english) {
+                            results[s.word.toLowerCase()] = { english: s.english, portuguese: s.portuguese || '' };
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('Seed context generation batch failed:', e);
+        }
+    }
+
+    return results;
 }
 
 /**
@@ -655,9 +799,9 @@ Return:
 }`;
 
     try {
-        if (config.provider === 'openai') {
+        if (config?.provider === 'openai' || isSupabaseConfigured()) {
             try {
-                const parsed = await callOpenAIStructured({
+                const parsed = await smartStructuredCall({
                     apiKey: config.openaiKey,
                     model: config.openaiModel || 'gpt-5.4-nano',
                     systemPrompt,
@@ -691,7 +835,7 @@ Return:
  * Gera um micro-diálogo situacional para prática conversacional.
  */
 export async function generateMicroDialogue({ words, cefrLevel, focusCategory, config, signal }) {
-    if (!config?.provider) return null;
+    if (!config?.provider && !isSupabaseConfigured()) return null;
 
     const wordList = words?.length ? words.map(w => w.word || w).join(', ') : '';
     const focusNote = focusCategory ? `Try to create situations that test ${focusCategory} usage.` : '';
@@ -755,9 +899,9 @@ Rules:
     };
 
     try {
-        if (config.provider === 'openai') {
+        if (config?.provider === 'openai' || isSupabaseConfigured()) {
             try {
-                return await callOpenAIStructured({
+                return await smartStructuredCall({
                     apiKey: config.openaiKey,
                     model: config.openaiModel || 'gpt-5.4-nano',
                     systemPrompt,
@@ -794,7 +938,7 @@ Rules:
  *   nextAiLinePT: string — tradução da próxima fala
  */
 export async function evaluateDialogueResponse({ scene, aiLine, userResponse, conversationSoFar, userLevel, config, signal }) {
-    if (!config?.provider) {
+    if (!config?.provider && !isSupabaseConfigured()) {
         return { understandable: true, corrections: '', correctedVersion: '', nextAiLine: '', nextAiLinePT: '' };
     }
 
@@ -840,9 +984,9 @@ User: ${userResponse}
 Continue the conversation naturally. Reply in JSON.`;
 
     try {
-        if (config.provider === 'openai') {
+        if (config?.provider === 'openai' || isSupabaseConfigured()) {
             try {
-                const parsed = await callOpenAIStructured({
+                const parsed = await smartStructuredCall({
                     apiKey: config.openaiKey,
                     model: config.openaiModel || 'gpt-5.4-nano',
                     systemPrompt,
@@ -883,7 +1027,7 @@ Continue the conversation naturally. Reply in JSON.`;
 }
 
 export async function explainGrammarError({ expected, userAnswer, userLevel, config, signal }) {
-    if (!config?.provider) {
+    if (!config?.provider && !isSupabaseConfigured()) {
         return { text: 'Verifique a ordem das palavras e tente novamente.', fromAI: false, errorCategory: 'other' };
     }
 
@@ -926,15 +1070,18 @@ Explique o erro de forma clara e curta.`;
  * Avalia se uma tradução está semanticamente correta, mesmo que não seja a string exata (M4/Escrever)
  */
 export async function evaluateSemanticTranslation({ original, expected, userAnswer, userLevel, config, signal }) {
-    if (!config?.provider) {
+    if (!config?.provider && !isSupabaseConfigured()) {
        // Fallback: normalize definida localmente para não depender de escopo externo
        const normalize = (s) => String(s || '').toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).filter(Boolean);
        const expectedWords = normalize(expected);
        const answerWords = new Set(normalize(userAnswer));
        const matches = expectedWords.filter(w => answerWords.has(w)).length;
-       const correct = expectedWords.length > 0 && matches >= expectedWords.length * 0.7;
+       const ratio = expectedWords.length > 0 ? matches / expectedWords.length : 0;
+       const score = Math.round(ratio * 10);
+       const correct = score >= 7;
 
        return {
+           score,
            correct,
            note: correct ? 'Correto segundo os critérios básicos offline.' : 'Incorreto. Tente usar as palavras da frase esperada.',
            fromAI: false,
@@ -942,23 +1089,30 @@ export async function evaluateSemanticTranslation({ original, expected, userAnsw
     }
 
     const systemPrompt = `You are an English teacher evaluating a translation from Portuguese to English.
-Your goal is to accept valid variations of translations, as long as the core meaning, tense, and target terminology are preserved.
+Your goal is to score the translation on a scale of 0-10 based on meaning accuracy, grammar, and naturalness.
+
+Scoring guide:
+- 10: Perfect or near-perfect translation
+- 7-9: Correct meaning with minor issues (article missing, slight word choice difference)
+- 4-6: Partially correct, core meaning understood but significant errors
+- 1-3: Major errors, meaning largely lost
+- 0: Completely wrong or unrelated
 
 Reply ONLY in valid JSON format:
 {
-  "correct": boolean, // true if the user's translation is semantically accurate and grammatically sound
-  "note": string // A short (1 sentence), encouraging explanation or minor correction in Portuguese. Empty string if perfect.
+  "score": number, // 0-10 integer score
+  "note": string // A short (1 sentence), encouraging explanation or correction in Portuguese. Empty string if perfect.
 }`;
 
     const userPrompt = `Portuguese original: "${original}"
 Expected strictly correct English: "${expected}"
 User's translation attempt: "${userAnswer}"
 
-Is the user's translation an acceptable and correct way to say this in English? Respond in JSON.`;
+Score the translation from 0-10 and explain briefly. Respond in JSON.`;
 
-    if (config.provider === 'openai') {
+    if (config?.provider === 'openai' || isSupabaseConfigured()) {
         try {
-            const parsed = await callOpenAIStructured({
+            const parsed = await smartStructuredCall({
                 apiKey: config.openaiKey,
                 model: config.openaiModel || 'gpt-5.4-nano',
                 systemPrompt,
@@ -967,16 +1121,18 @@ Is the user's translation an acceptable and correct way to say this in English? 
                 schema: {
                     type: "object",
                     properties: {
-                        correct: { type: "boolean" },
+                        score: { type: "number" },
                         note: { type: "string" }
                     },
-                    required: ["correct", "note"],
+                    required: ["score", "note"],
                     additionalProperties: false
                 },
                 signal,
             });
+            const score = Math.max(0, Math.min(10, Math.round(Number(parsed.score) || 0)));
             return {
-                correct: Boolean(parsed.correct),
+                score,
+                correct: score >= 7,
                 note: parsed.note || '',
                 fromAI: true
             };
@@ -992,15 +1148,17 @@ Is the user's translation an acceptable and correct way to say this in English? 
        let jsonText = text;
        const match = text.match(/\{[\s\S]*\}/);
        if (match) jsonText = match[0];
-       
+
        const parsed = JSON.parse(jsonText);
+       const score = Math.max(0, Math.min(10, Math.round(Number(parsed.score) || 0)));
        return {
-           correct: Boolean(parsed.correct),
+           score,
+           correct: score >= 7,
            note: parsed.note || '',
            fromAI: true
        };
     } catch (e) {
         console.error("Fallback AI Eval failed", e);
-        return { correct: false, note: 'Não foi possível validar a tradução agora.', fromAI: false };
+        return { score: 0, correct: false, note: 'Não foi possível validar a tradução agora.', fromAI: false };
     }
 }

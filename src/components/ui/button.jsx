@@ -13,7 +13,7 @@ export function Button({ className, variant = 'default', size = 'default', asChi
     outline: isIcon ? 'ibtn-outline' : 'btn-outline',
     ghost: isIcon ? 'ibtn-ghost' : 'btn-ghost',
     dark: isIcon ? 'ibtn-dark' : 'btn-dark',
-    pink: isIcon ? 'ibtn-pink' : 'btn-pink',
+    accent: isIcon ? 'ibtn-accent' : 'btn-accent',
   };
 
   const sizeToClass = {

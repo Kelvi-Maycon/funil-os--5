@@ -15,6 +15,18 @@ import {
 import PageHeader from './PageHeader.jsx';
 import { Button } from '../ui/button.jsx';
 import { Card, CardContent } from '../ui/card.jsx';
+import {
+  BoltIcon,
+  BookOpenIcon,
+  ClockIcon,
+  GridIcon,
+  LayersIcon,
+  MapIcon,
+  PencilIcon,
+  SearchIcon,
+  UserCircleIcon,
+  WriteIcon,
+} from './icons.jsx';
 
 const SKILL_LABELS = ['Vocabulário', 'Retenção', 'Precisão', 'Escrita', 'Consistência'];
 const SKILL_CENTER = 140;
@@ -22,10 +34,10 @@ const SKILL_RADIUS = 82;
 const MONTH_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const CONSISTENCY_LEVEL_STYLES = [
   'bg-white border-neutral-200',
-  'bg-violet-100 border-violet-200',
-  'bg-violet-200 border-violet-300',
-  'bg-violet-400 border-violet-400',
-  'bg-violet-600 border-violet-600',
+  'bg-[#dde2dc] border-[#CED1C6]',
+  'bg-[#CED1C6] border-[#CED1C6]',
+  'bg-[#647568] border-[#647568]',
+  'bg-[#35403A] border-[#35403A]',
 ];
 
 function buildSkillPolygon(values, radius = SKILL_RADIUS, center = SKILL_CENTER) {
@@ -88,7 +100,7 @@ function resolveConsistencyLevel(value, maxValue) {
 function buildConsistencyMap(dailyStats) {
   const end = startOfDay(new Date());
   const start = startOfDay(new Date(end));
-  start.setDate(start.getDate() - 364);
+  start.setDate(start.getDate() - 119);
   start.setDate(start.getDate() - start.getDay());
 
   const cells = [];
@@ -161,29 +173,28 @@ function formatConsistencyTooltip(date, value) {
   return `${value} XP ganhos em ${when}`;
 }
 
-function StatCard({ icon: Icon, tone = 'violet', label, value }) {
+function StatCard({ icon: Icon, tone = 'orange', label, value }) {
   const IconComponent = Icon;
   const toneMap = {
-    blue: { bg: 'bg-white', icon: 'bg-blue-50 text-blue-500 border-blue-100', text: 'text-neutral-900', shadow: 'shadow-soft' },
-    pink: { bg: 'bg-fuchsia-500', icon: 'bg-white/10 text-white border-white/10', text: 'text-white', shadow: 'shadow-none' },
-    orange: { bg: 'bg-amber-500', icon: 'bg-white/10 text-white border-white/10', text: 'text-white', shadow: 'shadow-none' },
+    blue: { bg: 'bg-white', icon: 'bg-[#eef0ec] text-[#35403A] border-[#CED1C6]', text: 'text-neutral-900', shadow: 'shadow-[0_1px_3px_rgba(20,20,19,0.06)]' },
+    terracotta: { bg: 'bg-[#35403A]', icon: 'bg-white/10 text-white border-white/10', text: 'text-white', shadow: 'shadow-none' },
+    orange: { bg: 'bg-[#647568]', icon: 'bg-white/10 text-white border-white/10', text: 'text-white', shadow: 'shadow-none' },
     green: { bg: 'bg-emerald-500', icon: 'bg-white/10 text-white border-white/10', text: 'text-white', shadow: 'shadow-none' },
-    violet: { bg: 'bg-violet-600', icon: 'bg-white/10 text-white border-white/10', text: 'text-white', shadow: 'shadow-lg' }
   };
 
-  const currentTheme = toneMap[tone] || toneMap.violet;
+  const currentTheme = toneMap[tone] || toneMap.orange;
 
   return (
-    <div className={`${currentTheme.bg} rounded-[2rem] p-6 lg:p-8 ${currentTheme.shadow} border ${tone === 'blue' ? 'border-neutral-100' : 'border-transparent'} flex flex-col justify-between relative overflow-hidden group transition-transform hover:-translate-y-1`}>
+    <div className={`${currentTheme.bg} rounded-xl p-6 md:p-8 ${currentTheme.shadow} border ${tone === 'blue' ? 'border-neutral-200/70' : 'border-transparent'} flex flex-col justify-between relative overflow-hidden group transition-transform hover:-translate-y-1`}>
       {tone !== 'blue' && (
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 opacity-60 pointer-events-none"></div>
       )}
-      <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border mb-6 relative z-10 shadow-inner-soft ${currentTheme.icon}`}>
+      <div className={`flex h-14 w-14 items-center justify-center rounded-xl border mb-6 relative z-10 ${currentTheme.icon}`}>
         <IconComponent className="h-6 w-6" />
       </div>
       <div>
-        <div className={`text-[11px] font-bold uppercase tracking-widest opacity-80 mb-2 ${currentTheme.text}`}>{label}</div>
-        <div className={`font-display text-4xl md:text-5xl font-black tracking-tight relative z-10 ${currentTheme.text}`}>{value}</div>
+        <div className={`text-[10px] font-bold uppercase tracking-[0.12em] opacity-80 mb-2 ${currentTheme.text}`}>{label}</div>
+        <div className={`font-display text-4xl md:text-5xl font-semibold tracking-tight relative z-10 ${currentTheme.text}`}>{value}</div>
       </div>
     </div>
   );
@@ -232,24 +243,24 @@ export default function Evolution() {
       <main className="w-full mt-2 lg:mt-4">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <StatCard icon={BookOpen} tone="blue" label="Palavras" value={words.length} />
-          <StatCard icon={Sparkles} tone="pink" label="Experiência" value={`${xp} XP`} />
+          <StatCard icon={Sparkles} tone="terracotta" label="Experiência" value={`${xp} XP`} />
           <StatCard icon={Brain} tone="orange" label="Retenção" value={`${retention.rate}%`} />
           <StatCard icon={Shield} tone="green" label="Nível CEFR" value={config.userLevel} />
         </div>
 
         <div className="space-y-8">
-          <section className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-soft border border-neutral-100 flex flex-col relative overflow-hidden">
+          <section className="bg-white rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col relative overflow-hidden">
             <div className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-100 bg-violet-50 text-violet-600 shadow-inner-soft">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#CED1C6] bg-[#eef0ec] text-[#35403A]">
                   <TrendingUp className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-900">Curva de Aprendizado</h3>
+                  <h3 className="text-lg font-semibold font-heading text-neutral-900">Curva de Aprendizado</h3>
                   <p className="mt-1 text-base font-medium text-neutral-500">Evolução do seu XP de Domínio (Últimos 90 Dias)</p>
                 </div>
               </div>
-              <div className="rounded-full bg-neutral-50 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.3em] text-neutral-900 border border-neutral-200 shadow-inner-soft whitespace-nowrap">
+              <div className="rounded-full bg-neutral-50 px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-900 border border-neutral-300 whitespace-nowrap">
                 90 DIAS
               </div>
             </div>
@@ -269,7 +280,7 @@ export default function Evolution() {
 
               <div className="absolute inset-y-4 left-10 right-0">
                 <svg viewBox="0 0 700 240" className="h-full w-full overflow-visible" preserveAspectRatio="none">
-                  <path d={learningPath} fill="none" stroke="#6D44D9" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d={learningPath} fill="none" stroke="#35403A" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
 
@@ -283,19 +294,19 @@ export default function Evolution() {
             </div>
           </section>
 
-          <section className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-soft border border-neutral-100 flex flex-col relative overflow-hidden">
+          <section className="bg-white rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col relative overflow-hidden">
             <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-100 bg-violet-50 text-violet-600 shadow-inner-soft">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#CED1C6] bg-[#eef0ec] text-[#35403A]">
                   <Calendar className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-900">Mapa de Consistência</h3>
-                  <p className="mt-1 text-base font-medium text-neutral-500">Sua frequência de estudos nos últimos 12 meses</p>
+                  <h3 className="text-lg font-semibold font-heading text-neutral-900">Mapa de Consistência</h3>
+                  <p className="mt-1 text-base font-medium text-neutral-500">Sua frequência de estudos nos últimos 4 meses</p>
                 </div>
               </div>
 
-              <div className="inline-flex items-center gap-3 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-2 text-xs font-semibold text-neutral-500 shadow-inner-soft whitespace-nowrap">
+              <div className="inline-flex items-center gap-3 rounded-full border border-neutral-300 bg-neutral-50 px-4 py-2 text-[10px] font-bold text-neutral-500 tracking-[0.12em] whitespace-nowrap">
                 <span>Menos XP</span>
                 <div className="flex items-center gap-1.5">
                   {CONSISTENCY_LEVEL_STYLES.slice(1).map((style, index) => (
@@ -359,10 +370,10 @@ export default function Evolution() {
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
             <div className="space-y-8">
               <div className="grid gap-8 lg:grid-cols-2">
-                <div className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-soft border border-neutral-100 flex flex-col">
+                <div className="bg-white rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col">
                   <div className="mb-6">
-                    <div className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 mb-1">Equilíbrio de Habilidades</div>
-                    <h3 className="text-xl font-extrabold tracking-tight text-neutral-900">Visão geral do desempenho</h3>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400 mb-1">Equilíbrio de Habilidades</div>
+                    <h3 className="text-lg font-semibold font-heading text-neutral-900">Visão geral do desempenho</h3>
                   </div>
 
                   <div className="flex justify-center flex-1 items-center">
@@ -372,7 +383,7 @@ export default function Evolution() {
                           key={ratio}
                           points={buildSkillPolygon(Array(SKILL_LABELS.length).fill(ratio))}
                           fill="none"
-                          stroke="rgba(124, 58, 237, 0.15)"
+                          stroke="rgba(53, 64, 58, 0.15)"
                           strokeWidth="1.5"
                           strokeDasharray={ratio < 1 ? "4 4" : "none"}
                         />
@@ -380,30 +391,30 @@ export default function Evolution() {
 
                       {skillAxes.map((axis) => (
                         <g key={axis.label}>
-                          <line x1={SKILL_CENTER} y1={SKILL_CENTER} x2={axis.x} y2={axis.y} stroke="rgba(124, 58, 237, 0.15)" strokeWidth="1.5" strokeDasharray="4 4" />
+                          <line x1={SKILL_CENTER} y1={SKILL_CENTER} x2={axis.x} y2={axis.y} stroke="rgba(53, 64, 58, 0.15)" strokeWidth="1.5" strokeDasharray="4 4" />
                           <text x={axis.labelX} y={axis.labelY} textAnchor={axis.textAnchor} dominantBaseline="middle" className="fill-neutral-500 text-[10px] uppercase font-bold tracking-wider">
                             {axis.label}
                           </text>
                         </g>
                       ))}
 
-                      <polygon points={skillPolygon} fill="rgba(124, 58, 237, 0.25)" stroke="#7C3AED" strokeWidth="4" strokeLinejoin="round" />
+                      <polygon points={skillPolygon} fill="rgba(53, 64, 58, 0.25)" stroke="#35403A" strokeWidth="4" strokeLinejoin="round" />
 
                       {skillValues.map((value, index) => {
                         const angle = (-Math.PI / 2) + ((Math.PI * 2) * index) / SKILL_LABELS.length;
                         const scaled = SKILL_RADIUS * value;
                         const x = SKILL_CENTER + Math.cos(angle) * scaled;
                         const y = SKILL_CENTER + Math.sin(angle) * scaled;
-                        return <circle key={index} cx={x} cy={y} r={4} fill="#fff" stroke="#7C3AED" strokeWidth="2" />;
+                        return <circle key={index} cx={x} cy={y} r={4} fill="#fff" stroke="#35403A" strokeWidth="2" />;
                       })}
                     </svg>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-soft border border-neutral-100 flex flex-col">
+                <div className="bg-white rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col">
                   <div className="mb-8">
-                    <div className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 mb-1">Funil de Vocabulário</div>
-                    <h3 className="text-xl font-extrabold tracking-tight text-neutral-900">Métricas de transição</h3>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400 mb-1">Funil de Vocabulário</div>
+                    <h3 className="text-lg font-semibold font-heading text-neutral-900">Métricas de transição</h3>
                   </div>
 
                   <div className="space-y-6 flex-1 flex flex-col justify-center">
@@ -411,18 +422,18 @@ export default function Evolution() {
                       const percentage = Math.max(6, (item.value / funnelMax) * 100);
                       const toneColor = {
                         'bg-neutral-200': 'bg-neutral-400',
-                        'bg-primary': 'bg-violet-600',
-                        'bg-warning': 'bg-amber-500',
+                        'bg-primary': 'bg-[#35403A]',
+                        'bg-warning': 'bg-[#647568]',
                         'bg-emerald-500': 'bg-emerald-500'
-                      }[item.tone] || 'bg-violet-500';
+                      }[item.tone] || 'bg-[#35403A]';
 
                       return (
                         <div key={item.label} className="group">
                           <div className="mb-2 flex items-center justify-between text-sm">
-                            <span className="font-bold text-neutral-600 uppercase tracking-widest text-[10px]">{item.label}</span>
-                            <strong className="font-black text-neutral-900 bg-neutral-100 px-2 py-0.5 rounded-md border border-neutral-200 shadow-inner-soft text-xs">{item.value}</strong>
+                            <span className="font-bold text-neutral-600 uppercase tracking-[0.12em] text-[10px]">{item.label}</span>
+                            <strong className="font-semibold text-neutral-900 bg-neutral-100 px-2 py-0.5 rounded-md border border-neutral-200 text-xs">{item.value}</strong>
                           </div>
-                          <div className="h-5 overflow-hidden rounded-full bg-neutral-100 border border-neutral-200 shadow-inner-soft">
+                          <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
                             <div className={`h-full rounded-full transition-all duration-1000 ease-out ${toneColor} relative overflow-hidden`} style={{ width: `${percentage}%` }}>
                               <div className="absolute inset-0 bg-white/20 -skew-x-12 translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
                             </div>
@@ -436,14 +447,14 @@ export default function Evolution() {
             </div>
 
             <div className="space-y-8">
-              <div className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-soft border border-neutral-100">
+              <div className="bg-white rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70">
                 <div className="mb-8">
-                  <div className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 mb-1">Marcos Históricos</div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400 mb-1">Marcos Históricos</div>
                   <div className="flex items-center gap-4 mt-3">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-orange-200 bg-orange-50 text-orange-500 shadow-inner-soft">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#CED1C6] bg-[#eef0ec] text-[#647568]">
                       <Trophy className="h-6 w-6" />
                     </div>
-                    <h3 className="text-2xl font-extrabold tracking-tight text-neutral-900">Sua jornada</h3>
+                    <h3 className="text-lg font-semibold font-heading text-neutral-900">Sua jornada</h3>
                   </div>
                 </div>
 
@@ -451,46 +462,46 @@ export default function Evolution() {
                   Continue praticando para desbloquear suas primeiras conquistas e ver seu histórico crescer.
                 </p>
 
-                <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-violet-100 before:z-0">
-                  <div className={`relative z-10 rounded-[1.5rem] border p-5 shadow-sm transition-transform hover:-translate-y-1 ${words.length > 0 ? 'border-emerald-200 bg-emerald-50' : 'border-neutral-100 bg-white'}`}>
-                    <div className={`text-lg font-extrabold mb-1 ${words.length > 0 ? 'text-emerald-700' : 'text-neutral-900'}`}>Primeiras palavras</div>
-                    <div className="text-xs font-bold text-neutral-500 uppercase tracking-widest">{words.length > 0 ? `${words.length} itens adicionados` : 'Adicione vocabulário'}</div>
+                <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-[#dde2dc] before:z-0">
+                  <div className={`relative z-10 rounded-xl border p-5 shadow-[0_1px_3px_rgba(20,20,19,0.06)] transition-transform hover:-translate-y-1 ${words.length > 0 ? 'border-emerald-200 bg-emerald-50' : 'border-neutral-200/70 bg-white'}`}>
+                    <div className={`text-lg font-semibold mb-1 ${words.length > 0 ? 'text-emerald-700' : 'text-neutral-900'}`}>Primeiras palavras</div>
+                    <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.12em]">{words.length > 0 ? `${words.length} itens adicionados` : 'Adicione vocabulário'}</div>
                     {words.length > 0 && <div className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-emerald-100 border-4 border-white rounded-full flex items-center justify-center shadow-sm"><span className="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span></div>}
                   </div>
 
-                  <div className={`relative z-10 rounded-[1.5rem] border p-5 shadow-sm transition-transform hover:-translate-y-1 ${streak.currentStreak > 0 ? 'border-orange-200 bg-orange-50' : 'border-neutral-100 bg-white'}`}>
-                    <div className={`text-lg font-extrabold mb-1 ${streak.currentStreak > 0 ? 'text-orange-700' : 'text-neutral-900'}`}>Ofensiva iniciada</div>
-                    <div className="text-xs font-bold text-neutral-500 uppercase tracking-widest">{streak.currentStreak > 0 ? `${streak.currentStreak} dias seguidos` : 'Ative sua primeira streak'}</div>
-                    {streak.currentStreak > 0 && <div className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-orange-100 border-4 border-white rounded-full flex items-center justify-center shadow-sm"><span className="w-2.5 h-2.5 bg-orange-500 rounded-full"></span></div>}
+                  <div className={`relative z-10 rounded-xl border p-5 shadow-[0_1px_3px_rgba(20,20,19,0.06)] transition-transform hover:-translate-y-1 ${streak.currentStreak > 0 ? 'border-[#CED1C6] bg-[#eef0ec]' : 'border-neutral-200/70 bg-white'}`}>
+                    <div className={`text-lg font-semibold mb-1 ${streak.currentStreak > 0 ? 'text-[#232625]' : 'text-neutral-900'}`}>Ofensiva iniciada</div>
+                    <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.12em]">{streak.currentStreak > 0 ? `${streak.currentStreak} dias seguidos` : 'Ative sua primeira streak'}</div>
+                    {streak.currentStreak > 0 && <div className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#dde2dc] border-4 border-white rounded-full flex items-center justify-center shadow-sm"><span className="w-2.5 h-2.5 bg-[#647568] rounded-full"></span></div>}
                   </div>
 
-                  <div className={`relative z-10 rounded-[1.5rem] border p-5 shadow-sm transition-transform hover:-translate-y-1 ${achievements.length > 0 ? 'border-violet-200 bg-violet-50' : 'border-neutral-100 bg-white'}`}>
-                    <div className={`text-lg font-extrabold mb-1 ${achievements.length > 0 ? 'text-violet-700' : 'text-neutral-900'}`}>Conquista liberada</div>
-                    <div className="text-xs font-bold text-neutral-500 uppercase tracking-widest">{achievements.length > 0 ? `${achievements.length} emblemas` : 'Cumpra desafios'}</div>
-                    {achievements.length > 0 && <div className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-violet-100 border-4 border-white rounded-full flex items-center justify-center shadow-sm"><span className="w-2.5 h-2.5 bg-violet-500 rounded-full"></span></div>}
+                  <div className={`relative z-10 rounded-xl border p-5 shadow-[0_1px_3px_rgba(20,20,19,0.06)] transition-transform hover:-translate-y-1 ${achievements.length > 0 ? 'border-[#CED1C6] bg-[#eef0ec]' : 'border-neutral-200/70 bg-white'}`}>
+                    <div className={`text-lg font-semibold mb-1 ${achievements.length > 0 ? 'text-[#232625]' : 'text-neutral-900'}`}>Conquista liberada</div>
+                    <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.12em]">{achievements.length > 0 ? `${achievements.length} emblemas` : 'Cumpra desafios'}</div>
+                    {achievements.length > 0 && <div className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#dde2dc] border-4 border-white rounded-full flex items-center justify-center shadow-sm"><span className="w-2.5 h-2.5 bg-[#647568] rounded-full"></span></div>}
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-soft border border-neutral-100">
-                <div className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 mb-6">Insights rápidos</div>
+              <div className="bg-white rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70">
+                <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400 mb-6">Insights rápidos</div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-[1.5rem] border border-neutral-100 bg-neutral-50/50 p-5 shadow-inner-soft hover:shadow-soft transition-shadow">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-violet-600 mb-2">Vocabulário ativo</div>
-                    <div className="text-3xl font-black tracking-tight text-neutral-900">{activeWords}</div>
+                  <div className="rounded-xl border border-neutral-200/70 bg-neutral-50/50 p-5 shadow-[0_1px_3px_rgba(20,20,19,0.06)] transition-shadow">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#35403A] mb-2">Vocabulário ativo</div>
+                    <div className="text-3xl font-semibold tracking-tight text-neutral-900">{activeWords}</div>
                   </div>
-                  <div className="rounded-[1.5rem] border border-neutral-100 bg-neutral-50/50 p-5 shadow-inner-soft hover:shadow-soft transition-shadow">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-2">Dominadas</div>
-                    <div className="text-3xl font-black tracking-tight text-neutral-900">{masteredWords}</div>
+                  <div className="rounded-xl border border-neutral-200/70 bg-neutral-50/50 p-5 shadow-[0_1px_3px_rgba(20,20,19,0.06)] transition-shadow">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-600 mb-2">Dominadas</div>
+                    <div className="text-3xl font-semibold tracking-tight text-neutral-900">{masteredWords}</div>
                   </div>
-                  <div className="rounded-[1.5rem] border border-neutral-100 bg-neutral-50/50 p-5 shadow-inner-soft hover:shadow-soft transition-shadow">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-orange-600 mb-2">Retenção semanal</div>
-                    <div className="text-3xl font-black tracking-tight text-neutral-900">{retention.rate}%</div>
+                  <div className="rounded-xl border border-neutral-200/70 bg-neutral-50/50 p-5 shadow-[0_1px_3px_rgba(20,20,19,0.06)] transition-shadow">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#35403A] mb-2">Retenção semanal</div>
+                    <div className="text-3xl font-semibold tracking-tight text-neutral-900">{retention.rate}%</div>
                   </div>
-                  <div className="rounded-[1.5rem] border border-neutral-100 bg-neutral-50/50 p-5 shadow-inner-soft hover:shadow-soft transition-shadow">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-pink-600 mb-2">Dominadas 14d</div>
-                    <div className="text-3xl font-black tracking-tight text-neutral-900">{masteredSeries.at(-1) ?? 0}</div>
+                  <div className="rounded-xl border border-neutral-200/70 bg-neutral-50/50 p-5 shadow-[0_1px_3px_rgba(20,20,19,0.06)] transition-shadow">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#647568] mb-2">Dominadas 14d</div>
+                    <div className="text-3xl font-semibold tracking-tight text-neutral-900">{masteredSeries.at(-1) ?? 0}</div>
                   </div>
                 </div>
               </div>
@@ -500,8 +511,8 @@ export default function Evolution() {
         {/* Error Patterns Section */}
         {Object.keys(errorPatterns).length > 0 && (
           <div className="mt-8">
-            <h3 className="text-lg font-bold text-neutral-900 mb-4 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-orange-500" />
+            <h3 className="text-lg font-semibold font-heading text-neutral-900 mb-4 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-[#647568]" />
               Seus pontos fracos
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -510,29 +521,30 @@ export default function Evolution() {
                 .slice(0, 6)
                 .map(([category, data]) => {
                   const labels = {
-                    word_order: { name: 'Ordem das palavras', icon: '🔀', bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700' },
-                    verb_tense: { name: 'Tempos verbais', icon: '⏰', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700' },
-                    preposition: { name: 'Preposições', icon: '📍', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' },
-                    article: { name: 'Artigos (a/an/the)', icon: '📝', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' },
-                    spelling: { name: 'Ortografia', icon: '✏️', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
-                    vocabulary: { name: 'Vocabulário', icon: '📚', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' },
-                    plural_singular: { name: 'Plural/Singular', icon: '🔢', bg: 'bg-pink-50', border: 'border-pink-200', text: 'text-pink-700' },
-                    pronoun: { name: 'Pronomes', icon: '👤', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700' },
-                    conjunction: { name: 'Conjunções', icon: '🔗', bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-700' },
-                    other: { name: 'Outros', icon: '❓', bg: 'bg-neutral-50', border: 'border-neutral-200', text: 'text-neutral-700' },
+                    word_order: { name: 'Ordem das palavras', icon: BoltIcon, bg: 'bg-[#eef0ec]', border: 'border-[#CED1C6]', text: 'text-[#232625]' },
+                    verb_tense: { name: 'Tempos verbais', icon: ClockIcon, bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700' },
+                    preposition: { name: 'Preposições', icon: MapIcon, bg: 'bg-[#eef0ec]', border: 'border-[#CED1C6]', text: 'text-[#232625]' },
+                    article: { name: 'Artigos (a/an/the)', icon: PencilIcon, bg: 'bg-[#eef0ec]', border: 'border-[#CED1C6]', text: 'text-[#647568]' },
+                    spelling: { name: 'Ortografia', icon: WriteIcon, bg: 'bg-[#eef0ec]', border: 'border-[#CED1C6]', text: 'text-[#35403A]' },
+                    vocabulary: { name: 'Vocabulário', icon: BookOpenIcon, bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' },
+                    plural_singular: { name: 'Plural/Singular', icon: GridIcon, bg: 'bg-[#eef0ec]', border: 'border-[#CED1C6]', text: 'text-[#647568]' },
+                    pronoun: { name: 'Pronomes', icon: UserCircleIcon, bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700' },
+                    conjunction: { name: 'Conjunções', icon: LayersIcon, bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-700' },
+                    other: { name: 'Outros', icon: SearchIcon, bg: 'bg-neutral-50', border: 'border-neutral-200', text: 'text-neutral-700' },
                   };
                   const meta = labels[category] || labels.other;
+                  const ErrorIcon = meta.icon;
 
                   return (
-                    <div key={category} className={`${meta.bg} ${meta.border} border rounded-2xl p-5 flex flex-col gap-2`}>
+                    <div key={category} className={`${meta.bg} ${meta.border} border rounded-xl p-5 flex flex-col gap-2`}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-xl">{meta.icon}</span>
-                          <span className={`text-sm font-bold ${meta.text}`}>{meta.name}</span>
+                          <ErrorIcon size={18} />
+                          <span className={`text-sm font-semibold ${meta.text}`}>{meta.name}</span>
                         </div>
-                        <span className="text-2xl font-black text-neutral-900">{data.count}</span>
+                        <span className="text-2xl font-semibold text-neutral-900">{data.count}</span>
                       </div>
-                      <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                      <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">
                         {data.count === 1 ? '1 erro' : `${data.count} erros`} · {(data.words || []).length} {(data.words || []).length === 1 ? 'palavra' : 'palavras'}
                       </div>
                     </div>

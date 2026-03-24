@@ -28,7 +28,7 @@ import { buildBuilderExercises, selectBuilderWords, buildMixedExercises } from '
 import { buildClozeExercises, buildTransformExercises, selectDailyPromptTargets } from './practiceModes.js';
 import PageHeader from '../shared/PageHeader.jsx';
 import SpeakButton from '../shared/SpeakButton.jsx';
-import { EyeIcon, PencilIcon, PlayIcon, PuzzleIcon, RefreshCwIcon, ReloadIcon, SparkIcon, TypeIcon } from '../shared/icons.jsx';
+import { EyeIcon, PartyIcon, PencilIcon, PlayIcon, PuzzleIcon, RefreshCwIcon, ReloadIcon, SparkIcon, TargetIcon, TrophyIcon, TypeIcon } from '../shared/icons.jsx';
 
 const AI_WARMUP_TIMEOUT_MS = 5000;
 const AVAILABLE_CONTAINER_ID = 'builder-available';
@@ -355,7 +355,7 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
             sentenceId: exercise.sentence.id,
             wordId: exercise.wordId,
             wordText: exercise.wordText,
-            front: exercise.sentence.portuguese,
+            front: exercise.sentence.portuguese || exercise.sentence.english,
             back: exercise.sentence.english,
             production,
         });
@@ -411,18 +411,18 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
     );
 
     return (
-        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-soft border border-neutral-100 flex flex-col gap-6 relative overflow-hidden">
-            <div className="bg-violet-50 p-5 rounded-2xl border border-violet-100/50 mb-2 relative overflow-hidden">
-                <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-violet-100/50 to-transparent pointer-events-none"></div>
-                <div className="text-[11px] font-bold text-violet-600 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+        <div className="bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 md:p-8 flex flex-col gap-6 relative overflow-hidden">
+            <div className="bg-[#eef0ec] p-5 rounded-xl border border-[#CED1C6]/50 mb-2 relative overflow-hidden">
+                <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#CED1C6]/50 to-transparent pointer-events-none"></div>
+                <div className="text-[10px] font-bold text-[#35403A] uppercase tracking-[0.12em] mb-1.5 flex items-center gap-2">
                     <SparkIcon size={12} /> Traduza para o inglês
                 </div>
-                <div className="text-xl md:text-2xl font-bold text-violet-950 leading-tight">{exercise.sentence.portuguese}</div>
+                <div className="text-xl md:text-2xl font-semibold font-heading text-[#111410] leading-tight">{exercise.sentence.portuguese}</div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
                 <div className="flex flex-col gap-4">
-                    <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest px-2">Monte a frase correta</label>
+                    <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] px-2">Monte a frase correta</label>
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableLane
                             containerId={ANSWER_CONTAINER_ID}
@@ -433,7 +433,7 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
                             disabled={result === 'correct' || result === 'incorrect'}
                             testId="builder-answer-lane"
                         />
-                        <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest px-2 mt-4">Banco de palavras</label>
+                        <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] px-2 mt-4">Banco de palavras</label>
                         <SortableLane
                             containerId={AVAILABLE_CONTAINER_ID}
                             tokens={availableTokens}
@@ -445,18 +445,18 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
                     </DndContext>
                 </div>
 
-                <div className="bg-neutral-50/80 rounded-2xl p-6 border border-neutral-200/60 shadow-inner-soft self-stretch flex flex-col pt-5">
-                    <div className="flex items-center gap-2 text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-4">
+                <div className="bg-neutral-50/80 rounded-xl p-6 border border-neutral-200/70 self-stretch flex flex-col pt-5">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-4">
                         <PencilIcon size={12} /> Dica de montagem
                     </div>
-                    <div className="text-sm font-medium text-neutral-600 bg-white p-3 rounded-xl border border-neutral-100 shadow-sm mb-3">
+                    <div className="text-sm font-medium text-neutral-600 bg-white p-3 rounded-xl border border-neutral-200/70 mb-3">
                         Ordem esperada: <strong>{expectedTokens.length}</strong> palavras
                     </div>
-                    <div className="text-sm text-neutral-500 bg-white p-3 rounded-xl border border-neutral-100 shadow-sm mb-3 leading-relaxed">
+                    <div className="text-sm text-neutral-500 bg-white p-3 rounded-xl border border-neutral-200/70 mb-3 leading-relaxed">
                         Palavra foco:<br />
-                        <strong className="text-violet-700">{exercise.wordText}</strong> <span className="opacity-50">·</span> variação <strong>{exercise.sentence.type}</strong>
+                        <strong className="text-[#232625]">{exercise.wordText}</strong> <span className="opacity-50">·</span> variação <strong>{exercise.sentence.type}</strong>
                     </div>
-                    <div className="text-xs font-semibold text-neutral-400 mt-auto bg-neutral-200/50 p-3 rounded-xl">
+                    <div className="text-xs font-semibold text-neutral-400 mt-auto bg-neutral-100 p-3 rounded-xl">
                         Tentativas usadas: <strong className={attempts >= maxAttempts ? 'text-red-500' : 'text-neutral-700'}>{attempts}</strong> / {maxAttempts}
                     </div>
                 </div>
@@ -464,14 +464,14 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
 
             {result === 'correct' && (
                 <div className="builder-feedback builder-feedback-success mt-lg">
-                    <div className="builder-feedback-title">✅ Resposta correta</div>
+                    <div className="builder-feedback-title">Resposta correta</div>
                     <div className="builder-feedback-text flex items-center gap-2">{exercise.sentence.english} <SpeakButton text={exercise.sentence.english} size={14} /></div>
                 </div>
             )}
 
             {result === 'try_again' && (
                 <div className="builder-feedback builder-feedback-warning mt-lg" style={{ background: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.2)' }}>
-                    <div className="builder-feedback-title" style={{ color: '#D97706' }}>⚠️ Ainda nao ficou certo</div>
+                    <div className="builder-feedback-title" style={{ color: '#D97706' }}>Ainda nao ficou certo</div>
                     <div className="builder-feedback-copy" style={{ color: '#D97706', marginTop: 4 }}>
                         Revise a ordem das palavras destacadas. Você tem mais {maxAttempts - attempts} {maxAttempts - attempts === 1 ? 'tentativa' : 'tentativas'}.
                     </div>
@@ -480,7 +480,7 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
 
             {result === 'incorrect' && (
                 <div className="builder-feedback builder-feedback-error mt-lg">
-                    <div className="builder-feedback-title">❌ Resposta encerrada</div>
+                    <div className="builder-feedback-title">Resposta encerrada</div>
                     <div className="builder-feedback-text flex items-center gap-2">
                         A frase correta era: <strong>{exercise.sentence.english}</strong> <SpeakButton text={exercise.sentence.english} size={14} />
                     </div>
@@ -492,8 +492,8 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
                         </div>
                     )}
                     {explanation && (
-                        <div className="mt-4 p-4 bg-white/60 rounded-xl border border-red-100 shadow-sm">
-                            <h4 className="flex items-center gap-2 text-[11px] font-bold text-red-600 uppercase tracking-widest mb-2">
+                        <div className="mt-4 p-4 bg-white/60 rounded-xl border border-red-100 shadow-[0_1px_3px_rgba(20,20,19,0.06)]">
+                            <h4 className="flex items-center gap-2 text-[10px] font-bold text-red-600 uppercase tracking-[0.12em] mb-2">
                                 <SparkIcon size={14} /> Sugestão da IA
                             </h4>
                             <p className="text-sm font-medium text-neutral-700 leading-relaxed">{explanation}</p>
@@ -530,7 +530,7 @@ function SentenceExercise({ exercise, onComplete, onSave }) {
             {showProd && (
                 <div className="mt-lg builder-production">
                     <label className="input-label builder-production-label">
-                        ✍️ Agora use essa palavra numa frase sua (opcional):
+                        <PencilIcon size={14} className="inline mr-1" /> Agora use essa palavra numa frase sua (opcional):
                     </label>
                     <div className="builder-production-copy">
                         Now use <strong>{exercise.wordText}</strong> in your own sentence.
@@ -640,24 +640,24 @@ function TransformExercise({ exercise, onComplete }) {
     };
 
     return (
-        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-soft border border-neutral-100 flex flex-col gap-6">
-            <div className="bg-violet-50 p-5 rounded-2xl border border-violet-100/50 mb-2">
-                <div className="text-[11px] font-bold text-violet-600 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+        <div className="bg-white rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col gap-6">
+            <div className="bg-[#eef0ec] p-5 rounded-xl border border-[#CED1C6]/50 mb-2">
+                <div className="text-[10px] font-bold text-[#35403A] uppercase tracking-[0.12em] mb-1.5 flex items-center gap-2">
                     <RefreshCwIcon size={12} /> Transformação Estrutural
                 </div>
-                <div className="text-xl md:text-2xl font-bold text-violet-950 leading-tight">{exercise.instruction}</div>
+                <div className="text-xl md:text-2xl font-semibold font-heading text-[#111410] leading-tight">{exercise.instruction}</div>
             </div>
 
-            <div className="bg-neutral-50/80 rounded-2xl p-6 border border-neutral-200/60 shadow-inner-soft">
-                <div className="flex items-center gap-2 text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Frase base</div>
-                <div className="text-lg font-bold text-neutral-800 bg-white p-4 rounded-xl border border-neutral-100 shadow-sm mb-2">{exercise.sourceSentence}</div>
+            <div className="bg-neutral-50/80 rounded-xl p-6 border border-neutral-200/60 shadow-[0_1px_3px_rgba(20,20,19,0.06)]">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-3">Frase base</div>
+                <div className="text-lg font-semibold font-heading text-neutral-800 bg-white p-4 rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] mb-2">{exercise.sourceSentence}</div>
                 <div className="text-sm font-medium text-neutral-500 px-2 italic">{exercise.sourcePortuguese}</div>
             </div>
 
             <div className="mt-2">
-                <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest px-2 mb-2 block">Digite a nova frase em inglês</label>
+                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] px-2 mb-2 block">Digite a nova frase em inglês</label>
                 <textarea
-                    className="w-full p-4 bg-white border border-neutral-200 hover:border-neutral-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl text-base transition-all outline-none resize-none shadow-sm"
+                    className="w-full p-4 bg-white border border-neutral-200 hover:border-neutral-300 focus:border-[#647568] focus:ring-2 focus:ring-[#35403A]/15 rounded-xl text-base transition-all outline-none resize-none shadow-[0_1px_3px_rgba(20,20,19,0.06)]"
                     style={{ minHeight: 120 }}
                     value={answer}
                     onChange={(event) => setAnswer(event.target.value)}
@@ -667,7 +667,7 @@ function TransformExercise({ exercise, onComplete }) {
 
             {result === 'try_again' && (
                 <div className="builder-feedback builder-feedback-warning mt-lg" style={{ background: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.2)' }}>
-                    <div className="builder-feedback-title" style={{ color: '#D97706' }}>⚠️ Ainda nao ficou certo</div>
+                    <div className="builder-feedback-title" style={{ color: '#D97706' }}>Ainda nao ficou certo</div>
                     <div className="builder-feedback-copy" style={{ color: '#D97706', marginTop: 4 }}>
                         Compare a transformação pedida com a frase base e tente novamente.
                     </div>
@@ -676,14 +676,14 @@ function TransformExercise({ exercise, onComplete }) {
 
             {result === 'correct' && (
                 <div className="builder-feedback builder-feedback-success mt-lg">
-                    <div className="builder-feedback-title">✅ Transformação correta</div>
+                    <div className="builder-feedback-title">Transformação correta</div>
                     <div className="builder-feedback-text flex items-center gap-2">{exercise.expectedSentence} <SpeakButton text={exercise.expectedSentence} size={14} /></div>
                 </div>
             )}
 
             {result === 'incorrect' && (
                 <div className="builder-feedback builder-feedback-error mt-lg">
-                    <div className="builder-feedback-title">❌ Tentativas encerradas</div>
+                    <div className="builder-feedback-title">Tentativas encerradas</div>
                     <div className="builder-feedback-text flex items-center gap-2">{exercise.expectedSentence} <SpeakButton text={exercise.expectedSentence} size={14} /></div>
                     
                     {isExplaining && (
@@ -693,8 +693,8 @@ function TransformExercise({ exercise, onComplete }) {
                         </div>
                     )}
                     {explanation && (
-                        <div className="mt-4 p-4 bg-white/60 rounded-xl border border-red-100 shadow-sm">
-                            <h4 className="flex items-center gap-2 text-[11px] font-bold text-red-600 uppercase tracking-widest mb-2">
+                        <div className="mt-4 p-4 bg-white/60 rounded-xl border border-red-100 shadow-[0_1px_3px_rgba(20,20,19,0.06)]">
+                            <h4 className="flex items-center gap-2 text-[10px] font-bold text-red-600 uppercase tracking-[0.12em] mb-2">
                                 <SparkIcon size={14} /> Sugestão da IA
                             </h4>
                             <p className="text-sm font-medium text-neutral-700 leading-relaxed">{explanation}</p>
@@ -802,23 +802,23 @@ function ClozeExercise({ exercise, onComplete }) {
     };
 
     return (
-        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-soft border border-neutral-100 flex flex-col gap-6">
-            <div className="bg-violet-50 p-5 rounded-2xl border border-violet-100/50 mb-2">
-                <div className="text-[11px] font-bold text-violet-600 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+        <div className="bg-white rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col gap-6">
+            <div className="bg-[#eef0ec] p-5 rounded-xl border border-[#CED1C6]/50 mb-2">
+                <div className="text-[10px] font-bold text-[#35403A] uppercase tracking-[0.12em] mb-1.5 flex items-center gap-2">
                     <TypeIcon size={12} /> Preencha a Lacuna (Cloze)
                 </div>
-                <div className="text-xl md:text-2xl font-bold text-violet-950 leading-tight">{exercise.portuguese}</div>
+                <div className="text-xl md:text-2xl font-semibold font-heading text-[#111410] leading-tight">{exercise.portuguese}</div>
             </div>
 
-            <div className="bg-neutral-50/80 rounded-2xl p-8 border border-neutral-200/60 shadow-inner-soft text-center">
-                <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Complete com a palavra certa</div>
-                <div className="text-2xl font-black text-neutral-900 leading-normal">{exercise.maskedEnglish}</div>
+            <div className="bg-neutral-50/80 rounded-xl p-8 border border-neutral-200/60 shadow-[0_1px_3px_rgba(20,20,19,0.06)] text-center">
+                <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-4">Complete com a palavra certa</div>
+                <div className="text-2xl font-semibold text-neutral-900 leading-normal">{exercise.maskedEnglish}</div>
             </div>
 
             <div className="mt-2 text-center max-w-lg mx-auto w-full">
-                <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest px-2 mb-2 block">Palavra ou expressão faltante</label>
+                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] px-2 mb-2 block">Palavra ou expressão faltante</label>
                 <input
-                    className="w-full px-6 py-4 bg-white border border-neutral-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl text-lg font-bold text-center transition-all outline-none shadow-sm placeholder-neutral-300"
+                    className="w-full px-6 py-4 bg-white border border-neutral-200 focus:border-[#647568] focus:ring-2 focus:ring-[#35403A]/15 rounded-xl text-lg font-semibold font-heading text-center transition-all outline-none shadow-[0_1px_3px_rgba(20,20,19,0.06)] placeholder-neutral-300"
                     value={answer}
                     onChange={(event) => setAnswer(event.target.value)}
                     placeholder="Digite a resposta aqui..."
@@ -827,7 +827,7 @@ function ClozeExercise({ exercise, onComplete }) {
 
             {result === 'try_again' && (
                 <div className="builder-feedback builder-feedback-warning mt-lg" style={{ background: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.2)' }}>
-                    <div className="builder-feedback-title" style={{ color: '#D97706' }}>⚠️ Ainda nao ficou certo</div>
+                    <div className="builder-feedback-title" style={{ color: '#D97706' }}>Ainda nao ficou certo</div>
                     <div className="builder-feedback-copy" style={{ color: '#D97706', marginTop: 4 }}>
                         Revise a palavra foco e tente completar novamente.
                     </div>
@@ -836,14 +836,14 @@ function ClozeExercise({ exercise, onComplete }) {
 
             {result === 'correct' && (
                 <div className="builder-feedback builder-feedback-success mt-lg">
-                    <div className="builder-feedback-title">✅ Lacuna correta</div>
+                    <div className="builder-feedback-title">Lacuna correta</div>
                     <div className="builder-feedback-text flex items-center gap-2">{exercise.english} <SpeakButton text={exercise.english} size={14} /></div>
                 </div>
             )}
 
             {result === 'incorrect' && (
                 <div className="builder-feedback builder-feedback-error mt-lg">
-                    <div className="builder-feedback-title">❌ Resposta correta</div>
+                    <div className="builder-feedback-title">Resposta correta</div>
                     <div className="builder-feedback-text flex items-center gap-2">{exercise.expectedText} <SpeakButton text={exercise.expectedText} size={14} /></div>
 
                     {isExplaining && (
@@ -853,8 +853,8 @@ function ClozeExercise({ exercise, onComplete }) {
                         </div>
                     )}
                     {explanation && (
-                        <div className="mt-4 p-4 bg-white/60 rounded-xl border border-red-100 shadow-sm">
-                            <h4 className="flex items-center gap-2 text-[11px] font-bold text-red-600 uppercase tracking-widest mb-2">
+                        <div className="mt-4 p-4 bg-white/60 rounded-xl border border-red-100 shadow-[0_1px_3px_rgba(20,20,19,0.06)]">
+                            <h4 className="flex items-center gap-2 text-[10px] font-bold text-red-600 uppercase tracking-[0.12em] mb-2">
                                 <SparkIcon size={14} /> Sugestão da IA
                             </h4>
                             <p className="text-sm font-medium text-neutral-700 leading-relaxed">{explanation}</p>
@@ -948,7 +948,7 @@ function DailyPromptPanel({ targets }) {
     if (targets.length === 0) {
         return (
             <div className="empty-state">
-                <div className="empty-icon">📝</div>
+                <div className="empty-icon"><PencilIcon size={14} /></div>
                 <h3>Nenhum termo disponível</h3>
                 <p>Adicione palavras ao banco ou importe o seed do seu nível para desbloquear o desafio diário.</p>
             </div>
@@ -956,16 +956,16 @@ function DailyPromptPanel({ targets }) {
     }
 
     return (
-        <div className="bg-white rounded-[2rem] p-6 lg:p-10 shadow-soft border border-neutral-100 mb-8 relative overflow-hidden">
-            <div className="absolute right-0 top-0 bottom-0 w-64 bg-gradient-to-l from-violet-50/80 to-transparent pointer-events-none"></div>
+        <div className="bg-white rounded-xl p-6 lg:p-10 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 mb-8 relative overflow-hidden">
+            <div className="absolute right-0 top-0 bottom-0 w-64 bg-gradient-to-l from-[#eef0ec]/80 to-transparent pointer-events-none"></div>
 
             <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-100 border border-violet-200 mb-4 w-max shadow-inner-soft">
-                    <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></span>
-                    <span className="text-[10px] font-bold text-violet-700 uppercase tracking-widest">Daily Prompt</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#dde2dc] border border-[#CED1C6] mb-4 w-max shadow-[0_1px_3px_rgba(20,20,19,0.06)]">
+                    <span className="w-2 h-2 rounded-full bg-[#35403A] animate-pulse"></span>
+                    <span className="text-[10px] font-bold text-[#232625] uppercase tracking-[0.12em]">Daily Prompt</span>
                 </div>
 
-                <h3 className="text-2xl font-extrabold text-neutral-900 mb-1 tracking-tight">
+                <h3 className="text-2xl font-semibold font-heading text-neutral-900 mb-1 tracking-tight">
                     Escreva uma frase com cada palavra do dia.
                 </h3>
                 <p className="text-sm text-neutral-500 mb-6">
@@ -979,8 +979,8 @@ function DailyPromptPanel({ targets }) {
                             key={t.wordId}
                             onClick={() => !allDone && setCurrentIdx(i)}
                             className={`h-2 rounded-full transition-all duration-300 ${
-                                i === currentIdx ? 'w-8 bg-violet-600' :
-                                submitted[i] ? 'w-4 bg-green-400' :
+                                i === currentIdx ? 'w-8 bg-[#35403A]' :
+                                submitted[i] ? 'w-4 bg-[#647568]' :
                                 'w-2 bg-neutral-200'
                             } ${!allDone ? 'cursor-pointer hover:opacity-80' : ''}`}
                         />
@@ -991,16 +991,16 @@ function DailyPromptPanel({ targets }) {
             {/* Current word card */}
             {!allDone && target && (
                 <div className="relative z-10 max-w-2xl">
-                    <div className="bg-neutral-50/80 rounded-2xl p-6 border border-neutral-200/60 shadow-inner-soft">
-                        <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-1">
+                    <div className="bg-neutral-50/80 rounded-xl p-6 border border-neutral-200/60 shadow-[0_1px_3px_rgba(20,20,19,0.06)]">
+                        <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-1">
                             Palavra {currentIdx + 1}
                         </div>
-                        <div className="text-3xl font-bold text-violet-700 mb-3">{target.wordText}</div>
-                        <div className="text-xs font-semibold text-neutral-500 bg-white px-3 py-1.5 rounded-lg border border-neutral-100 shadow-sm inline-block mb-4">
+                        <div className="text-3xl font-semibold font-heading text-[#232625] mb-3">{target.wordText}</div>
+                        <div className="text-xs font-semibold text-neutral-500 bg-white px-3 py-1.5 rounded-lg border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] inline-block mb-4">
                             {target.entryType === 'collocation' ? 'Use a expressão inteira na frase.' : 'Escreva uma frase em inglês usando esta palavra.'}
                         </div>
                         <textarea
-                            className="w-full p-4 bg-white border border-neutral-200 hover:border-neutral-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-xl text-base transition-all outline-none resize-none shadow-sm"
+                            className="w-full p-4 bg-white border border-neutral-200 hover:border-neutral-300 focus:border-[#647568] focus:ring-2 focus:ring-[#35403A]/15 rounded-xl text-base transition-all outline-none resize-none shadow-[0_1px_3px_rgba(20,20,19,0.06)]"
                             style={{ minHeight: 100 }}
                             disabled={submitted[currentIdx]}
                             value={answers[currentIdx] || ''}
@@ -1021,7 +1021,7 @@ function DailyPromptPanel({ targets }) {
 
                         <div className="flex gap-3 mt-4">
                             <button
-                                className="flex-1 bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-xl font-bold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="flex-1 bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 onClick={handleSubmitWord}
                                 disabled={submitted[currentIdx] || !answers[currentIdx]?.trim()}
                             >
@@ -1036,14 +1036,14 @@ function DailyPromptPanel({ targets }) {
             {/* All done summary */}
             {allDone && (
                 <div className="relative z-10 text-center py-6">
-                    <div className="text-4xl mb-3">🎉</div>
-                    <h4 className="text-xl font-bold text-neutral-900 mb-2">
+                    <div className="text-4xl mb-3 text-[#647568]"><SparkIcon size={40} /></div>
+                    <h4 className="text-xl font-semibold font-heading text-neutral-900 mb-2">
                         {targets.length} palavra{targets.length > 1 ? 's' : ''} concluída{targets.length > 1 ? 's' : ''}!
                     </h4>
                     <div className="flex flex-col gap-2 max-w-lg mx-auto mt-4">
                         {targets.map((t, i) => (
-                            <div key={t.wordId} className="flex items-center gap-3 bg-green-50 rounded-xl p-3 border border-green-200 text-left">
-                                <span className="text-green-500 font-bold">✓</span>
+                            <div key={t.wordId} className="flex items-center gap-3 bg-[#eef0ec] rounded-xl p-3 border border-[#CED1C6] text-left">
+                                <span className="text-[#647568] font-bold">✓</span>
                                 <span className="font-bold text-neutral-700">{t.wordText}</span>
                                 <span className="text-sm text-neutral-500 italic truncate flex-1">&ldquo;{answers[i]}&rdquo;</span>
                             </div>
@@ -1053,7 +1053,7 @@ function DailyPromptPanel({ targets }) {
             )}
 
             {feedback && (
-                <div className={`mt-6 p-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm relative z-10 ${feedback.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : feedback.type === 'info' ? 'bg-violet-50 text-violet-700 border border-violet-200' : 'bg-orange-50 text-orange-700 border border-orange-200'}`}>
+                <div className={`mt-6 p-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-[0_1px_3px_rgba(20,20,19,0.06)] relative z-10 ${feedback.type === 'success' ? 'bg-[#eef0ec] text-[#35403A] border border-[#CED1C6]' : feedback.type === 'info' ? 'bg-[#eef0ec] text-[#232625] border border-[#CED1C6]' : 'bg-[#eef0ec] text-[#232625] border border-[#CED1C6]'}`}>
                     {feedback.text}
                 </div>
             )}
@@ -1063,15 +1063,15 @@ function DailyPromptPanel({ targets }) {
 
 function renderModeSummary({ title, copy, actionLabel, onReset, secondaryAction }) {
     return (
-        <div className="bg-white rounded-3xl p-12 shadow-soft border border-neutral-100 flex flex-col items-center justify-center text-center mt-4">
-            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center text-green-600 mb-6 border border-green-100 shadow-inner-soft">
+        <div className="bg-white rounded-xl p-12 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col items-center justify-center text-center mt-4">
+            <div className="w-20 h-20 bg-[#eef0ec] rounded-full flex items-center justify-center text-[#647568] mb-6 border border-[#CED1C6] shadow-[0_1px_3px_rgba(20,20,19,0.06)]">
                 <SparkIcon size={36} />
             </div>
-            <h2 className="text-3xl font-extrabold text-neutral-900 mb-3 tracking-tight">{title}</h2>
+            <h2 className="text-3xl font-semibold font-heading text-neutral-900 mb-3 tracking-tight">{title}</h2>
             <p className="text-neutral-500 max-w-md">{copy}</p>
 
             <div className="flex justify-center gap-4 flex-wrap mt-8">
-                <button className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white px-8 py-3.5 rounded-full font-bold shadow-lg transition-transform hover:-translate-y-0.5" onClick={onReset}>{actionLabel}</button>
+                <button className="bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors" onClick={onReset}>{actionLabel}</button>
                 {secondaryAction}
             </div>
         </div>
@@ -1294,11 +1294,11 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
         return (
             <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
                 <main className="w-full mt-2 lg:mt-4">
-                    <div className="bg-white rounded-3xl p-12 shadow-soft border border-neutral-100 flex flex-col items-center justify-center text-center mt-12">
-                        <div className="w-20 h-20 bg-violet-50 rounded-full flex items-center justify-center text-violet-600 mb-6 animate-pulse">
+                    <div className="bg-white rounded-xl p-12 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col items-center justify-center text-center mt-12">
+                        <div className="w-20 h-20 bg-[#eef0ec] rounded-full flex items-center justify-center text-[#35403A] mb-6 animate-pulse">
                             <PuzzleIcon size={36} />
                         </div>
-                        <h3 className="text-2xl font-bold text-neutral-900 mb-3">Abrindo prática rápida</h3>
+                        <h3 className="text-2xl font-semibold font-heading text-neutral-900 mb-3">Abrindo prática rápida</h3>
                         <p className="text-neutral-500 max-w-md">
                             Montando até {builderConfig.sessionWordLimit ?? 5} palavras com {(builderConfig.phrasesPerWord ?? 3)} variações por item.
                         </p>
@@ -1316,20 +1316,20 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
             <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
                 <main className="w-full mt-2 lg:mt-4">
                     {error ? (
-                        <div className="bg-red-50 text-red-700 border border-red-200 p-6 rounded-2xl mb-8 flex items-center gap-3 font-semibold">
-                            ❌ {error}
+                        <div className="bg-red-50 text-red-700 border border-red-200 p-6 rounded-xl mb-8 flex items-center gap-3 font-semibold">
+                            {error}
                         </div>
                     ) : (
-                        <div className="bg-white rounded-3xl p-12 shadow-soft border border-neutral-100 flex flex-col items-center justify-center text-center mt-12 mb-8">
-                            <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center text-neutral-400 mb-6 border border-neutral-200 shadow-inner-soft">
+                        <div className="bg-white rounded-xl p-12 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col items-center justify-center text-center mt-12 mb-8">
+                            <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center text-neutral-400 mb-6 border border-neutral-200 shadow-[0_1px_3px_rgba(20,20,19,0.06)]">
                                 <PuzzleIcon size={36} />
                             </div>
-                            <h3 className="text-2xl font-bold text-neutral-900 mb-3">Nada para praticar agora</h3>
+                            <h3 className="text-2xl font-semibold font-heading text-neutral-900 mb-3">Nada para praticar agora</h3>
                             <p className="text-neutral-500 max-w-md">Clique em palavras no Reader, importe o seed do seu nível ou adicione itens ao banco para abrir uma sessão.</p>
                         </div>
                     )}
                     <div className="flex justify-center gap-4 flex-wrap">
-                        <button className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white px-8 py-3.5 rounded-full font-bold shadow-lg transition-transform hover:-translate-y-0.5 flex items-center gap-2" onClick={prepare}>
+                        <button className="bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors flex items-center gap-2" onClick={prepare}>
                             <ReloadIcon size={18} />
                             Atualizar sessão
                         </button>
@@ -1386,51 +1386,51 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
     return (
         <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
             <main className="w-full mt-2 lg:mt-4 relative">
-                <div className="bg-white rounded-[2rem] p-6 lg:p-10 shadow-soft border border-neutral-100 mb-8 relative overflow-hidden" ref={workspaceRef} data-testid="builder-workspace-header">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-violet-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-70"></div>
+                <div className="bg-white rounded-xl p-6 lg:p-10 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 mb-8 relative overflow-hidden" ref={workspaceRef} data-testid="builder-workspace-header">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#eef0ec] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-70"></div>
                     
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
                         <div>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-100 border border-violet-200 mb-4 w-max">
-                                <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></span>
-                                <span className="text-[10px] font-bold text-violet-700 uppercase tracking-widest">Workspace da sessão</span>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#dde2dc] border border-[#CED1C6] mb-4 w-max">
+                                <span className="w-2 h-2 rounded-full bg-[#35403A] animate-pulse"></span>
+                                <span className="text-[10px] font-bold text-[#232625] uppercase tracking-[0.12em]">Workspace da sessão</span>
                             </div>
-                            <h3 className="text-3xl font-extrabold text-neutral-900 mb-2">{currentModeMeta.title}</h3>
+                            <h3 className="text-3xl font-semibold font-heading text-neutral-900 mb-2">{currentModeMeta.title}</h3>
                             <p className="text-sm text-neutral-500 max-w-xl">
                                 {currentContext || 'A sessão atual usa o vocabulário capturado no reader e no banco ativo.'}
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-2 lg:justify-end">
-                            <span className="px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-lg text-[11px] font-bold uppercase tracking-wider">Concluídos {completedCount}</span>
-                            <span className="px-3 py-1.5 bg-neutral-100 text-neutral-600 border border-neutral-200 rounded-lg text-[11px] font-bold uppercase tracking-wider">Restantes {remainingCount}</span>
-                            <span className="px-3 py-1.5 bg-violet-50 text-violet-700 border border-violet-200 rounded-lg text-[11px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5"><SparkIcon size={12}/> Cards salvos {saved.length}</span>
+                            <span className="px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200 text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">Concluídos {completedCount}</span>
+                            <span className="px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200 text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">Restantes {remainingCount}</span>
+                            <span className="px-3 py-1.5 rounded-full bg-[#eef0ec] border border-[#CED1C6] text-[10px] font-bold uppercase tracking-[0.12em] text-[#35403A] flex items-center gap-1.5"><SparkIcon size={12}/> Cards salvos {saved.length}</span>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 pt-8 border-t border-neutral-100 relative z-10">
-                        <div className="bg-neutral-50/80 p-4 rounded-2xl border border-neutral-100">
-                            <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Foco atual</span>
+                        <div className="bg-neutral-50/80 p-4 rounded-xl border border-neutral-200/70">
+                            <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-1.5">Foco atual</span>
                             <strong className="text-sm text-neutral-900 line-clamp-2">{currentFocus || 'Sessão sem foco definido'}</strong>
                         </div>
-                        <div className="bg-neutral-50/80 p-4 rounded-2xl border border-neutral-100">
-                            <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Itens na sessão</span>
-                            <strong className="text-2xl font-black text-neutral-900">{practiceData.selectedWords.length}</strong>
+                        <div className="bg-neutral-50/80 p-4 rounded-xl border border-neutral-200/70">
+                            <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-1.5">Itens na sessão</span>
+                            <strong className="text-2xl font-semibold text-neutral-900">{practiceData.selectedWords.length}</strong>
                         </div>
-                        <div className="bg-neutral-50/80 p-4 rounded-2xl border border-neutral-100">
-                            <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Modo ativo</span>
-                            <strong className="text-lg font-bold text-violet-600">{currentModeMeta.title}</strong>
+                        <div className="bg-neutral-50/80 p-4 rounded-xl border border-neutral-200/70">
+                            <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-1.5">Modo ativo</span>
+                            <strong className="text-lg font-semibold font-heading text-[#35403A]">{currentModeMeta.title}</strong>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mb-8 bg-neutral-100/50 p-1.5 rounded-2xl w-max">
+                <div className="flex flex-wrap gap-2 mb-8 bg-neutral-100/50 p-1.5 rounded-full w-max">
                     {PRACTICE_MODES.map((item) => (
                         <button
                             key={item.id}
                             type="button"
-                            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                                mode === item.id 
-                                ? 'bg-white text-violet-700 shadow-sm border border-neutral-200/60' 
+                            className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-colors ${
+                                mode === item.id
+                                ? 'bg-white text-[#232625] shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70'
                                 : 'text-neutral-500 hover:text-neutral-800 hover:bg-neutral-200/50'
                             }`}
                             onClick={() => setMode(item.id)}
@@ -1444,11 +1444,10 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
                     <div className="mb-8 pl-1">
                         <div className="flex items-center justify-between mb-3 text-sm font-bold">
                             <span className="text-neutral-500">{currentModeMeta.title} <span className="text-neutral-300 mx-1">•</span> exercício {Math.min(currentModeMeta.index + 1, currentModeMeta.count)} de {currentModeMeta.count}</span>
-                            <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider border border-violet-200">{practiceData.selectedWords.length} itens na sessão</span>
+                            <span className="px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200 text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">{practiceData.selectedWords.length} itens na sessão</span>
                         </div>
-                        <div className="h-2 w-full bg-neutral-100 rounded-full overflow-hidden border border-neutral-200/50">
-                            <div className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-400 transition-all duration-500 relative" style={{ width: `${progress}%` }}>
-                                <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
+                        <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                            <div className="bg-[#35403A] h-full rounded-full transition-all duration-500" style={{ width: `${progress}%` }}>
                             </div>
                         </div>
                     </div>
@@ -1457,60 +1456,64 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
                 {mode === 'practice' && (
                     practiceData.mixedExercises.length === 0 ? (
                         <div className="empty-state">
-                            <div className="empty-icon">🧩</div>
+                            <div className="empty-icon"><PuzzleIcon size={14} /></div>
                             <h3>Nenhum exercício disponível</h3>
                             <p>Importe seed ou clique em palavras no Reader para montar novas frases.</p>
                         </div>
                     ) : exerciseIndex >= practiceData.mixedExercises.length ? (
-                        <div className="page-content builder-page builder-summary-page bg-white rounded-3xl p-8 lg:p-12 shadow-soft border border-neutral-100 flex flex-col items-center">
+                        <div className="page-content builder-page builder-summary-page bg-white rounded-xl p-8 lg:p-12 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col items-center">
                             <div className="builder-summary-hero mb-8 flex flex-col items-center">
-                                <div className="w-20 h-20 bg-green-50 flex justify-center items-center rounded-full text-green-500 mb-6 border border-green-100 shadow-inner-soft animate-bounce">
+                                <div className="w-20 h-20 bg-[#eef0ec] flex justify-center items-center rounded-full text-[#647568] mb-6 border border-[#CED1C6] shadow-[0_1px_3px_rgba(20,20,19,0.06)] animate-bounce">
                                     <TrophyIcon size={40} />
                                 </div>
-                                <h2 className="text-3xl font-extrabold text-neutral-900 tracking-tight text-center mb-2">Sessão Concluída!</h2>
+                                <h2 className="text-3xl font-semibold font-heading text-neutral-900 tracking-tight text-center mb-2">Sessão Concluída!</h2>
                                 <p className="text-neutral-500 text-center max-w-md mx-auto">
                                     Excelente trabalho. Aqui está o seu desempenho nesta sessão.
                                 </p>
                             </div>
                             
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 w-full max-w-3xl">
-                                <div className="bg-neutral-50 p-6 rounded-2xl border border-neutral-100 shadow-sm text-center">
-                                    <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-2">Exercícios</div>
-                                    <div className="text-3xl font-black text-neutral-900">{practiceData.mixedExercises.length}</div>
+                                <div className="bg-neutral-50 p-6 rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] text-center">
+                                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-2">Exercícios</div>
+                                    <div className="text-3xl font-semibold text-neutral-900">{practiceData.mixedExercises.length}</div>
                                 </div>
-                                <div className="bg-green-50 p-6 rounded-2xl border border-green-100 shadow-sm text-center">
-                                    <div className="text-[11px] font-bold text-green-600 uppercase tracking-widest mb-2">Acertos</div>
-                                    <div className="text-3xl font-black text-green-700">{sessionStats.correct}</div>
+                                <div className="bg-[#eef0ec] p-6 rounded-xl border border-[#CED1C6] shadow-[0_1px_3px_rgba(20,20,19,0.06)] text-center">
+                                    <div className="text-[10px] font-bold text-[#647568] uppercase tracking-[0.12em] mb-2">Acertos</div>
+                                    <div className="text-3xl font-semibold text-[#35403A]">{sessionStats.correct}</div>
                                 </div>
-                                <div className="bg-red-50 p-6 rounded-2xl border border-red-100 shadow-sm text-center">
-                                    <div className="text-[11px] font-bold text-red-600 uppercase tracking-widest mb-2">Erros</div>
-                                    <div className="text-3xl font-black text-red-700">{sessionStats.incorrect}</div>
+                                <div className="bg-red-50 p-6 rounded-xl border border-red-100 shadow-[0_1px_3px_rgba(20,20,19,0.06)] text-center">
+                                    <div className="text-[10px] font-bold text-red-600 uppercase tracking-[0.12em] mb-2">Erros</div>
+                                    <div className="text-3xl font-semibold text-red-700">{sessionStats.incorrect}</div>
                                 </div>
-                                <div className="bg-yellow-50 p-6 rounded-2xl border border-yellow-100 shadow-sm text-center flex flex-col items-center justify-center relative overflow-hidden">
-                                    <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-yellow-200/30 to-transparent pointer-events-none"></div>
-                                    <div className="text-[11px] font-bold text-yellow-600 uppercase tracking-widest mb-2 z-10 flex items-center gap-1.5"><SparkIcon size={12}/> XP Ganho</div>
-                                    <div className="text-3xl font-black text-yellow-700 z-10">+{sessionStats.xpEarned}</div>
+                                <div className="bg-[#eef0ec] p-6 rounded-xl border border-[#CED1C6] shadow-[0_1px_3px_rgba(20,20,19,0.06)] text-center flex flex-col items-center justify-center relative overflow-hidden">
+                                    <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#dde2dc]/30 to-transparent pointer-events-none"></div>
+                                    <div className="text-[10px] font-bold text-[#647568] uppercase tracking-[0.12em] mb-2 z-10 flex items-center gap-1.5"><SparkIcon size={12}/> XP Ganho</div>
+                                    <div className="text-3xl font-semibold text-[#35403A] z-10">+{sessionStats.xpEarned}</div>
                                 </div>
                             </div>
                             
                             {Object.keys(sessionStats.wordErrors).length > 0 && (
-                                <div className="bg-orange-50/80 p-6 rounded-2xl border border-orange-100 text-center mb-8 w-full max-w-3xl flex items-center justify-between">
+                                <div className="bg-[#eef0ec]/80 p-6 rounded-xl border border-[#CED1C6] text-center mb-8 w-full max-w-3xl flex items-center justify-between">
                                     <div className="text-left">
-                                        <div className="text-[11px] font-bold text-orange-600/80 uppercase tracking-widest mb-1.5 flex items-center gap-2">Maior dificuldade na sessão</div>
-                                        <div className="text-xl font-bold text-orange-900">
-                                            {Object.entries(sessionStats.wordErrors).sort((a,b) => b[1]-a[1])[0][0]}
+                                        <div className="text-[10px] font-bold text-[#35403A]/80 uppercase tracking-[0.12em] mb-1.5 flex items-center gap-2">Maior dificuldade na sessão</div>
+                                        <div className="text-xl font-semibold font-heading text-[#1a1e1b]">
+                                            {(() => {
+                                                const [wordId] = Object.entries(sessionStats.wordErrors).sort((a,b) => b[1]-a[1])[0];
+                                                const found = bankWords.find(w => w.id === wordId);
+                                                return found?.word || wordId;
+                                            })()}
                                         </div>
                                     </div>
-                                    <div className="text-4xl">🎯</div>
+                                    <div className="text-[#647568]"><TargetIcon size={36} /></div>
                                 </div>
                             )}
 
                             {saved.length > 0 && (
                                 <div className="w-full max-w-3xl mb-8">
-                                    <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Frases salvas no Flashcard</div>
+                                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-4">Frases salvas no Flashcard</div>
                                     <div className="flex flex-col gap-3">
                                         {saved.map((item, index) => (
-                                            <div key={`${item.back}_${index}`} className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 text-sm">
+                                            <div key={`${item.back}_${index}`} className="bg-neutral-50 p-4 rounded-xl border border-neutral-200/70 text-sm">
                                                 <div className="font-bold text-neutral-800 mb-1">{item.front}</div>
                                                 <div className="text-neutral-500 font-medium">{item.back}</div>
                                             </div>
@@ -1520,7 +1523,7 @@ export default function Builder({ initialWords = [], initialMode = 'assembly', o
                             )}
 
                             <div className="flex justify-center gap-4 flex-wrap mt-4">
-                                <button className="bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-8 py-3.5 rounded-full font-bold transition-all flex items-center gap-2" onClick={prepare}>
+                                <button className="border border-neutral-300 rounded-full px-5 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors flex items-center gap-2" onClick={prepare}>
                                     <ReloadIcon size={18} />
                                     Refazer Prática
                                 </button>

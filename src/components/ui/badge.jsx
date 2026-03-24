@@ -13,7 +13,7 @@ const badgeVariants = cva(
         level: 'bg-level-bg text-level',
         warning: 'bg-streak-bg text-streak',
         streak: 'bg-streak-bg text-streak',
-        pink: 'bg-xp-bg text-xp',
+        accent: 'bg-xp-bg text-xp',
         xp: 'bg-xp-bg text-xp',
         vocab: 'bg-vocab-bg text-vocab',
         retention: 'bg-retention-bg text-retention',

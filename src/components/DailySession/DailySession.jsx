@@ -11,14 +11,21 @@ import SegmentTimer from './SegmentTimer.jsx';
 import Dialogue from '../Dialogue/Dialogue.jsx';
 import SpeakButton from '../shared/SpeakButton.jsx';
 import { Button } from '../ui/button.jsx';
+import { BookOpenIcon, PuzzleIcon, PencilIcon, ChatBubbleIcon, PartyIcon, TrophyIcon, BookIcon, CheckCircleIcon, SparkIcon, PlayIcon } from '../shared/icons.jsx';
 
 
 const SEGMENTS = ['flashcards', 'builder', 'translation', 'dialogue'];
 const SEGMENT_LABELS = {
-  flashcards: '📚 Flashcards',
-  builder: '🔨 Builder',
-  translation: '✍️ Tradução PT→EN',
-  dialogue: '💬 Micro-diálogo',
+  flashcards: 'Flashcards',
+  builder: 'Builder',
+  translation: 'Traducao PT>EN',
+  dialogue: 'Micro-dialogo',
+};
+const SEGMENT_ICONS = {
+  flashcards: BookOpenIcon,
+  builder: PuzzleIcon,
+  translation: PencilIcon,
+  dialogue: ChatBubbleIcon,
 };
 const SEGMENT_DURATION = { flashcards: 180, builder: 240, translation: 240, dialogue: 240 };
 
@@ -41,6 +48,8 @@ export default function DailySession() {
 
   // Translation sub-state
   const [transSentences, setTransSentences] = useState([]);
+  const [transFetching, setTransFetching] = useState(false);
+  const [transFetchFailed, setTransFetchFailed] = useState(false);
   const [transIdx, setTransIdx] = useState(0);
   const [transAnswer, setTransAnswer] = useState('');
   const [transFeedback, setTransFeedback] = useState(null);
@@ -75,15 +84,25 @@ export default function DailySession() {
     setPlan({ ...sessionPlan, validSegments });
 
     // Pre-generate translation sentences
-    if (config?.provider && sessionPlan.translationWords.length > 0) {
+    if (config?.provider) {
       const targetWords = selectTranslationWords(words, config.userLevel, 2);
-      generateTranslationSentences({
-        words: targetWords,
-        cefrLevel: config.userLevel,
-        config,
-      }).then(result => {
-        if (result?.length) setTransSentences(result);
-      }).catch(() => {});
+      if (targetWords.length > 0) {
+        setTransFetching(true);
+        generateTranslationSentences({
+          words: targetWords,
+          cefrLevel: config.userLevel,
+          config,
+        }).then(result => {
+          if (result?.length) setTransSentences(result);
+          else setTransFetchFailed(true);
+        }).catch(() => {
+          setTransFetchFailed(true);
+        }).finally(() => {
+          setTransFetching(false);
+        });
+      } else {
+        setTransFetchFailed(true);
+      }
     }
 
     setPhase('segment');
@@ -184,10 +203,14 @@ export default function DailySession() {
   if (phase === 'empty') {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-6 text-center">
-        <div className="text-6xl">🎉</div>
-        <h2 className="text-2xl font-extrabold text-neutral-900">Tudo em dia!</h2>
-        <p className="text-sm text-neutral-500 max-w-xs">Adicione mais palavras no Reader ou volte mais tarde quando tiver flashcards para revisar.</p>
-        <Button onClick={() => navigate('/')} className="rounded-xl bg-neutral-900 text-white px-6 font-bold">
+        <div className="w-16 h-16 rounded-2xl bg-neutral-50 border border-neutral-200 flex items-center justify-center">
+          <PartyIcon size={32} className="text-[#647568]" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-semibold font-heading text-neutral-900 tracking-tight">Tudo em dia!</h2>
+          <p className="text-sm text-neutral-500 max-w-xs mt-2 leading-relaxed">Adicione mais palavras no Reader ou volte mais tarde quando tiver flashcards para revisar.</p>
+        </div>
+        <Button onClick={() => navigate('/')} className="bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold">
           Dashboard
         </Button>
       </div>
@@ -198,8 +221,8 @@ export default function DailySession() {
   if (phase === 'loading' || !plan) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <span className="w-8 h-8 rounded-full border-3 border-teal-200 border-t-teal-600 animate-spin" />
-        <p className="text-sm font-semibold text-neutral-500">Montando sua sessão…</p>
+        <span className="w-8 h-8 rounded-full border-2 border-[#CED1C6] border-t-[#647568] animate-spin" />
+        <p className="text-sm text-neutral-500">Montando sua sessão...</p>
       </div>
     );
   }
@@ -211,29 +234,32 @@ export default function DailySession() {
     const totalCount = allResults.length;
 
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto">
         <div className="flex flex-col items-center justify-center py-12 gap-6 text-center">
-          <div className="text-6xl">🏆</div>
+          <div className="w-16 h-16 rounded-2xl bg-neutral-50 border border-neutral-200 flex items-center justify-center">
+            <TrophyIcon size={28} className="text-[#647568]" />
+          </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-teal-500 mb-1">Sessão completa</p>
-            <h2 className="text-3xl font-extrabold text-neutral-900">
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#647568] mb-1">Sessão completa</p>
+            <h2 className="text-3xl font-semibold font-heading text-neutral-900 tracking-tight">
               {totalCount > 0 ? `${correctCount}/${totalCount}` : 'Sessão'} completa
             </h2>
-            <p className="mt-2 text-lg font-semibold text-teal-600">+{totalXp} XP ganhos</p>
+            <p className="mt-2 text-base text-[#35403A] font-semibold">+{totalXp} XP ganhos</p>
           </div>
 
           {/* Segment breakdown */}
-          <div className="grid grid-cols-2 gap-3 w-full max-w-sm mt-4">
+          <div className="grid grid-cols-2 gap-4 w-full max-w-sm mt-4">
             {plan.validSegments.map(seg => {
               const results = segmentResults[seg] || [];
               const correct = results.filter(Boolean).length;
               return (
-                <div key={seg} className="bg-white rounded-2xl border border-neutral-200 p-4 text-center">
-                  <div className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1">
+                <div key={seg} className="bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-4 text-center">
+                  <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-1 flex items-center justify-center gap-1.5">
+                    {(() => { const SegIcon = SEGMENT_ICONS[seg]; return SegIcon ? <SegIcon size={14} /> : null; })()}
                     {SEGMENT_LABELS[seg]}
                   </div>
-                  <div className="text-lg font-extrabold text-neutral-900">
-                    {results.length > 0 ? `${correct}/${results.length}` : '✓'}
+                  <div className="text-lg font-bold text-neutral-900">
+                    {results.length > 0 ? `${correct}/${results.length}` : <CheckCircleIcon size={18} className="inline text-green-500" />}
                   </div>
                 </div>
               );
@@ -241,18 +267,18 @@ export default function DailySession() {
           </div>
 
           {plan.weakCategories?.length > 0 && (
-            <div className="text-xs text-neutral-400 mt-2">
+            <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mt-2">
               Áreas reforçadas: {plan.weakCategories.join(', ')}
             </div>
           )}
 
           <div className="flex gap-3 mt-4">
-            <Button onClick={() => navigate('/')} className="rounded-xl bg-neutral-900 hover:bg-black text-white px-8 font-bold">
+            <button onClick={() => navigate('/')} className="bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors">
               Dashboard
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/evolution')} className="rounded-xl px-6">
+            </button>
+            <button onClick={() => navigate('/evolution')} className="border border-neutral-300 rounded-full px-5 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
               Ver evolução
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -263,12 +289,12 @@ export default function DailySession() {
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       {/* Segment progress bar */}
-        <div className="flex items-center gap-1 mb-6">
+        <div className="flex items-center gap-1.5 mb-6">
           {plan.validSegments.map((seg, i) => (
             <div
               key={seg}
-              className={`flex-1 h-2 rounded-full transition-all ${
-                i < segmentIdx ? 'bg-teal-500' : i === segmentIdx ? 'bg-teal-300' : 'bg-neutral-200'
+              className={`flex-1 h-1.5 rounded-full transition-all ${
+                i < segmentIdx ? 'bg-[#35403A]' : i === segmentIdx ? 'bg-[#CED1C6]' : 'bg-neutral-100'
               }`}
             />
           ))}
@@ -284,35 +310,35 @@ export default function DailySession() {
 
         {/* Skip button */}
         <div className="flex justify-end mb-4">
-          <button onClick={advanceSegment} className="text-xs text-neutral-400 hover:text-neutral-600 underline underline-offset-2">
-            Pular segmento →
+          <button onClick={advanceSegment} className="text-[10px] font-bold text-neutral-400 hover:text-neutral-600 uppercase tracking-[0.12em] underline underline-offset-2">
+            Pular segmento
           </button>
         </div>
 
         {/* ── FLASHCARD SEGMENT ── */}
         {currentSegment === 'flashcards' && plan.flashcards[fcIndex] && (
           <div className="space-y-5">
-            <div className="text-sm text-neutral-500 text-center mb-2">
+            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] text-center">
               Card {fcIndex + 1} de {plan.flashcards.length}
-            </div>
+            </p>
 
             <div
-              className="bg-white rounded-2xl border-2 border-neutral-100 p-8 min-h-[200px] flex flex-col items-center justify-center text-center cursor-pointer shadow-sm hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-8 min-h-[200px] flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => setFcFlipped(prev => !prev)}
             >
               {!fcFlipped ? (
                 <>
-                  <div className="text-[10px] font-bold text-violet-600 uppercase tracking-widest mb-4">
-                    {plan.flashcards[fcIndex].isContextual ? '📖 Contexto' : 'Português'}
-                  </div>
-                  <div className="text-xl font-extrabold text-neutral-900">{plan.flashcards[fcIndex].front}</div>
-                  <div className="mt-6 text-xs text-neutral-400">Clique para revelar</div>
+                  <p className="text-[10px] font-bold text-[#35403A] uppercase tracking-[0.12em] mb-4 flex items-center justify-center gap-1.5">
+                    {plan.flashcards[fcIndex].isContextual ? <><BookIcon size={12} /> Contexto</> : 'Português'}
+                  </p>
+                  <p className="text-xl font-semibold text-neutral-900 leading-relaxed">{plan.flashcards[fcIndex].front}</p>
+                  <p className="mt-6 text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">Clique para revelar</p>
                 </>
               ) : (
                 <>
-                  <div className="text-[10px] font-bold text-teal-600 uppercase tracking-widest mb-4">Inglês</div>
+                  <p className="text-[10px] font-bold text-[#35403A] uppercase tracking-[0.12em] mb-4">Inglês</p>
                   <div className="flex items-center gap-2">
-                    <div className="text-xl font-extrabold text-neutral-900">{plan.flashcards[fcIndex].back}</div>
+                    <p className="text-xl font-semibold text-neutral-900 leading-relaxed">{plan.flashcards[fcIndex].back}</p>
                     <SpeakButton text={plan.flashcards[fcIndex].back} size={14} />
                   </div>
                 </>
@@ -320,17 +346,17 @@ export default function DailySession() {
             </div>
 
             {fcFlipped && (
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-3">
                 {[
                   ['nao_lembro', 'Não lembro', 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'],
-                  ['dificil', 'Difícil', 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'],
-                  ['bom', 'Bom', 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100'],
+                  ['dificil', 'Difícil', 'bg-[#eef0ec] text-[#647568] border-[#CED1C6] hover:bg-[#dde2dc]'],
+                  ['bom', 'Bom', 'bg-[#eef0ec] text-[#35403A] border-[#CED1C6] hover:bg-[#dde2dc]'],
                   ['facil', 'Fácil', 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'],
                 ].map(([rating, label, cls]) => (
                   <button
                     key={rating}
                     onClick={() => handleFcRate(rating)}
-                    className={`p-3 rounded-xl border text-sm font-bold transition-all hover:-translate-y-0.5 ${cls}`}
+                    className={`p-3 rounded-xl border text-xs font-semibold transition-all hover:-translate-y-0.5 ${cls}`}
                   >
                     {label}
                   </button>
@@ -343,11 +369,16 @@ export default function DailySession() {
         {/* ── BUILDER SEGMENT ── */}
         {currentSegment === 'builder' && (
           <div className="flex flex-col items-center justify-center py-12 gap-6 text-center">
-            <div className="text-4xl">🔨</div>
-            <p className="text-sm text-neutral-500 max-w-xs">
-              Pratique construção de frases com suas palavras.
-            </p>
-            <Button
+            <div className="w-16 h-16 rounded-2xl bg-neutral-50 border border-neutral-200 flex items-center justify-center">
+              <PuzzleIcon size={28} className="text-[#647568]" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold font-heading text-neutral-900 tracking-tight mb-1">Builder</h3>
+              <p className="text-sm text-neutral-500 max-w-xs leading-relaxed">
+                Pratique construção de frases com suas palavras.
+              </p>
+            </div>
+            <button
               onClick={() => {
                 navigate('/practice', {
                   state: {
@@ -360,11 +391,12 @@ export default function DailySession() {
                   },
                 });
               }}
-              className="rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 font-bold"
+              className="bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors flex items-center gap-2"
             >
+              <PlayIcon size={16} />
               Ir para Builder
-            </Button>
-            <button onClick={advanceSegment} className="text-sm text-neutral-400 underline underline-offset-2">
+            </button>
+            <button onClick={advanceSegment} className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] underline underline-offset-2">
               Pular para próximo segmento
             </button>
           </div>
@@ -375,25 +407,36 @@ export default function DailySession() {
           <div className="space-y-5">
             {transSentences.length === 0 ? (
               <div className="flex flex-col items-center py-12 gap-4 text-center">
-                <span className="w-6 h-6 rounded-full border-2 border-teal-200 border-t-teal-600 animate-spin" />
-                <p className="text-sm text-neutral-500">Gerando frases…</p>
+                {transFetchFailed ? (
+                  <>
+                    <p className="text-sm text-neutral-500">Não foi possível gerar frases agora.</p>
+                    <button onClick={advanceSegment} className="text-[10px] font-bold text-[#35403A] uppercase tracking-[0.12em] underline underline-offset-2">
+                      Pular segmento
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-6 h-6 rounded-full border-2 border-[#CED1C6] border-t-[#647568] animate-spin" />
+                    <p className="text-sm text-neutral-500">Gerando frases...</p>
+                  </>
+                )}
               </div>
             ) : (
               <>
-                <div className="text-sm text-neutral-500 text-center">
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] text-center">
                   Frase {transIdx + 1} de {transSentences.length}
-                </div>
+                </p>
 
-                <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-3">
+                <div className="rounded-xl border border-neutral-200/70 bg-white p-6 shadow-[0_1px_3px_rgba(20,20,19,0.06)]">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400 mb-3">
                     Traduza para inglês
                   </p>
                   <p className="text-xl font-semibold text-neutral-900 leading-relaxed">
                     &ldquo;{transSentences[transIdx].portuguese}&rdquo;
                   </p>
                   {transSentences[transIdx].targetWord && (
-                    <p className="mt-3 text-xs text-neutral-400">
-                      Palavra-alvo: <span className="font-semibold text-violet-500">{transSentences[transIdx].targetWord}</span>
+                    <p className="mt-3 text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">
+                      Palavra-alvo: <span className="text-[#647568] normal-case tracking-normal">{transSentences[transIdx].targetWord}</span>
                     </p>
                   )}
                 </div>
@@ -404,25 +447,28 @@ export default function DailySession() {
                       value={transAnswer}
                       onChange={e => setTransAnswer(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleTransVerify(); } }}
-                      placeholder="Digite a tradução em inglês…"
-                      className="w-full rounded-xl border border-neutral-200 bg-white p-4 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-100 resize-none shadow-sm"
+                      placeholder="Digite a tradução em inglês..."
+                      className="w-full rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#647568] focus:outline-none focus:ring-2 focus:ring-[#35403A]/15 resize-none shadow-[0_1px_2px_rgba(20,20,19,0.04)]"
                       rows={2}
                       autoFocus
                       disabled={transLoading}
                     />
-                    <Button
+                    <button
                       onClick={handleTransVerify}
                       disabled={!transAnswer.trim() || transLoading}
-                      className="w-full rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold py-3"
+                      className="w-full bg-[#35403A] hover:bg-[#232625] disabled:opacity-50 text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors"
                     >
-                      {transLoading ? 'Analisando…' : 'Verificar'}
-                    </Button>
+                      {transLoading ? 'Analisando...' : 'Verificar'}
+                    </button>
                   </div>
                 ) : (
-                  <div className={`rounded-2xl border p-5 space-y-3 ${transFeedback.correct ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
+                  <div className={`rounded-xl border p-5 space-y-3 ${transFeedback.correct ? 'border-green-200 bg-green-50' : 'border-[#CED1C6] bg-[#eef0ec]'}`}>
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{transFeedback.correct ? '✅' : '❌'}</span>
-                      <span className={`font-bold ${transFeedback.correct ? 'text-green-800' : 'text-orange-800'}`}>
+                      {transFeedback.correct
+                        ? <CheckCircleIcon size={22} className="text-green-600" />
+                        : <SparkIcon size={22} className="text-[#35403A]" />
+                      }
+                      <span className={`text-sm font-semibold ${transFeedback.correct ? 'text-green-800' : 'text-[#232625]'}`}>
                         {transFeedback.correct ? 'Correto!' : 'Quase lá!'}
                       </span>
                     </div>
@@ -430,11 +476,11 @@ export default function DailySession() {
                       <p className="text-sm text-neutral-700"><strong>Nota:</strong> {transFeedback.note}</p>
                     )}
                     <p className="text-sm text-neutral-700">
-                      <span className="font-medium">→ Esperado:</span> &ldquo;{transFeedback.expected}&rdquo;
+                      <span className="font-medium">&rarr; Esperado:</span> &ldquo;{transFeedback.expected}&rdquo;
                     </p>
-                    <Button onClick={handleTransNext} className="w-full rounded-xl bg-neutral-900 hover:bg-black text-white font-bold py-3">
-                      {transIdx + 1 < transSentences.length ? 'Próxima →' : 'Continuar →'}
-                    </Button>
+                    <button onClick={handleTransNext} className="w-full bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors">
+                      {transIdx + 1 < transSentences.length ? 'Próxima' : 'Continuar'}
+                    </button>
                   </div>
                 )}
               </>

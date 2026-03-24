@@ -315,3 +315,164 @@ export function VolumeIcon(props) {
     </SvgIcon>
   );
 }
+
+export function MedalBronzeIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <circle cx="12" cy="9" r="6" />
+      <path d="M8.5 15 7 22l5-3 5 3-1.5-7" />
+      <path d="M11 7v4" />
+      <path d="M10 9h4" />
+    </SvgIcon>
+  );
+}
+
+export function MedalSilverIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <circle cx="12" cy="9" r="6" />
+      <path d="M8.5 15 7 22l5-3 5 3-1.5-7" />
+      <path d="M10 7.5a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 0 3H11l2.5 2.5H10" />
+    </SvgIcon>
+  );
+}
+
+export function MedalGoldIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <circle cx="12" cy="9" r="6" />
+      <path d="M8.5 15 7 22l5-3 5 3-1.5-7" />
+      <path d="M12 6v6" />
+      <path d="M10 6h4" />
+      <path d="M10 9h3" />
+    </SvgIcon>
+  );
+}
+
+export function GemIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M6 3h12l4 7-10 11L2 10l4-7Z" />
+      <path d="M2 10h20" />
+      <path d="M12 21 9 10l3-7 3 7-3 11Z" />
+    </SvgIcon>
+  );
+}
+
+export function ChatBubbleIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" />
+    </SvgIcon>
+  );
+}
+
+export function RobotIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <rect x="5" y="8" width="14" height="10" rx="2" />
+      <path d="M12 4v4" />
+      <circle cx="12" cy="4" r="1.5" />
+      <circle cx="9" cy="13" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="13" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M10 16h4" />
+      <path d="M3 12h2" />
+      <path d="M19 12h2" />
+    </SvgIcon>
+  );
+}
+
+export function UserCircleIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M6.2 18.8a7 7 0 0 1 11.6 0" />
+    </SvgIcon>
+  );
+}
+
+export function LockIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </SvgIcon>
+  );
+}
+
+export function SeedlingIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M12 22V12" />
+      <path d="M12 12C12 7 17 4 20 4c0 5-3 8-8 8Z" />
+      <path d="M12 15C12 11 7 8 4 8c0 4 3 7 8 7Z" />
+    </SvgIcon>
+  );
+}
+
+export function RecycleIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <path d="m7 19-3-5.2 3-5.2" />
+      <path d="M4 13.8h7" />
+      <path d="m17 5 3 5.2-3 5.2" />
+      <path d="M20 10.2h-7" />
+      <path d="m12 3-4 7h8l-4-7Z" />
+      <path d="m8 17 4 4 4-4" />
+    </SvgIcon>
+  );
+}
+
+export function PartyIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <path d="m4 20 4-16 8 8-12 8Z" />
+      <path d="M15 5a2 2 0 0 1 2 2" />
+      <path d="M18 3a4 4 0 0 1 3 4" />
+      <circle cx="15" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="18" cy="9" r="1" fill="currentColor" stroke="none" />
+      <circle cx="11" cy="16" r="1" fill="currentColor" stroke="none" />
+    </SvgIcon>
+  );
+}
+
+export function CheckCircleIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m9 12 2 2 4-4" />
+    </SvgIcon>
+  );
+}
+
+export function CalendarIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4" />
+      <path d="M8 2v4" />
+      <path d="M3 10h18" />
+    </SvgIcon>
+  );
+}
+
+export function FileBoxIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z" />
+      <path d="M14 2v6h6" />
+      <path d="M8 14h8" />
+      <path d="M8 18h8" />
+    </SvgIcon>
+  );
+}
+
+export function BookOpenIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2V3Z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7V3Z" />
+    </SvgIcon>
+  );
+}

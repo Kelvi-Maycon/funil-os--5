@@ -32,7 +32,13 @@ import {
   BrainIcon,
   FlameIcon,
   GridIcon,
+  LockIcon,
   MapIcon,
+  MedalBronzeIcon,
+  MedalGoldIcon,
+  MedalSilverIcon,
+  GemIcon,
+  PartyIcon,
   PencilIcon,
   PlayIcon,
   PuzzleIcon,
@@ -46,6 +52,13 @@ import {
   TrophyIcon,
 } from './icons.jsx';
 import { Badge } from '../ui/badge.jsx';
+
+const AWARD_ICONS = {
+  'medal-bronze': MedalBronzeIcon,
+  'medal-silver': MedalSilverIcon,
+  'medal-gold': MedalGoldIcon,
+  'gem': GemIcon,
+};
 
 const missionIcons = {
   readerWords: BookIcon,
@@ -324,27 +337,25 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
-      <header className="w-full flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pt-2 lg:pt-0">
-        <div className="flex items-center gap-8">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
-              <GridIcon size={28} className="text-violet-600 font-bold" strokeWidth={2.5} />
-              Dashboard
-            </h1>
-            <p className="text-xs font-semibold tracking-wider text-neutral-400 uppercase mt-0.5">{currentDate}</p>
-          </div>
+    <div className="text-[#232625] antialiased min-h-screen flex flex-col pt-0 pb-16">
+      <header className="w-full flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pt-2 lg:pt-0">
+        <div>
+          <h1 className="text-xl font-semibold font-heading tracking-tight text-neutral-900 flex items-center gap-2.5">
+            <GridIcon size={18} className="text-[#35403A]" strokeWidth={1.5} />
+            Dashboard
+          </h1>
+          <p className="text-[10px] font-bold tracking-[0.12em] text-neutral-400 uppercase mt-0.5">{currentDate}</p>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <div className="relative group hidden lg:block">
-            <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 group-focus-within:text-violet-600 transition-colors" />
-            <input type="text" placeholder="Buscar no painel" className="pl-10 pr-4 py-2.5 bg-neutral-100 hover:bg-neutral-200/70 focus:bg-white border border-transparent focus:border-violet-300 focus:ring-4 focus:ring-violet-300/30 rounded-full text-sm w-72 transition-all outline-none placeholder-neutral-400" />
+            <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 group-focus-within:text-[#35403A] transition-colors" />
+            <input type="text" placeholder="Buscar no painel" className="pl-10 pr-4 py-2 bg-white border border-neutral-200 focus:border-[#647568] focus:ring-2 focus:ring-[#35403A]/15 rounded-full text-sm w-60 transition-all outline-none placeholder-neutral-400 shadow-[0_1px_2px_rgba(20,20,19,0.04)]" />
           </div>
 
-          <div className="relative flex items-center bg-orange-50 border border-orange-100 px-4 py-2 rounded-full gap-2 cursor-pointer hover:bg-orange-100 transition-colors pulse-ring">
-            <FlameIcon size={16} className="text-orange-500" />
-            <span className="text-sm font-bold text-orange-600">{streakStats.currentStreak} dias 🔥</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#CED1C6]/30 border border-[#CED1C6] cursor-pointer hover:bg-[#CED1C6]/50 transition-colors">
+            <FlameIcon size={13} className="text-[#647568]" />
+            <span className="text-xs font-semibold text-[#35403A]">{streakStats.currentStreak} dias</span>
           </div>
 
           <div className="hidden md:block">
@@ -353,139 +364,111 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="w-full mt-2 lg:mt-4">
-        <div className="grid grid-cols-12 gap-6">
+      <main className="w-full">
+        <div className="grid grid-cols-12 gap-5">
 
           {/* Hero Widget */}
-          {/* Hero Widget with Priority Styling */}
-          <section className={`col-span-12 relative bg-white rounded-3xl p-6 md:p-10 shadow-soft border ${nextStep.priority === 'high' ? 'border-orange-300 shadow-orange-500/10' : 'border-neutral-100'} overflow-hidden flex items-center justify-between min-h-[400px]`}>
-            {nextStep.priority === 'high' ? (
-              <>
-                <div className="absolute top-0 right-0 w-96 h-96 bg-orange-300/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
-                <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-red-100/60 rounded-full blur-3xl translate-y-1/2 opacity-60"></div>
-              </>
-            ) : (
-              <>
-                <div className="absolute top-0 right-0 w-96 h-96 bg-violet-300/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
-                <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-pink-100/60 rounded-full blur-3xl translate-y-1/2 opacity-60"></div>
-              </>
-            )}
-
-            <div className="relative z-10 max-w-2xl">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${nextStep.priority === 'high' ? 'bg-orange-50 border-orange-200' : 'bg-neutral-100 border-neutral-200'} mb-6`}>
-                <span className={`w-2 h-2 rounded-full ${nextStep.priority === 'high' ? 'bg-orange-500 animate-pulse' : 'bg-pink-500'}`}></span>
-                <span className={`text-[11px] font-bold ${nextStep.priority === 'high' ? 'text-orange-600' : 'text-neutral-500'} uppercase tracking-widest`}>
+          <section className="col-span-12 bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-8 md:p-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200 mb-6">
+                <span className={`w-1.5 h-1.5 rounded-full ${nextStep.priority === 'high' ? 'bg-[#35403A] animate-pulse' : 'bg-neutral-400'}`}></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">
                   {nextStep.priority === 'high' ? 'Ação Prioritária' : heroMeta.label}
                 </span>
               </div>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-neutral-900 leading-tight tracking-tight mb-4 hidden md:block">
-                {nextStep.title || heroMeta.headline} <br />
-                {heroMeta.accent && nextStep.priority !== 'high' && (
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600 text-gradient-animated">{heroMeta.accent}</span>
-                )}
-              </h2>
-              <h2 className="text-4xl font-extrabold text-neutral-900 leading-tight tracking-tight mb-4 md:hidden">
+              <h2 className="font-body italic text-4xl md:text-5xl text-neutral-900 leading-tight mb-3">
                 {nextStep.title || heroMeta.headline}
                 {heroMeta.accent && nextStep.priority !== 'high' && (
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600">{heroMeta.accent}</span>
+                  <span className="text-[#35403A]"> {heroMeta.accent}</span>
                 )}
               </h2>
-              <p className="text-neutral-500 text-lg md:text-xl mb-8 leading-relaxed max-w-md">
+              <p className="text-base text-neutral-500 leading-relaxed mb-8 max-w-md">
                 {nextStep.description || 'Importe um texto ou legenda para iniciar o ciclo de estudo de hoje.'}
               </p>
-              <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-3 flex-wrap">
                 <button
                   onClick={() => navigate(nextStep.route)}
-                  className={`font-semibold px-8 py-3.5 rounded-full text-white shadow-lg transition-all flex items-center gap-2 transform hover:-translate-y-0.5 ${nextStep.priority === 'high'
-                    ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-orange-500/25'
-                    : 'bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 shadow-pink-500/25'
-                    }`}
+                  className="bg-[#35403A] text-white rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-[#232625] transition-colors flex items-center gap-2"
                 >
-                  <PlayIcon size={20} />
+                  <PlayIcon size={16} />
                   {nextStep.cta}
                 </button>
                 <button
                   onClick={() => navigate('/study')}
-                  className="font-semibold px-8 py-3.5 rounded-full text-white shadow-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/25 flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
+                  className="border border-neutral-300 rounded-full px-5 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors flex items-center gap-2"
                 >
-                  <PlayIcon size={20} />
+                  <PlayIcon size={16} />
                   Estudar (15 min)
                 </button>
               </div>
             </div>
-
-            <div className="hidden md:block relative z-10 w-72 h-72 mr-12">
-              <div className={`absolute inset-0 bg-white rounded-3xl shadow-xl border border-neutral-100 rotate-12 transform hover:rotate-6 transition-transform duration-500 flex items-center justify-center ${nextStep.priority === 'high' ? 'shadow-orange-600/10' : 'shadow-violet-600/10'}`}>
-                <div className={`w-24 h-24 rounded-2xl flex items-center justify-center ${nextStep.priority === 'high' ? 'bg-orange-300/30 text-orange-600' : 'bg-violet-300/30 text-violet-600'}`}>
-                  <HeroIcon size={40} />
-                </div>
+            <div className="hidden md:flex items-center justify-center w-24 h-24 rounded-2xl bg-neutral-50 border border-neutral-200 shrink-0">
+              <div className="w-12 h-12 rounded-full bg-[#35403A] flex items-center justify-center text-white">
+                <HeroIcon size={22} />
               </div>
-              <div className={`absolute inset-0 rounded-3xl shadow-lg rotate-[-8deg] -z-10 opacity-20 ${nextStep.priority === 'high' ? 'bg-gradient-to-br from-orange-600 to-red-500' : 'bg-gradient-to-br from-violet-600 to-fuchsia-500'}`}></div>
             </div>
           </section>
 
           {/* Level Widget */}
-          <section className="col-span-12 lg:col-span-7 bg-white rounded-3xl p-6 md:p-8 lg:p-10 shadow-soft border border-neutral-100 flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-4 right-4 flex gap-2">
-              <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 text-[10px] font-bold uppercase tracking-widest border border-violet-100 shadow-inner-soft">🏆 Rank: {config.userLevel}</span>
+          <section className="col-span-12 lg:col-span-7 bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 md:p-8 flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute top-4 right-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200 text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">
+                <TrophyIcon size={10} /> Rank: {config.userLevel}
+              </span>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8 mt-4 lg:mt-0">
-              <div className="flex items-center gap-5">
-                <div className="w-16 h-16 rounded-2xl bg-neutral-50 border border-neutral-100 flex items-center justify-center shadow-inner-soft text-neutral-400">
-                  <ShieldIcon size={32} />
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#35403A] flex items-center justify-center text-white shrink-0">
+                  <ShieldIcon size={22} />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Nível de Vocabulário</p>
-                  <h3 className="text-3xl font-extrabold text-neutral-900 tracking-tight">{masteryInfo.current.id}</h3>
-                  <p className="text-sm font-medium text-neutral-500 mt-1">{activeWords} palavras ativas · {masteredWords} dominadas</p>
+                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-1">Nível de Vocabulário</p>
+                  <h3 className="text-3xl font-bold font-heading text-neutral-900 tracking-tight">{masteryInfo.current.id}</h3>
+                  <p className="text-sm text-neutral-500 mt-0.5">{activeWords} palavras ativas · {masteredWords} dominadas</p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="flex items-baseline justify-end gap-1">
-                  <span className="text-5xl font-black text-neutral-900 tracking-tight">{xpToday}</span>
-                </div>
-                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">XP Hoje {todayCapRemaining > 0 ? `· ${todayCapRemaining} restam` : '· cap ✓'}</p>
+                <span className="text-5xl font-black text-neutral-900 tracking-tight">{xpToday}</span>
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mt-1">XP Hoje {todayCapRemaining > 0 ? `· ${todayCapRemaining} restam` : '· cap ✓'}</p>
               </div>
             </div>
 
-            <div className="space-y-4 mb-8">
-              <div className="w-full bg-neutral-100 rounded-full h-4 overflow-hidden border border-neutral-200 shadow-inner-soft">
-                <div className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 h-full rounded-full xp-bar-fill relative overflow-hidden transition-all duration-1000" style={{ width: `${masteryProgressPct}%` }}>
-                  <div className="absolute inset-0 bg-white/20 -skew-x-12 translate-x-full animate-[shimmer_2s_infinite]"></div>
-                </div>
+            <div className="space-y-3 mb-8">
+              <div className="w-full bg-neutral-100 rounded-full h-1.5 overflow-hidden">
+                <div className="bg-[#35403A] h-full rounded-full transition-all duration-1000" style={{ width: `${masteryProgressPct}%` }}></div>
               </div>
-              <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-neutral-500">
+              <div className="flex justify-between text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400">
                 <span>{masteryProgressInLevel.toLocaleString('pt-BR')} / {masteryRangeSize.toLocaleString('pt-BR')} MP</span>
                 {masteryInfo.next
                   ? <span>{masteryInfo.next.id} →</span>
-                  : <span>Nível máximo 🎉</span>
+                  : <span className="flex items-center gap-1">Nivel maximo <PartyIcon size={12} /></span>
                 }
               </div>
             </div>
 
-            {/* 3 awards for current CEFR level */}
-            <div className="flex items-center gap-6 mt-auto pt-6 border-t border-neutral-100">
+            {/* Awards */}
+            <div className="flex items-center gap-6 mt-auto pt-5 border-t border-neutral-100">
               <div className="shrink-0">
-                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Marcos</p>
-                <p className="text-[10px] text-neutral-300 font-bold uppercase tracking-widest mt-0.5">{masteryInfo.current.id}</p>
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">Marcos</p>
+                <p className="text-[10px] text-neutral-300 font-bold uppercase tracking-[0.12em] mt-0.5">{masteryInfo.current.id}</p>
               </div>
               <div className="flex items-center justify-between flex-1 relative">
-                <div className="absolute left-5 right-5 top-5 h-1.5 bg-neutral-100 -z-10 rounded-full"></div>
+                <div className="absolute left-5 right-5 top-5 h-px bg-neutral-100 -z-10"></div>
                 {masteryInfo.current.awards.map((award, i) => {
                   const unlocked = masteryXp >= award.mp;
                   const awardStyle = i === 0
-                    ? 'bg-gradient-to-br from-orange-200 to-orange-400 text-orange-800'
+                    ? 'bg-[#CED1C6] text-[#35403A]'
                     : i === 1
-                      ? 'bg-gradient-to-br from-neutral-200 to-neutral-400 text-neutral-700'
-                      : 'bg-gradient-to-br from-yellow-300 to-yellow-500 text-yellow-800';
+                      ? 'bg-[#647568]/30 text-[#35403A]'
+                      : 'bg-[#35403A] text-white';
                   return (
-                    <div key={award.name} className="flex flex-col items-center gap-2.5 z-10">
-                      <div className={`w-11 h-11 rounded-full flex items-center justify-center shadow-sm text-xl border-[3px] border-white transition-all
-                        ${unlocked ? awardStyle : 'bg-neutral-100 text-neutral-300 border-neutral-200'}`}>
-                        {unlocked ? award.icon : '🔒'}
+                    <div key={award.name} className="flex flex-col items-center gap-2 z-10">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-sm transition-all
+                        ${unlocked ? awardStyle : 'bg-neutral-100 text-neutral-300'}`}>
+                        {unlocked ? (() => { const AIcon = AWARD_ICONS[award.icon]; return AIcon ? <AIcon size={16} /> : null; })() : <LockIcon size={16} />}
                       </div>
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${unlocked ? 'text-neutral-600' : 'text-neutral-300'}`}>
+                      <span className={`text-[10px] font-bold uppercase tracking-[0.1em] ${unlocked ? 'text-neutral-500' : 'text-neutral-300'}`}>
                         {award.name}
                       </span>
                     </div>
@@ -495,43 +478,43 @@ export default function Dashboard() {
             </div>
 
             {/* XP semana/mês */}
-            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-neutral-100 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">
-              <span>Semana: <span className="text-neutral-700">{xpWeek} XP</span></span>
+            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-neutral-100 text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">
+              <span>Semana: <span className="text-neutral-600">{xpWeek} XP</span></span>
               <span className="text-neutral-200">|</span>
-              <span>Mês: <span className="text-neutral-700">{xpMonth} XP</span></span>
-              {todayStreakBonus > 0 && <span className="text-orange-500">🔥 +{todayStreakBonus} streak</span>}
+              <span>Mês: <span className="text-neutral-600">{xpMonth} XP</span></span>
+              {todayStreakBonus > 0 && <span className="text-[#647568] flex items-center gap-1"><FlameIcon size={10} /> +{todayStreakBonus} streak</span>}
             </div>
           </section>
 
           {/* Prompt Widget */}
-          <section className="col-span-12 lg:col-span-5 bg-white rounded-3xl p-6 md:p-8 lg:p-10 shadow-soft border border-neutral-100 flex flex-col justify-between">
+          <section className="col-span-12 lg:col-span-5 bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 md:p-8 flex flex-col justify-between">
             <div className="flex items-start justify-between mb-6">
-              <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">Daily Prompt</p>
-              <span className={`px-3 py-1.5 rounded-full border text-[10px] font-bold tracking-widest uppercase shadow-inner-soft ${promptState.status === 'empty' ? 'border-violet-200 text-violet-600 bg-violet-50' : 'border-pink-200 text-pink-600 bg-pink-50'}`}>
+              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mt-1">Daily Prompt</p>
+              <span className={`px-3 py-1.5 rounded-full border text-[10px] font-bold tracking-[0.1em] uppercase ${promptState.status === 'empty' ? 'border-[#CED1C6] text-[#35403A] bg-[#eef0ec]' : 'border-[#CED1C6] text-[#35403A] bg-[#dde2dc]'}`}>
                 {promptState.status === 'empty' ? 'Indisponivel' : 'Pronto'}
               </span>
             </div>
 
-            <div className="mb-auto mt-4 lg:mt-6">
-              <h3 className="text-2xl md:text-3xl font-extrabold text-neutral-900 mb-3 tracking-tight leading-tight">
+            <div className="mb-auto">
+              <h3 className="font-body italic text-2xl text-neutral-900 mb-3 leading-tight">
                 {pendingPrompt ? 'Desafio Diário' : promptState.title}
               </h3>
               {!pendingPrompt && (
-                <p className="text-base font-medium text-neutral-500 mb-8 leading-relaxed max-w-sm">{promptState.challenge || promptState.description || 'Capture vocabulário no reader para liberar um desafio contextual amanhã.'}</p>
+                <p className="text-sm text-neutral-500 mb-8 leading-relaxed max-w-sm">{promptState.challenge || promptState.description || 'Capture vocabulário no reader para liberar um desafio contextual amanhã.'}</p>
               )}
               {pendingPrompt && (
                 <div className="mt-4">
-                  <p className="text-sm font-bold text-neutral-500 mb-2">Traduza para o inglês:</p>
+                  <p className="text-xs font-semibold text-neutral-400 mb-2 uppercase tracking-[0.1em]">Traduza para o inglês:</p>
                   {isLoadingPrompt ? (
                     <div className="animate-pulse bg-neutral-100 h-10 w-full rounded-lg mb-4"></div>
                   ) : dailyPromptData ? (
-                    <p className="text-lg font-medium text-neutral-800 mb-4">{dailyPromptData.portuguese}</p>
+                    <p className="text-base font-body italic text-neutral-800 mb-4">{dailyPromptData.portuguese}</p>
                   ) : null}
 
                   {promptResult ? (
-                    <div className={`p-4 rounded-xl border ${promptResult.correct ? 'bg-green-50 border-green-200 text-green-800' : 'bg-orange-50 border-orange-200 text-orange-800'} mb-4`}>
-                      <p className="font-bold mb-1">{promptResult.correct ? '🎉 Excelente!' : 'Quase lá!'}</p>
-                      {!promptResult.correct && <p className="text-sm">A tradução esperada era: <strong>{promptResult.expected}</strong></p>}
+                    <div className={`p-4 rounded-xl border ${promptResult.correct ? 'bg-green-50 border-green-200 text-green-800' : 'bg-[#eef0ec] border-[#CED1C6] text-[#35403A]'} mb-4`}>
+                      <p className="font-semibold mb-1 flex items-center gap-1 text-sm">{promptResult.correct ? <><PartyIcon size={14} /> Excelente!</> : 'Quase la!'}</p>
+                      {!promptResult.correct && <p className="text-xs">A tradução esperada era: <strong>{promptResult.expected}</strong></p>}
                     </div>
                   ) : (
                     <input
@@ -540,7 +523,7 @@ export default function Dashboard() {
                       onChange={(e) => setPromptAnswer(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && submitPrompt()}
                       placeholder="Sua tradução em inglês..."
-                      className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 mb-4"
+                      className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#35403A]/20 focus:border-[#647568] mb-4"
                       disabled={isLoadingPrompt || !dailyPromptData}
                     />
                   )}
@@ -553,75 +536,74 @@ export default function Dashboard() {
                 <button
                   onClick={submitPrompt}
                   disabled={isLoadingPrompt || !dailyPromptData || !promptAnswer.trim()}
-                  className="bg-violet-600 border border-transparent disabled:opacity-50 hover:bg-violet-700 text-white text-sm font-semibold px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 w-full mt-auto shadow-md shadow-violet-600/20 transform hover:-translate-y-0.5">
-                  <SparkIcon size={18} />
+                  className="bg-[#35403A] hover:bg-[#232625] disabled:opacity-50 text-white text-sm font-semibold px-6 py-2.5 rounded-full transition-colors flex items-center justify-center gap-2 w-full mt-auto">
+                  <SparkIcon size={16} />
                   Verificar Resposta
                 </button>
               )
             ) : (
               <button
                 onClick={handlePromptAction}
-                className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 w-full mt-auto shadow-md shadow-violet-600/20 transform hover:-translate-y-0.5">
-                <SparkIcon size={18} />
+                className="bg-[#35403A] hover:bg-[#232625] text-white text-sm font-semibold px-6 py-2.5 rounded-full transition-colors flex items-center justify-center gap-2 w-full mt-auto">
+                <SparkIcon size={16} />
                 {promptState.ctaLabel || 'Abrir reader para capturar'}
               </button>
             )}
           </section>
 
           {/* Learn Rhythm Chart */}
-          <section className="col-span-12 lg:col-span-8 bg-white rounded-3xl p-6 md:p-8 shadow-soft border border-neutral-100 flex flex-col min-h-[420px]">
+          <section className="col-span-12 lg:col-span-8 bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 md:p-8 flex flex-col min-h-[360px]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
-                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Ritmo de aprendizado</p>
-                <h3 className="text-xl font-bold text-neutral-900">Atividade por dia</h3>
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-1">Ritmo de aprendizado</p>
+                <h3 className="text-lg font-semibold font-heading text-neutral-900">Atividade por dia</h3>
               </div>
               <div className="flex items-center bg-neutral-50 p-1 rounded-lg border border-neutral-200">
-                <button onClick={() => setChartWindow(7)} className={`px-3 py-1 text-xs ${chartWindow === 7 ? 'font-bold text-neutral-900 bg-white shadow-sm border border-neutral-200' : 'font-medium text-neutral-500 hover:text-neutral-800'} rounded-md`}>7d</button>
-                <button onClick={() => setChartWindow(30)} className={`px-3 py-1 text-xs ${chartWindow === 30 ? 'font-bold text-neutral-900 bg-white shadow-sm border border-neutral-200' : 'font-medium text-neutral-500 hover:text-neutral-800'} rounded-md`}>30d</button>
-                <button onClick={() => setChartWindow(90)} className={`px-3 py-1 text-xs ${chartWindow === 90 ? 'font-bold text-neutral-900 bg-white shadow-sm border border-neutral-200' : 'font-medium text-neutral-500 hover:text-neutral-800'} rounded-md`}>90d</button>
+                <button onClick={() => setChartWindow(7)} className={`px-3 py-1 text-xs ${chartWindow === 7 ? 'font-semibold text-neutral-900 bg-white shadow-sm border border-neutral-200' : 'font-medium text-neutral-500 hover:text-neutral-700'} rounded-md transition-all`}>7d</button>
+                <button onClick={() => setChartWindow(30)} className={`px-3 py-1 text-xs ${chartWindow === 30 ? 'font-semibold text-neutral-900 bg-white shadow-sm border border-neutral-200' : 'font-medium text-neutral-500 hover:text-neutral-700'} rounded-md transition-all`}>30d</button>
+                <button onClick={() => setChartWindow(90)} className={`px-3 py-1 text-xs ${chartWindow === 90 ? 'font-semibold text-neutral-900 bg-white shadow-sm border border-neutral-200' : 'font-medium text-neutral-500 hover:text-neutral-700'} rounded-md transition-all`}>90d</button>
               </div>
             </div>
 
             {totalActivity === 0 ? (
-              <div className="flex-1 bg-neutral-50/50 border border-neutral-100 rounded-2xl flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-                <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-neutral-200 flex items-center justify-center text-neutral-300 mb-4 z-10">
-                  <MapIcon size={24} />
+              <div className="flex-1 bg-neutral-50 border border-neutral-100 rounded-xl flex flex-col items-center justify-center p-6 text-center">
+                <div className="w-12 h-12 bg-white rounded-xl border border-neutral-200 flex items-center justify-center text-neutral-300 mb-4">
+                  <MapIcon size={20} />
                 </div>
-                <p className="font-bold text-neutral-700 mb-1 z-10">Sem atividade nesta janela</p>
-                <p className="text-sm text-neutral-500 max-w-sm z-10">Inicie uma sessao para ver seu progresso aqui.</p>
+                <p className="font-semibold text-neutral-600 text-sm mb-1">Sem atividade nesta janela</p>
+                <p className="text-xs text-neutral-400 max-w-xs">Inicie uma sessao para ver seu progresso aqui.</p>
               </div>
             ) : (
-              <div className="flex-1 relative w-full h-[250px]">
-                <svg viewBox="0 0 680 250" className="w-full h-full dashboard-chart-svg" preserveAspectRatio="none">
+              <div className="flex-1 relative w-full h-[220px]">
+                <svg viewBox="0 0 680 220" className="w-full h-full dashboard-chart-svg" preserveAspectRatio="none">
                   <defs>
-                    <linearGradient id="dashboardChartGlowV4" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="rgba(124, 58, 237, 0.24)" />
-                      <stop offset="100%" stopColor="rgba(124, 58, 237, 0)" />
+                    <linearGradient id="dashboardChartGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="rgba(100,117,104,0.20)" />
+                      <stop offset="100%" stopColor="rgba(100,117,104,0)" />
                     </linearGradient>
                   </defs>
-                  <path d={areaPath} fill="url(#dashboardChartGlowV4)" />
-                  <path d={chartPath} fill="none" stroke="hsl(var(--primary))" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d={areaPath} fill="url(#dashboardChartGradient)" />
+                  <path d={chartPath} fill="none" stroke="#647568" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
             )}
           </section>
 
           {/* Captures & Achievement Panel */}
-          <div className="col-span-12 lg:col-span-4 grid grid-rows-2 gap-6 min-w-0">
-            <section className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col overflow-hidden min-w-0">
-              <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Capturas recentes</p>
+          <div className="col-span-12 lg:col-span-4 grid grid-rows-2 gap-5 min-w-0">
+            <section className="bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 flex flex-col overflow-hidden min-w-0">
+              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-4">Capturas recentes</p>
 
-              <div className="flex-1 bg-neutral-50 border border-neutral-100 rounded-2xl flex flex-col items-center justify-center text-center p-4 overflow-y-auto min-w-0">
+              <div className="flex-1 bg-neutral-50 border border-neutral-100 rounded-lg flex flex-col items-center justify-center text-center p-4 overflow-y-auto min-w-0">
                 {recentCapturedWords.length > 0 ? (
                   <div className="w-full h-full flex flex-col gap-3 text-left min-w-0">
                     {recentCapturedWords.map((word) => (
                       <div key={word.id} className="flex justify-between items-center text-sm min-w-0">
                         <div className="min-w-0 pr-2 flex-1">
-                          <strong className="text-neutral-800 block truncate">{word.word}</strong>
-                          <p className="text-[11px] text-neutral-500 truncate mt-0.5">{word.originalSentence || 'Sem contexto salvo'}</p>
+                          <strong className="text-neutral-800 block truncate text-sm">{word.word}</strong>
+                          <p className="text-[11px] text-neutral-400 truncate mt-0.5">{word.originalSentence || 'Sem contexto salvo'}</p>
                         </div>
-                        <Badge variant="outline" className="text-[9px] px-2 py-0.5 whitespace-nowrap bg-white border-neutral-200">
+                        <Badge variant="outline" className="text-[9px] px-2 py-0.5 whitespace-nowrap bg-white border-neutral-200 shrink-0">
                           {formatStatusLabel(word.status)}
                         </Badge>
                       </div>
@@ -629,140 +611,130 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <>
-                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm border border-neutral-200 flex items-center justify-center text-neutral-300 mb-3">
-                      <BookIcon size={20} />
+                    <div className="w-9 h-9 bg-white rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-300 mb-3">
+                      <BookIcon size={18} />
                     </div>
-                    <p className="font-bold text-neutral-700 text-sm mb-1">Nenhuma captura hoje</p>
+                    <p className="font-semibold text-neutral-600 text-sm mb-1">Nenhuma captura hoje</p>
                   </>
                 )}
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-3xl p-6 shadow-soft flex flex-col text-white overflow-hidden min-w-0">
+            <section className="bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 flex flex-col overflow-hidden min-w-0">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-[11px] font-bold text-white/60 uppercase tracking-widest">Próxima Conquista</p>
-                <span className="text-lg">🏆</span>
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">Proxima Conquista</p>
+                <div className="w-7 h-7 rounded-full bg-[#35403A] flex items-center justify-center text-white">
+                  <TrophyIcon size={13} />
+                </div>
               </div>
-              <p className="text-sm font-bold text-white mb-1">{spotlightCopy.title}</p>
-              <p className="text-xs text-white/60 mb-4">{spotlightCopy.desc}</p>
-              <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
-                <div className="h-full bg-white rounded-full transition-all duration-1000" style={{ width: `${spotlight.percent}%` }}></div>
+              <p className="text-sm font-semibold text-neutral-800 mb-1">{spotlightCopy.title}</p>
+              <p className="text-xs text-neutral-500 mb-4 leading-relaxed">{spotlightCopy.desc}</p>
+              <div className="w-full bg-neutral-100 rounded-full h-1.5 overflow-hidden">
+                <div className="h-full bg-[#35403A] rounded-full transition-all duration-1000" style={{ width: `${spotlight.percent}%` }}></div>
               </div>
-              <p className="text-[10px] text-white/50 mt-2">{spotlight.current}/{spotlight.goal} completo</p>
-
-              <div className="mt-4 pt-4 border-t border-white/20 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm">📚</div>
-                <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm">⚡</div>
-                <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm">🔥</div>
-                <span className="text-[10px] text-white/50 ml-1">+ {achievements.length} conquistas bloqueadas</span>
+              <p className="text-[10px] text-neutral-400 mt-2">{spotlight.current}/{spotlight.goal} completo</p>
+              <div className="mt-4 pt-4 border-t border-neutral-100 flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400"><BookIcon size={12} /></div>
+                <div className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400"><SparkIcon size={12} /></div>
+                <div className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400"><FlameIcon size={12} /></div>
+                <span className="text-[10px] text-neutral-400 ml-1">+ {achievements.length} conquistas</span>
               </div>
             </section>
           </div>
 
           {/* Missions List */}
-          <section className="col-span-12 bg-white rounded-3xl p-6 md:p-8 shadow-soft border border-neutral-100">
+          <section className="col-span-12 bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 md:p-8">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Missões de hoje</p>
-                <h3 className="text-xl font-bold text-neutral-900">Complete para ganhar XP</h3>
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-1">Missões de hoje</p>
+                <h3 className="text-lg font-semibold font-heading text-neutral-900">Complete para ganhar XP</h3>
               </div>
-              <span className="text-xs font-bold text-neutral-400">{completedMissions}/{missions.length} completas</span>
+              <span className="text-xs font-semibold text-neutral-400">{completedMissions}/{missions.length}</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {missions.slice(0, 4).map((mission, idx) => {
-                const borderClasses = ['hover:border-violet-300 hover:bg-violet-300/10', 'hover:border-orange-300 hover:bg-orange-50/40', 'hover:border-fuchsia-300 hover:bg-fuchsia-50/40', 'hover:border-pink-300 hover:bg-pink-50/40'];
-                const barClasses = ['bg-violet-600', 'bg-orange-400', 'bg-fuchsia-400', 'bg-pink-400'];
-                const textClasses = ['text-violet-700', 'text-orange-600', 'text-fuchsia-600', 'text-pink-600'];
-                const icons = ['📖', '🔁', '✍️', '🎯'];
-
-                const hoverBorder = borderClasses[idx % 4];
-                const barColor = barClasses[idx % 4];
-                const textColor = textClasses[idx % 4];
-                const iconMark = icons[idx % 4];
-
+                const MissionIcons = [BookIcon, ReloadIcon, PencilIcon, TargetIcon];
+                const MissionIcon = MissionIcons[idx % 4];
                 const isDone = mission.done;
                 const percent = Math.min(100, (mission.current / mission.goal) * 100);
 
                 return (
-                  <div key={mission.key} className={`flex items-center gap-4 p-4 rounded-2xl border-2 border-dashed border-neutral-200 bg-neutral-50 ${hoverBorder} transition-all cursor-pointer ${isDone ? 'border-solid border-green-300 bg-green-50 shadow-sm' : ''}`}>
-                    <div className="w-10 h-10 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-xl shadow-sm">
-                      {iconMark}
+                  <div key={mission.key} className={`flex items-center gap-4 p-4 rounded-xl border transition-all cursor-pointer ${isDone ? 'border-green-200 bg-green-50' : 'border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50'}`}>
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${isDone ? 'bg-green-100 text-green-600' : 'bg-neutral-100 text-neutral-500'}`}>
+                      <MissionIcon size={16} />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-neutral-800">{mission.label}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex-1 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
-                          <div className={`h-full ${isDone ? 'bg-green-400' : barColor} rounded-full transition-all duration-1000`} style={{ width: `${percent}%` }}></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-neutral-800 truncate">{mission.label}</p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                          <div className={`h-full ${isDone ? 'bg-green-400' : 'bg-[#35403A]'} rounded-full transition-all duration-700`} style={{ width: `${percent}%` }}></div>
                         </div>
-                        <span className={`text-[10px] font-bold ${isDone ? 'text-green-600' : textColor}`}>+{mission.xp || 10} XP</span>
+                        <span className={`text-[10px] font-semibold shrink-0 ${isDone ? 'text-green-600' : 'text-neutral-400'}`}>+{mission.xp || 10} XP</span>
                       </div>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           </section>
 
           {/* KPIs Overview */}
-          <section className="col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-12">
-            <div className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col justify-between">
+          <section className="col-span-12 grid grid-cols-2 lg:grid-cols-4 gap-5 pb-12">
+            <div className="bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 flex flex-col justify-between">
               <div className="flex items-start justify-between mb-4">
-                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Meta Diária</p>
-                <div className="p-2 bg-neutral-50 rounded-lg text-neutral-400">
-                  <TargetIcon size={16} />
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">Meta Diária</p>
+                <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400">
+                  <TargetIcon size={14} />
                 </div>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.dailyGoal.value}</span>
-                <span className="text-lg font-medium text-neutral-400">/{topStats.dailyGoal.total}</span>
+                <span className="text-base font-medium text-neutral-400">/{topStats.dailyGoal.total}</span>
               </div>
-              <div className="flex gap-1.5 mt-3">
-                <div className="h-2 w-full rounded-full bg-neutral-100 overflow-hidden">
-                  <div className="h-full bg-violet-600" style={{ width: `${topStats.dailyGoal.percent}%` }}></div>
-                </div>
+              <div className="mt-3 h-1.5 w-full rounded-full bg-neutral-100 overflow-hidden">
+                <div className="h-full bg-[#35403A] rounded-full" style={{ width: `${topStats.dailyGoal.percent}%` }}></div>
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col justify-between">
+            <div className="bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 flex flex-col justify-between">
               <div className="flex items-start justify-between mb-4">
-                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Revisões</p>
-                <div className="p-2 bg-orange-50 rounded-lg text-orange-500">
-                  <ReviewIcon size={16} />
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">Revisões</p>
+                <div className="w-8 h-8 rounded-full bg-[#eef0ec] flex items-center justify-center text-[#35403A]">
+                  <ReviewIcon size={14} />
                 </div>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.pendingReviews.value}</span>
               </div>
-              <p className="text-[10px] text-orange-500 font-bold mt-2 uppercase">Pendentes Hoje</p>
+              <p className="text-[10px] text-[#35403A] font-bold mt-2 uppercase tracking-[0.1em]">Pendentes Hoje</p>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col justify-between">
+            <div className="bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 flex flex-col justify-between">
               <div className="flex items-start justify-between mb-4">
-                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Memória</p>
-                <div className="p-2 bg-violet-300/20 rounded-lg text-violet-700">
-                  <BrainIcon size={16} />
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">Memória</p>
+                <div className="w-8 h-8 rounded-full bg-[#eef0ec] flex items-center justify-center text-[#35403A]">
+                  <BrainIcon size={14} />
                 </div>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.retention.value}%</span>
               </div>
-              <p className="text-[10px] text-violet-700 font-bold mt-2 uppercase">Taxa de Restenção</p>
+              <p className="text-[10px] text-[#35403A] font-bold mt-2 uppercase tracking-[0.1em]">Taxa de Retencao</p>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 shadow-soft border border-neutral-100 flex flex-col justify-between relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-pink-50 rounded-full -translate-y-6 translate-x-6 opacity-60"></div>
+            <div className="bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 flex flex-col justify-between">
               <div className="flex items-start justify-between mb-4">
-                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Ofensiva</p>
-                <div className="p-2 bg-pink-50 rounded-lg text-pink-500 badge-bounce">
-                  <FlameIcon size={16} />
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">Ofensiva</p>
+                <div className="w-8 h-8 rounded-full bg-[#CED1C6]/40 flex items-center justify-center text-[#647568]">
+                  <FlameIcon size={14} />
                 </div>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-black text-neutral-900 tracking-tight">{topStats.streak.value}</span>
-                <span className="text-sm font-bold text-neutral-400 uppercase">Dias</span>
+                <span className="text-sm font-semibold text-neutral-400 uppercase tracking-wide">Dias</span>
               </div>
-              <p className="text-[10px] text-pink-400 font-bold mt-1 z-10">🎯 Recorde: {topStats.streak.longestStreak} dias</p>
+              <p className="text-[10px] text-[#647568] font-bold mt-1 flex items-center gap-1"><TargetIcon size={10} /> Recorde: {topStats.streak.longestStreak} dias</p>
             </div>
           </section>
 

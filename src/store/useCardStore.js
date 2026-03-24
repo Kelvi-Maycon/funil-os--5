@@ -136,10 +136,11 @@ export const useCardStore = create(
                     id: uuid(),
                     sentenceId,
                     wordId,
-                    front: originalSentence,
-                    back: `[${wordText}] — ${originalSentence}`,
+                    front: `[${wordText}] ${originalSentence}`,
+                    back: originalSentence,
                     contextSentence: originalSentence,
                     isContextual: true,
+                    pendingTranslation: true,
                     easeFactor: 2.5,
                     interval: 1,
                     nextReview: tomorrow.getTime(),
@@ -165,7 +166,7 @@ export const useCardStore = create(
                                             s.id === sentenceId ? { ...s, portuguese } : s
                                         ),
                                         flashcards: state.flashcards.map(f =>
-                                            f.id === card.id ? { ...f, front: portuguese, back: originalSentence } : f
+                                            f.id === card.id ? { ...f, front: portuguese, back: originalSentence, pendingTranslation: false } : f
                                         ),
                                     }));
                                 }

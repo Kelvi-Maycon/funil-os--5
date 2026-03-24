@@ -6,7 +6,7 @@ import { useUiStore } from '../../store/useUiStore.js';
 import { parseText, getSentenceForToken } from '../../utils/parser.js';
 import { explainWord } from '../../services/ai.js';
 import { fetchYouTubeTranscript } from '../../services/youtube.js';
-import { BookIcon, PlayIcon, ReloadIcon, SearchIcon, SparkIcon } from '../shared/icons.jsx';
+import { BookIcon, CheckCircleIcon, PlayIcon, ReloadIcon, SearchIcon, SparkIcon } from '../shared/icons.jsx';
 import SpeakButton from '../shared/SpeakButton.jsx';
 import { Badge } from '../ui/badge.jsx';
 
@@ -274,26 +274,26 @@ export default function Reader({ onPractice }) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* YouTube Entry Card */}
-            <div className="bg-white rounded-3xl p-6 md:p-10 shadow-soft border border-neutral-100 flex flex-col relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-pink-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-70"></div>
+            <div className="bg-white rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#eef0ec] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-70"></div>
 
               <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-200 mb-6 w-max">
-                  <span className="w-2 h-2 rounded-full bg-pink-500"></span>
-                  <span className="text-[11px] font-bold text-neutral-500 uppercase tracking-widest">Entrada rápida</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200 mb-6 w-max">
+                  <span className="w-2 h-2 rounded-full bg-[#647568]"></span>
+                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.12em]">Entrada rápida</span>
                 </div>
 
-                <h3 className="text-3xl font-extrabold text-neutral-900 mb-2">Comece por um vídeo do YouTube</h3>
-                <p className="text-neutral-500 mb-8 max-w-sm">Use uma legenda real para trazer contexto natural antes de praticar.</p>
+                <h3 className="text-lg font-semibold font-heading text-neutral-900 mb-2">Comece por um vídeo do YouTube</h3>
+                <p className="text-sm text-neutral-500 leading-relaxed mb-8 max-w-sm">Use uma legenda real para trazer contexto natural antes de praticar.</p>
 
                 <div className="mt-4 space-y-3">
-                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">URL do vídeo</label>
+                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">URL do vídeo</label>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <div className="relative flex-1 group">
-                      <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 group-focus-within:text-violet-600 transition-colors" />
+                      <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 group-focus-within:text-[#35403A] transition-colors" />
                       <input
                         ref={youtubeInputRef}
-                        className="w-full pl-11 pr-4 py-3 bg-neutral-50 hover:bg-neutral-100/70 focus:bg-white border border-neutral-200 focus:border-violet-300 focus:ring-4 focus:ring-violet-300/30 rounded-xl text-sm transition-all outline-none placeholder-neutral-400"
+                        className="w-full pl-11 pr-4 py-3 bg-neutral-50 hover:bg-neutral-100/70 focus:bg-white border border-neutral-200 focus:border-[#647568] focus:ring-2 focus:ring-[#35403A]/15 rounded-xl shadow-[0_1px_2px_rgba(20,20,19,0.04)] text-sm transition-all outline-none placeholder-neutral-400"
                         type="url"
                         placeholder="https://www.youtube.com/watch?v=..."
                         value={youtubeUrl}
@@ -301,41 +301,41 @@ export default function Reader({ onPractice }) {
                       />
                     </div>
                     <button
-                      className="bg-neutral-900 hover:bg-black text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                      className="bg-[#35403A] hover:bg-[#232625] text-white px-6 py-2.5 rounded-full font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                       onClick={handleYouTubeImport}
                       disabled={!youtubeUrl.trim() || youtubeStatus?.state === 'loading'}
                     >
-                      {youtubeStatus?.state === 'loading' ? <SparkIcon size={16} className="animate-spin text-pink-400" /> : <PlayIcon size={16} />}
+                      {youtubeStatus?.state === 'loading' ? <SparkIcon size={16} className="animate-spin text-[#647568]" /> : <PlayIcon size={16} />}
                       {youtubeStatus?.state === 'loading' ? 'Importando...' : 'Importar'}
                     </button>
                   </div>
                 </div>
 
                 {youtubeStatus ? (
-                  <div className={`mt-5 p-3 rounded-xl text-sm font-medium flex items-center gap-2 ${youtubeStatus.state === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : youtubeStatus.state === 'error' ? 'bg-orange-50 text-orange-700 border border-orange-200' : 'bg-violet-50 text-violet-700 border border-violet-200'}`}>
+                  <div className={`mt-5 p-3 rounded-xl text-sm font-medium flex items-center gap-2 ${youtubeStatus.state === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : youtubeStatus.state === 'error' ? 'bg-[#eef0ec] text-[#35403A] border border-[#CED1C6]' : 'bg-[#eef0ec] text-[#35403A] border border-[#CED1C6]'}`}>
                     {youtubeStatus.message}
                   </div>
                 ) : (
-                  <div className="mt-5 text-xs font-semibold text-neutral-400">Se a legenda não existir, cole o texto manualmente ao lado.</div>
+                  <div className="mt-5 text-sm text-neutral-500 leading-relaxed">Se a legenda não existir, cole o texto manualmente ao lado.</div>
                 )}
               </div>
             </div>
 
             {/* Text Entry Card */}
-            <div className="bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-3xl p-6 md:p-10 shadow-soft border border-neutral-100 flex flex-col relative overflow-hidden text-white min-h-[450px]">
+            <div className="bg-primary rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col relative overflow-hidden text-white min-h-[450px]">
               <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl translate-y-1/3 translate-x-1/3"></div>
 
               <div className="relative z-10 flex flex-col h-full">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 border border-white/10 mb-6 w-max">
                   <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                  <span className="text-[11px] font-bold text-white/90 uppercase tracking-widest">Sessão de leitura</span>
+                  <span className="text-[10px] font-bold text-white/90 uppercase tracking-[0.12em]">Sessão de leitura</span>
                 </div>
 
-                <h3 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Cole seu texto em inglês</h3>
+                <h3 className="text-lg font-semibold font-heading text-white mb-2">Cole seu texto em inglês</h3>
                 <p className="text-white/70 mb-6 max-w-md">Reader, tooltip contextual e prática seguem o mesmo fluxo.</p>
 
                 <div className="flex-1 flex flex-col">
-                  <label className="text-[11px] font-bold text-white/60 uppercase tracking-widest mb-2">Texto da sessão</label>
+                  <label className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em] mb-2">Texto da sessão</label>
                   <textarea
                     ref={textAreaRef}
                     className="w-full flex-1 min-h-[160px] p-4 bg-white/10 border border-white/20 hover:bg-white/15 focus:bg-white/20 focus:border-white/40 rounded-xl text-sm transition-all outline-none placeholder-white/40 text-white resize-none"
@@ -351,7 +351,7 @@ export default function Reader({ onPractice }) {
                     {rawText.trim().split(/\s+/).filter(Boolean).length} palavras
                   </span>
                   <button
-                    className="bg-white text-violet-700 hover:bg-neutral-50 px-8 py-3.5 rounded-full font-bold shadow-lg transition-transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 w-full sm:w-auto"
+                    className="bg-white text-[#232625] hover:bg-neutral-50 px-6 py-2.5 rounded-full font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full sm:w-auto"
                     onClick={startReading}
                     disabled={!rawText.trim()}
                   >
@@ -361,7 +361,7 @@ export default function Reader({ onPractice }) {
                 </div>
 
                 {!config.provider && (
-                  <div className="mt-4 p-3 bg-orange-500/20 text-orange-100 border border-orange-400/30 rounded-xl text-xs font-semibold">
+                  <div className="mt-4 p-3 bg-[#647568]/20 text-[#CED1C6] border border-[#647568]/30 rounded-xl text-xs font-semibold">
                     Nenhuma IA configurada. Fallback local ativo.
                   </div>
                 )}
@@ -373,27 +373,27 @@ export default function Reader({ onPractice }) {
           <div className="flex flex-col gap-6">
 
             {/* Workspace Header / Session Bar */}
-            <div className="bg-white rounded-3xl p-4 md:p-6 shadow-soft border border-neutral-100 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="bg-white rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-violet-50 rounded-2xl flex items-center justify-center text-violet-600 border border-violet-100">
+                  <div className="w-12 h-12 bg-[#eef0ec] rounded-2xl flex items-center justify-center text-[#35403A] border border-[#CED1C6]/50">
                     <BookIcon size={20} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Palavras Capturadas</p>
+                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">Palavras Capturadas</p>
                     <div className="text-xl font-bold text-neutral-900">{clickedWords.size}</div>
                   </div>
                 </div>
                 <div className="h-8 w-px bg-neutral-200 hidden md:block"></div>
                 <div>
-                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Tempo de leitura</p>
+                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">Tempo de leitura</p>
                   <div className="text-sm font-semibold text-neutral-600">{estimatedSessionMinutes} min est.</div>
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                 <button
-                  className="flex-1 md:flex-none bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 md:flex-none bg-[#35403A] hover:bg-[#232625] text-white font-semibold px-6 py-2.5 rounded-full text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => onPractice && onPractice(sessionWords)}
                   disabled={sessionWords.length === 0}
                 >
@@ -401,7 +401,7 @@ export default function Reader({ onPractice }) {
                   <span>Praticar Capturas</span>
                 </button>
                 <button
-                  className="flex-none bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-4 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center border border-neutral-200"
+                  className="flex-none border border-neutral-300 rounded-full px-5 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors flex items-center justify-center"
                   onClick={reset}
                 >
                   <ReloadIcon size={16} />
@@ -410,13 +410,13 @@ export default function Reader({ onPractice }) {
             </div>
 
             {/* Reading Canvas */}
-            <div className="bg-white rounded-3xl p-6 md:p-10 lg:p-12 shadow-soft border border-neutral-100 min-h-[500px]">
+            <div className="bg-white rounded-xl p-6 md:p-8 lg:p-10 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 min-h-[500px]">
               <div className="flex gap-4 mb-6 border-b border-neutral-100 pb-4">
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">
-                  <span className="w-3 h-3 rounded bg-violet-100 border border-violet-200"></span>
+                <span className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">
+                  <span className="w-3 h-3 rounded bg-[#dde2dc] border border-[#CED1C6]"></span>
                   Capturada nesta sessão
                 </span>
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">
+                <span className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]">
                   <span className="w-3 h-3 rounded bg-neutral-100 border border-neutral-200"></span>
                   Já salva no banco
                 </span>
@@ -428,8 +428,8 @@ export default function Reader({ onPractice }) {
                     <div className="w-16 h-16 bg-neutral-50 rounded-2xl flex items-center justify-center text-neutral-300 mb-4 border border-neutral-100">
                       <SearchIcon size={32} />
                     </div>
-                    <h3 className="text-xl font-bold text-neutral-900 mb-2">Nada para ler</h3>
-                    <p className="text-neutral-500 max-w-md">O texto importado não gerou blocos válidos. Tente outro conteúdo.</p>
+                    <h3 className="text-lg font-semibold font-heading text-neutral-900 mb-2">Nada para ler</h3>
+                    <p className="text-sm text-neutral-500 leading-relaxed max-w-md">O texto importado não gerou blocos válidos. Tente outro conteúdo.</p>
                   </div>
                 ) : tokens.map((token, index) => {
                   if (token.type === 'space') return <span key={index}>{token.raw}</span>;
@@ -440,13 +440,13 @@ export default function Reader({ onPractice }) {
 
                   let bgClass = 'hover:bg-neutral-100 hover:text-neutral-900 rounded cursor-pointer transition-colors';
                   if (inBank) bgClass = 'bg-neutral-100 text-neutral-800 rounded cursor-pointer border border-neutral-200/50 shadow-sm';
-                  if (inSession && !inBank) bgClass = 'bg-violet-100 text-violet-900 rounded font-medium cursor-pointer border border-violet-200 shadow-sm';
+                  if (inSession && !inBank) bgClass = 'bg-[#dde2dc] text-[#232625] rounded font-medium cursor-pointer border border-[#CED1C6] shadow-sm';
 
                   return (
                     <span key={index} className="relative inline-block">
                       <span
                         className={`inline-block px-1 ${bgClass}`}
-                        style={{ outline: isActive ? '2px solid #7C3AED' : 'none', outlineOffset: 1 }}
+                        style={{ outline: isActive ? '2px solid #35403A' : 'none', outlineOffset: 1 }}
                         onClick={(event) => {
                           event.stopPropagation();
                           handleWordClick(index, token);
@@ -456,7 +456,7 @@ export default function Reader({ onPractice }) {
                       </span>
 
                       {isActive ? (
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[320px] bg-white rounded-2xl shadow-lg border border-neutral-100 z-50 overflow-hidden flex flex-col font-sans" ref={tooltipRef} onClick={(event) => event.stopPropagation()} style={{ boxShadow: '0 8px 24px rgba(124, 58, 237, 0.14)' }}>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[320px] bg-white rounded-xl shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 z-50 overflow-hidden flex flex-col font-sans" ref={tooltipRef} onClick={(event) => event.stopPropagation()} style={{ boxShadow: '0 8px 24px rgba(53, 64, 58, 0.14)' }}>
                           <div className="bg-neutral-50 border-b border-neutral-100 p-4">
                             <div className="flex items-center gap-2 mb-3">
                               <div className="text-[22px] font-bold text-neutral-900 leading-none">{tooltip.word}</div>
@@ -466,7 +466,7 @@ export default function Reader({ onPractice }) {
                               {tooltip.exist ? (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-neutral-200 text-neutral-600 border border-neutral-300/50">Já no banco</span>
                               ) : (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-violet-100 text-violet-700 border border-violet-200">Novo item</span>
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#dde2dc] text-[#35403A] border border-[#CED1C6]">Novo item</span>
                               )}
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-neutral-200 text-neutral-500 bg-white">
                                 {tooltip.fromAI ? 'IA' : 'Contexto'}
@@ -475,17 +475,17 @@ export default function Reader({ onPractice }) {
                           </div>
 
                           <div className="p-4">
-                            <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Significado contextual</div>
+                            <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-1.5">Significado contextual</div>
                             {tooltip.loading ? (
                               <div className="flex items-center gap-2 text-sm text-neutral-500 font-medium my-2">
-                                <SparkIcon size={14} className="animate-spin text-violet-400" />
+                                <SparkIcon size={14} className="animate-spin text-[#647568]" />
                                 Buscando contexto...
                               </div>
                             ) : (
                               <>
                                 <div className="text-[15px] font-medium text-neutral-800 mb-3 leading-snug">{tooltip.text}</div>
                                 {tooltip.sentence && (
-                                  <div className="text-[12px] italic text-neutral-500 bg-neutral-50/80 p-3 rounded-xl border border-neutral-100 leading-relaxed shadow-inner-soft flex items-start gap-2">
+                                  <div className="text-[12px] italic text-neutral-500 bg-neutral-50/80 p-3 rounded-xl border border-neutral-100 leading-relaxed flex items-start gap-2">
                                     <span className="flex-1">{tooltip.sentence}</span>
                                     <SpeakButton text={tooltip.sentence} size={12} className="flex-shrink-0 mt-0.5" />
                                   </div>
@@ -496,17 +496,17 @@ export default function Reader({ onPractice }) {
 
                           <div className="p-3 bg-neutral-50 flex border-t border-neutral-100 gap-2">
                             {!tooltip.exist ? (
-                              <button className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-semibold py-2 rounded-xl text-xs transition-colors shadow-sm focus:ring-2 focus:ring-violet-400 focus:outline-none" onClick={addToBank}>
+                              <button className="flex-1 bg-[#35403A] hover:bg-[#232625] text-white font-semibold py-2 rounded-full text-xs transition-colors focus:ring-2 focus:ring-[#35403A]/15 focus:outline-none" onClick={addToBank}>
                                 + Salvar palavra
                               </button>
                             ) : sessionWords.find((sw) => sw.wordId === tooltip.existingId) ? (
-                              <span className="flex-1 text-center py-2 text-xs font-semibold text-green-600 uppercase tracking-wider">✓ Na sessão</span>
+                              <span className="flex-1 text-center py-2 text-xs font-semibold text-green-600 uppercase tracking-wider inline-flex items-center justify-center gap-1"><CheckCircleIcon size={14} /> Na sess\u00e3o</span>
                             ) : (
-                              <button className="flex-1 bg-neutral-800 hover:bg-black text-white font-semibold py-2 rounded-xl text-xs transition-colors shadow-sm" onClick={addToBank}>
+                              <button className="flex-1 bg-[#35403A] hover:bg-[#232625] text-white font-semibold py-2 rounded-full text-xs transition-colors" onClick={addToBank}>
                                 + Adicionar à prática
                               </button>
                             )}
-                            <button className="px-4 bg-white border border-neutral-200 hover:bg-neutral-100 text-neutral-700 font-semibold py-2 rounded-xl text-xs transition-colors" onClick={() => setTooltip(null)}>
+                            <button className="px-4 border border-neutral-300 hover:bg-neutral-50 text-neutral-700 font-semibold py-2 rounded-full text-xs transition-colors" onClick={() => setTooltip(null)}>
                               Fechar
                             </button>
                           </div>
@@ -520,23 +520,23 @@ export default function Reader({ onPractice }) {
 
             {/* Captures Footer */}
             {sessionWords.length > 0 ? (
-              <div className="bg-white rounded-3xl p-6 md:p-8 shadow-soft border border-neutral-100 mb-12">
-                <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Capturas dessa leitura</div>
+              <div className="bg-white rounded-xl p-6 md:p-8 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border border-neutral-200/70 mb-12">
+                <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-4">Capturas dessa leitura</div>
                 <div className="flex flex-wrap gap-2">
                   {sessionWords.map((sessionWord) => (
-                    <Badge key={sessionWord.wordId} className="bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-100/50 px-3 py-1 font-bold">
+                    <Badge key={sessionWord.wordId} className="bg-[#eef0ec] text-[#35403A] hover:bg-[#dde2dc] border border-[#CED1C6]/50 px-3 py-1 font-bold">
                       {sessionWord.wordText}
                     </Badge>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="bg-neutral-50 rounded-3xl p-8 border border-neutral-200 border-dashed text-center mb-12">
+              <div className="bg-neutral-50 rounded-xl p-8 border border-neutral-200 border-dashed text-center mb-12">
                 <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-neutral-400 mx-auto mb-4 shadow-sm border border-neutral-200">
                   <SearchIcon size={24} />
                 </div>
-                <h3 className="text-lg font-bold text-neutral-800 mb-1">Sem capturas ativas</h3>
-                <p className="text-sm text-neutral-500 max-w-sm mx-auto">Interaja com as palavras acima que você não conhece bem. Elas formarão a base do seu próximo exercício.</p>
+                <h3 className="text-lg font-semibold font-heading text-neutral-900 mb-1">Sem capturas ativas</h3>
+                <p className="text-sm text-neutral-500 leading-relaxed max-w-sm mx-auto">Interaja com as palavras acima que você não conhece bem. Elas formarão a base do seu próximo exercício.</p>
               </div>
             )}
 

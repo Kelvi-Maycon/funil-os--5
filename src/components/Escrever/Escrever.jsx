@@ -7,7 +7,7 @@ import { useProgressStore } from '../../store/useProgressStore.js';
 import { generateTranslationSentences, generateReverseTranslationSentences, evaluateTranslation, evaluateSemanticTranslation, evaluateSemanticReverseTranslation } from '../../services/ai.js';
 import { selectTranslationWords } from './translationSession.js';
 import { Button } from '../ui/button.jsx';
-import { WriteIcon } from '../shared/icons.jsx';
+import { WriteIcon, BookOpenIcon, CheckCircleIcon, SparkIcon } from '../shared/icons.jsx';
 
 function buildOfflineSessions(flashcards = [], words = [], limit = 5) {
   const eligible = flashcards
@@ -53,7 +53,7 @@ export default function Escrever() {
 
   const handleStart = useCallback(async () => {
     if (!config?.provider) {
-      // Fallback offline: usar flashcards existentes como exercícios de tradução
+      // Fallback offline: usar flashcards existentes como exercicios de traducao
       const offline = buildOfflineSessions(flashcards, words);
       if (offline.length >= 2) {
         setSentences(offline);
@@ -87,7 +87,7 @@ export default function Escrever() {
       });
 
       if (!generated || generated.length === 0) {
-        setError('Não foi possível gerar as frases. Verifique sua chave de API e tente novamente.');
+        setError('Nao foi possivel gerar as frases. Verifique sua chave de API e tente novamente.');
         setPhase('idle');
         return;
       }
@@ -115,7 +115,7 @@ export default function Escrever() {
 
     const { correct: exactCorrect } = evaluateTranslation(userAnswer, expectedAnswer, sentence.alternatives);
 
-    // Se não for exato, tentar avaliação semântica
+    // Se nao for exato, tentar avaliacao semantica
     if (!exactCorrect && config?.provider) {
         setPhase('verifying');
         try {
@@ -127,11 +127,13 @@ export default function Escrever() {
                 userLevel: config.userLevel,
                 config,
             });
-            const xp = aiResult.correct ? XP_CORRECT : XP_ATTEMPT;
-            awardXp(xp, aiResult.correct ? 'translation:correct' : 'translation:attempt');
+            const score = aiResult.score ?? (aiResult.correct ? 10 : 0);
+            const xp = Math.max(XP_ATTEMPT, Math.round((score / 10) * XP_CORRECT));
+            awardXp(xp, score >= 7 ? 'translation:correct' : 'translation:attempt');
             setXpEarned(prev => prev + xp);
             setFeedback({
-                correct: aiResult.correct,
+                correct: score >= 7,
+                score,
                 expected: expectedAnswer,
                 alternatives: sentence.alternatives,
                 note: aiResult.note
@@ -141,20 +143,21 @@ export default function Escrever() {
             const xp = XP_ATTEMPT;
             awardXp(xp, 'translation:attempt');
             setXpEarned(prev => prev + xp);
-            setFeedback({ correct: false, expected: expectedAnswer, alternatives: sentence.alternatives });
+            setFeedback({ correct: false, score: 0, expected: expectedAnswer, alternatives: sentence.alternatives });
         } finally {
             setPhase('session');
         }
     } else {
+        const score = exactCorrect ? 10 : 0;
         const xp = exactCorrect ? XP_CORRECT : XP_ATTEMPT;
         awardXp(xp, exactCorrect ? 'translation:correct' : 'translation:attempt');
         setXpEarned(prev => prev + xp);
-        setFeedback({ correct: exactCorrect, expected: expectedAnswer, alternatives: sentence.alternatives });
+        setFeedback({ correct: exactCorrect, score, expected: expectedAnswer, alternatives: sentence.alternatives });
     }
   }, [sentences, currentIndex, userAnswer, awardXp, config, direction]);
 
   const handleNext = useCallback(() => {
-    const newResults = [...results, feedback.correct];
+    const newResults = [...results, { correct: feedback.correct, score: feedback.score ?? (feedback.correct ? 10 : 0) }];
     if (currentIndex + 1 >= sentences.length) {
       setResults(newResults);
       setPhase('done');
@@ -180,20 +183,20 @@ export default function Escrever() {
   if (phase === 'offline-empty') {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-6 text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-orange-50 text-orange-400 border border-orange-100">
-          📚
+        <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-[#eef0ec] text-[#647568] border border-[#CED1C6]">
+          <BookOpenIcon size={36} strokeWidth={1.8} />
         </div>
         <div>
-          <h2 className="text-2xl font-extrabold text-neutral-900 tracking-tight">Sem material suficiente</h2>
+          <h2 className="text-2xl font-semibold text-neutral-900 tracking-tight">Sem material suficiente</h2>
           <p className="mt-2 text-sm text-neutral-500 max-w-xs mx-auto">
-            Configure uma IA para gerar exercícios personalizados, ou salve pelo menos 2 flashcards durante a prática para usar o Escrever offline.
+            Configure uma IA para gerar exercicios personalizados, ou salve pelo menos 2 flashcards durante a pratica para usar o Escrever offline.
           </p>
         </div>
         <div className="flex gap-3">
-          <Button onClick={() => navigate('/settings')} className="rounded-xl bg-violet-600 hover:bg-violet-700 text-white px-6 font-bold">
+          <Button onClick={() => navigate('/settings')} className="bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors">
             Configurar IA
           </Button>
-          <Button variant="outline" onClick={() => navigate('/flashcards')} className="rounded-xl px-6">
+          <Button variant="outline" onClick={() => navigate('/flashcards')} className="border border-neutral-300 rounded-full px-5 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
             Ver flashcards
           </Button>
         </div>
@@ -208,36 +211,36 @@ export default function Escrever() {
   if (phase === 'idle' || phase === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-6 text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-violet-100 text-violet-600">
+        <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-[#dde2dc] text-[#35403A]">
           <WriteIcon size={36} strokeWidth={1.8} />
         </div>
         <div>
-          <h2 className="text-2xl font-extrabold text-neutral-900 tracking-tight">
-            Pratique tradução
+          <h2 className="text-2xl font-semibold text-neutral-900 tracking-tight">
+            Pratique traducao
           </h2>
           <p className="mt-2 text-sm text-neutral-500 max-w-xs mx-auto">
-            Frases do cotidiano com suas palavras mais difíceis. Escolha a direção e pratique!
+            Frases do cotidiano com suas palavras mais dificeis. Escolha a direcao e pratique!
           </p>
         </div>
 
         {/* Direction toggle */}
-        <div className="flex items-center gap-1 bg-neutral-100 rounded-xl p-1 w-fit">
+        <div className="flex items-center gap-1 bg-neutral-100 rounded-full p-1 w-fit">
           <button
             onClick={() => setDirection('pt-en')}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${direction === 'pt-en' ? 'bg-white text-violet-700 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${direction === 'pt-en' ? 'bg-white text-[#232625] shadow-[0_1px_3px_rgba(20,20,19,0.06)]' : 'text-neutral-500 hover:text-neutral-700'}`}
           >
-            🇧🇷 → 🇺🇸 PT→EN
+            PT &rarr; EN
           </button>
           <button
             onClick={() => setDirection('en-pt')}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${direction === 'en-pt' ? 'bg-white text-violet-700 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${direction === 'en-pt' ? 'bg-white text-[#35403A] shadow-[0_1px_3px_rgba(20,20,19,0.06)]' : 'text-neutral-500 hover:text-neutral-700'}`}
           >
-            🇺🇸 → 🇧🇷 EN→PT
+            EN &rarr; PT
           </button>
         </div>
 
         {error && (
-          <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3 max-w-sm">
+          <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 max-w-sm">
             {error}
           </div>
         )}
@@ -245,15 +248,15 @@ export default function Escrever() {
         <Button
           onClick={handleStart}
           disabled={phase === 'loading'}
-          className="rounded-xl bg-violet-600 hover:bg-violet-700 text-white px-8 py-3 font-bold text-base shadow-sm"
+          className="bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-8 py-2.5 text-sm font-semibold transition-colors"
         >
-          {phase === 'loading' ? 'Gerando frases…' : 'Gerar sessão'}
+          {phase === 'loading' ? 'Gerando frases...' : 'Gerar sessao'}
         </Button>
 
         {!config?.provider && (
           <p className="text-xs text-neutral-400 max-w-xs">
-            Sem IA configurada: serão usados seus flashcards salvos como exercícios.{' '}
-            <button onClick={() => navigate('/settings')} className="text-violet-500 underline underline-offset-2">
+            Sem IA configurada: serao usados seus flashcards salvos como exercicios.{' '}
+            <button onClick={() => navigate('/settings')} className="text-[#647568] underline underline-offset-2">
               Configurar IA
             </button>
           </p>
@@ -264,76 +267,81 @@ export default function Escrever() {
 
   // ── Resultado final ───────────────────────────────────────────────────────
   if (phase === 'done') {
-    const correctCount = results.filter(Boolean).length;
+    const correctCount = results.filter(r => r.correct).length;
+    const avgScore = results.length > 0 ? (results.reduce((sum, r) => sum + (r.score || 0), 0) / results.length).toFixed(1) : '0';
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-6 text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-violet-100 text-violet-600">
+        <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-[#dde2dc] text-[#35403A]">
           <WriteIcon size={36} strokeWidth={1.8} />
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-1">
-            Sessão completa
+          <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-1">
+            Sessao completa
           </p>
-          <h2 className="text-3xl font-extrabold text-neutral-900">
-            {correctCount}/{sentences.length} corretas
+          <h2 className="text-3xl font-semibold text-neutral-900">
+            Media: {avgScore}/10
           </h2>
+          <p className="mt-1 text-sm text-neutral-600">{correctCount}/{sentences.length} corretas</p>
           <p className="mt-1.5 text-neutral-500 text-sm">+{xpEarned} XP ganhos</p>
         </div>
 
         <div className="flex items-center gap-2 mt-1">
-          {results.map((r, i) => (
-            <span
-              key={i}
-              className={`inline-flex h-3 w-3 rounded-full ${r ? 'bg-green-500' : 'bg-red-400'}`}
-            />
-          ))}
+          {results.map((r, i) => {
+            const s = r.score ?? 0;
+            const bg = s >= 7 ? 'bg-green-500' : s >= 4 ? 'bg-amber-400' : 'bg-red-400';
+            return (
+              <span key={i} className={`inline-flex h-7 w-7 rounded-full items-center justify-center text-[10px] font-bold text-white ${bg}`}>
+                {s}
+              </span>
+            );
+          })}
         </div>
 
         <div className="flex gap-3 mt-2">
           <Button
             onClick={handleRestart}
-            className="rounded-xl bg-violet-600 hover:bg-violet-700 text-white px-6 font-bold"
+            className="bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors"
           >
-            Nova sessão
+            Nova sessao
           </Button>
           <Button
             variant="outline"
             onClick={() => navigate('/vocabulary')}
-            className="rounded-xl px-6"
+            className="border border-neutral-300 rounded-full px-5 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
           >
-            Ver vocabulário
+            Ver vocabulario
           </Button>
         </div>
       </div>
     );
   }
 
-  // ── Sessão em andamento ───────────────────────────────────────────────────
+  // ── Sessao em andamento ───────────────────────────────────────────────────
   const sentence = sentences[currentIndex];
 
   return (
     <div className="max-w-2xl mx-auto py-2 space-y-5">
-      {/* Cabeçalho da sessão */}
+      {/* Cabecalho da sessao */}
       <div className="flex items-center justify-between text-sm">
         <span className="text-neutral-500">
           Frase <span className="font-semibold text-neutral-700">{currentIndex + 1}</span> de{' '}
           <span className="font-semibold text-neutral-700">{sentences.length}</span>
         </span>
-        <span className="font-semibold text-violet-600">+{xpEarned} XP</span>
+        <span className="font-semibold text-[#35403A]">+{xpEarned} XP</span>
       </div>
 
       {/* Barra de progresso */}
       <div className="h-1.5 rounded-full bg-neutral-100 overflow-hidden">
         <div
-          className="h-full rounded-full bg-violet-500 transition-all duration-300"
+          className="h-full rounded-full bg-[#35403A] transition-all duration-300"
           style={{ width: `${(currentIndex / sentences.length) * 100}%` }}
         />
       </div>
 
       {/* Card da frase prompt */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-3">
-          {direction === 'en-pt' ? 'Traduza para português' : 'Traduza para inglês'}
+      <div className="bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 md:p-8">
+        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em] mb-3">
+          {direction === 'en-pt' ? 'Traduza para portugues' : 'Traduza para ingles'}
         </p>
         <p className="text-xl font-semibold text-neutral-900 leading-relaxed">
           &ldquo;{direction === 'en-pt' ? sentence.english : sentence.portuguese}&rdquo;
@@ -341,7 +349,7 @@ export default function Escrever() {
         {sentence.targetWord && (
           <p className="mt-3 text-xs text-neutral-400">
             Palavra-alvo:{' '}
-            <span className="font-semibold text-violet-500">{sentence.targetWord}</span>
+            <span className="font-semibold text-[#647568]">{sentence.targetWord}</span>
           </p>
         )}
       </div>
@@ -358,8 +366,8 @@ export default function Escrever() {
                 handleVerify();
               }
             }}
-            placeholder={direction === 'en-pt' ? 'Digite a tradução em português…' : 'Digite a tradução em inglês…'}
-            className="w-full rounded-xl border border-neutral-200 bg-white p-4 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100 resize-none shadow-sm disabled:opacity-50"
+            placeholder={direction === 'en-pt' ? 'Digite a traducao em portugues...' : 'Digite a traducao em ingles...'}
+            className="w-full rounded-xl border border-neutral-200 bg-white p-4 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-[#647568] focus:outline-none focus:ring-2 focus:ring-[#35403A]/15 resize-none disabled:opacity-50"
             rows={3}
             autoFocus
             disabled={phase === 'verifying'}
@@ -367,7 +375,7 @@ export default function Escrever() {
           <Button
             onClick={handleVerify}
             disabled={!userAnswer.trim() || phase === 'verifying'}
-            className="w-full rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 shadow-sm flex items-center justify-center gap-2"
+            className="w-full bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2"
           >
             {phase === 'verifying' ? (
                 <>
@@ -380,46 +388,46 @@ export default function Escrever() {
       )}
 
       {/* Feedback */}
-      {feedback && (
-        <div
-          className={`rounded-2xl border p-5 space-y-3 ${
-            feedback.correct
-              ? 'border-green-200 bg-green-50'
-              : 'border-orange-200 bg-orange-50'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-xl">{feedback.correct ? '✅' : '❌'}</span>
-            <span
-              className={`font-bold text-base ${
-                feedback.correct ? 'text-green-800' : 'text-orange-800'
-              }`}
-            >
-              {feedback.correct ? 'Correto!' : 'Quase lá!'}
+      {feedback && (() => {
+        const score = feedback.score ?? (feedback.correct ? 10 : 0);
+        const scoreColor = score >= 7 ? 'text-green-700' : score >= 4 ? 'text-amber-600' : 'text-red-600';
+        const scoreBg = score >= 7 ? 'bg-green-100 border-green-300' : score >= 4 ? 'bg-amber-50 border-amber-300' : 'bg-red-50 border-red-300';
+        const containerBorder = score >= 7 ? 'border-green-200 bg-green-50' : 'border-[#CED1C6] bg-[#eef0ec]';
+        return (
+        <div className={`rounded-xl border p-5 space-y-3 ${containerBorder}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">{score >= 7 ? <CheckCircleIcon size={22} className="text-green-600" /> : <SparkIcon size={22} className="text-[#35403A]" />}</span>
+              <span className={`font-semibold text-base ${score >= 7 ? 'text-green-800' : 'text-[#232625]'}`}>
+                {score >= 7 ? 'Correto!' : 'Quase la!'}
+              </span>
+            </div>
+            <span className={`inline-flex items-center justify-center rounded-full border px-3 py-1 text-lg font-bold ${scoreBg} ${scoreColor}`}>
+              {score}/10
             </span>
           </div>
 
           <div className="text-sm space-y-1.5">
-            {!feedback.correct && (
+            {score < 10 && (
               <p className="text-neutral-500">
                 <span className="font-medium">Sua resposta:</span>{' '}
                 <span className="italic">&ldquo;{userAnswer}&rdquo;</span>
               </p>
             )}
             {feedback.note ? (
-              <div className="mt-3 p-3 bg-white/50 rounded-xl border border-white/40 shadow-sm">
+              <div className="mt-3 p-3 bg-white/50 rounded-lg border border-white/40">
                 <p className="text-sm font-medium text-neutral-700 leading-relaxed">
                    <strong>Nota do IA:</strong> {feedback.note}
                 </p>
               </div>
             ) : null}
             <p className="text-neutral-700 mt-2">
-              <span className="font-medium">→ Esperado:</span>{' '}
+              <span className="font-medium">&rarr; Esperado:</span>{' '}
               <span className="font-semibold">&ldquo;{feedback.expected}&rdquo;</span>
             </p>
             {feedback.alternatives?.map((alt, i) => (
               <p key={i} className="text-neutral-500">
-                <span className="font-medium">→ Também aceito:</span>{' '}
+                <span className="font-medium">&rarr; Tambem aceito:</span>{' '}
                 <span className="italic">&ldquo;{alt}&rdquo;</span>
               </p>
             ))}
@@ -427,12 +435,13 @@ export default function Escrever() {
 
           <Button
             onClick={handleNext}
-            className="w-full rounded-xl bg-neutral-900 hover:bg-black text-white font-bold py-3 mt-1"
+            className="w-full bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors mt-1"
           >
-            {currentIndex + 1 < sentences.length ? 'Próxima →' : 'Ver resultado'}
+            {currentIndex + 1 < sentences.length ? 'Proxima' : 'Ver resultado'}
           </Button>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

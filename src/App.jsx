@@ -22,7 +22,11 @@ import AppLayout from './components/shared/AppLayout.jsx';
 import ToastViewport from './components/shared/ToastViewport.jsx';
 import { useConfig } from './store/useConfig.js';
 import { useWordStore } from './store/useWordStore.js';
+import { useCardStore } from './store/useCardStore.js';
 import { useProgressStore } from './store/useProgressStore.js';
+import { syncAll } from './services/sync.js';
+import { setupAutoSync } from './services/syncMiddleware.js';
+import { migrateToSupabase } from './utils/migration.js';
 
 function DashboardRoute() {
   return <Dashboard />;
@@ -60,6 +64,12 @@ export default function App() {
   useEffect(() => {
     syncWordStatusTotals({ activeWords, masteredWords });
   }, [activeWords, masteredWords, syncWordStatusTotals]);
+
+  // Supabase sync — run once on mount
+  useEffect(() => {
+    const stores = { useWordStore, useCardStore, useProgressStore, useConfig };
+    migrateToSupabase(stores).then(() => syncAll(stores)).then(() => setupAutoSync(stores));
+  }, []);
 
   return (
     <BrowserRouter>

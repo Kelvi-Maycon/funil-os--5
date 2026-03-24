@@ -21,8 +21,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Inter', 'system-ui', 'sans-serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Poppins', 'system-ui', 'sans-serif'],
+        heading: ['Poppins', 'system-ui', 'sans-serif'],
+        sans: ['Poppins', 'system-ui', 'sans-serif'],
+        body: ['Lora', 'Georgia', 'serif'],
         mono: ['"Fira Code"', 'monospace'],
       },
       colors: {
@@ -115,13 +117,13 @@ export default {
       },
       borderRadius: {
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 6px)',
+        sm: 'calc(var(--radius) - 10px)',
       },
       boxShadow: {
-        soft: '0 1px 2px rgba(15, 23, 42, 0.02)',
-        card: 'var(--shadow-card)',
-        hover: '0 10px 28px rgba(108, 63, 197, 0.12)',
+        soft: '0 1px 3px rgba(20, 20, 19, 0.06)',
+        card: 'var(--shadow-md)',
+        hover: '0 10px 28px rgba(217, 119, 87, 0.12)',
         'btn': 'var(--shadow-btn)',
         'sm-purple': 'var(--shadow-sm)',
         'md-purple': 'var(--shadow-md)',

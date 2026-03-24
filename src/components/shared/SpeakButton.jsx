@@ -42,7 +42,7 @@ export default function SpeakButton({ text, lang = 'en-US', rate = 1, className 
             type="button"
             onClick={handleClick}
             className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all ${speaking
-                    ? 'bg-violet-100 text-violet-600 border border-violet-200 shadow-sm'
+                    ? 'bg-[#eef0ec] text-[#35403A] border border-[#CED1C6] shadow-sm'
                     : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-neutral-700 border border-neutral-200/60'
                 } ${className}`}
             title={speaking ? 'Parar áudio' : 'Ouvir pronúncia'}

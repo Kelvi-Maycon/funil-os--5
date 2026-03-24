@@ -63,7 +63,7 @@ export default function Onboarding({ onComplete }) {
                     {[0, 1, 2].map((s) => (
                         <div
                             key={s}
-                            className={`h-2 rounded-full transition-all duration-300 ${s === step ? 'w-8 bg-violet-600' : s < step ? 'w-2 bg-violet-300' : 'w-2 bg-neutral-200'}`}
+                            className={`h-2 rounded-full transition-all duration-300 ${s === step ? 'w-8 bg-[#35403A]' : s < step ? 'w-2 bg-[#CED1C6]' : 'w-2 bg-neutral-200'}`}
                         />
                     ))}
                 </div>
@@ -73,17 +73,17 @@ export default function Onboarding({ onComplete }) {
                     {/* Step 0: Welcome */}
                     {step === 0 && (
                         <div className="text-center">
-                            <div className="w-20 h-20 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                            <div className="w-20 h-20 bg-gradient-to-br from-[#35403A] to-[#647568] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                                 <BookIcon size={36} className="text-white" />
                             </div>
-                            <h2 className="text-3xl font-extrabold text-neutral-900 mb-3 tracking-tight">
+                            <h2 className="text-3xl font-heading font-extrabold text-neutral-900 mb-3 tracking-tight">
                                 Bem-vindo ao LangFlow
                             </h2>
-                            <p className="text-neutral-500 mb-8 max-w-sm mx-auto leading-relaxed">
+                            <p className="font-body text-neutral-500 mb-8 max-w-sm mx-auto leading-relaxed">
                                 Aprenda inglês lendo textos reais, praticando com exercícios inteligentes e revisando com repetição espaçada.
                             </p>
                             <button
-                                className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white px-8 py-4 rounded-2xl font-bold shadow-lg transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                                className="w-full bg-gradient-to-r from-[#35403A] to-[#647568] hover:from-[#232625] hover:to-[#647568] text-white px-8 py-4 rounded-2xl font-bold shadow-lg transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
                                 onClick={() => setStep(1)}
                             >
                                 <SparkIcon size={18} />
@@ -95,10 +95,10 @@ export default function Onboarding({ onComplete }) {
                     {/* Step 1: Level selection */}
                     {step === 1 && (
                         <div>
-                            <h2 className="text-2xl font-extrabold text-neutral-900 mb-2 tracking-tight">
+                            <h2 className="text-2xl font-heading font-extrabold text-neutral-900 mb-2 tracking-tight">
                                 Qual seu nível de inglês?
                             </h2>
-                            <p className="text-neutral-500 mb-6 text-sm">
+                            <p className="font-body text-neutral-500 mb-6 text-sm">
                                 Isso ajusta a dificuldade dos exercícios e o vocabulário inicial.
                             </p>
                             <div className="flex flex-col gap-2 mb-8">
@@ -106,7 +106,7 @@ export default function Onboarding({ onComplete }) {
                                     <button
                                         key={level.id}
                                         className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${selectedLevel === level.id
-                                                ? 'border-violet-500 bg-violet-50 shadow-sm'
+                                                ? 'border-[#647568] bg-[#eef0ec] shadow-sm'
                                                 : 'border-neutral-100 bg-white hover:border-neutral-200 hover:bg-neutral-50'
                                             }`}
                                         onClick={() => setSelectedLevel(level.id)}
@@ -136,10 +136,10 @@ export default function Onboarding({ onComplete }) {
                     {/* Step 2: AI Config (optional) */}
                     {step === 2 && (
                         <div>
-                            <h2 className="text-2xl font-extrabold text-neutral-900 mb-2 tracking-tight">
+                            <h2 className="text-2xl font-heading font-extrabold text-neutral-900 mb-2 tracking-tight">
                                 Configure a IA <span className="text-neutral-400 font-normal text-lg">(opcional)</span>
                             </h2>
-                            <p className="text-neutral-500 mb-6 text-sm">
+                            <p className="font-body text-neutral-500 mb-6 text-sm">
                                 A IA gera explicações contextuais e avalia suas respostas. Sem ela, o app usa fallback local.
                             </p>
 
@@ -165,7 +165,7 @@ export default function Onboarding({ onComplete }) {
                                     </label>
                                     <input
                                         type="password"
-                                        className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 focus:border-violet-400 focus:ring-4 focus:ring-violet-400/20 rounded-xl text-sm transition-all outline-none mb-4"
+                                        className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 focus:border-[#647568] focus:ring-4 focus:ring-[#647568]/20 rounded-xl text-sm transition-all outline-none mb-4"
                                         placeholder={provider === 'openai' ? 'sk-proj-...' : 'AIza...'}
                                         value={apiKey}
                                         onChange={(e) => setApiKey(e.target.value)}
@@ -180,11 +180,11 @@ export default function Onboarding({ onComplete }) {
                                 </>
                             ) : (
                                 <div className="bg-neutral-50 rounded-2xl p-6 border border-neutral-200 mb-6 text-center">
-                                    <p className="text-sm text-neutral-600 font-medium mb-3">
+                                    <p className="font-body text-sm text-neutral-600 font-medium mb-3">
                                         Sem IA configurada. Você pode adicionar depois em Configurações.
                                     </p>
                                     <button
-                                        className="text-xs font-semibold text-violet-600 hover:text-violet-800 underline underline-offset-4"
+                                        className="text-xs font-semibold text-[#35403A] hover:text-[#232625] underline underline-offset-4"
                                         onClick={() => setSkipAI(false)}
                                     >
                                         Voltar atrás — quero configurar
@@ -200,7 +200,7 @@ export default function Onboarding({ onComplete }) {
                                     Voltar
                                 </button>
                                 <button
-                                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2"
+                                    className="flex-1 bg-gradient-to-r from-[#35403A] to-[#647568] hover:from-[#232625] hover:to-[#647568] text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2"
                                     onClick={handleFinish}
                                 >
                                     <SparkIcon size={16} />

@@ -14,9 +14,28 @@ const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
 const OAI_MODELS = ['gpt-5.4-nano', 'gpt-5-mini', 'gpt-5-nano', 'gpt-5.2', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-4o-mini', 'gpt-4o'];
 const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
 
+/* ── shared tailwind fragments ── */
+const cls = {
+  card: 'bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 md:p-8',
+  sectionTitle: 'text-lg font-semibold font-heading text-neutral-900 mb-4',
+  sectionLabel: 'text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]',
+  btnPrimary: 'inline-flex items-center justify-center bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
+  btnOutline: 'inline-flex items-center justify-center border border-neutral-300 rounded-full px-5 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
+  btnOutlineSm: 'inline-flex items-center justify-center border border-neutral-300 rounded-full px-4 py-1.5 text-xs text-neutral-700 hover:bg-neutral-50 transition-colors cursor-pointer',
+  input: 'w-full px-4 py-3 rounded-xl border border-neutral-200/70 bg-white text-sm text-neutral-800 placeholder:text-neutral-400 focus:border-[#647568] focus:ring-2 focus:ring-[#35403A]/15 focus:outline-none transition-colors',
+  inputLabel: 'block mb-2 text-xs font-semibold text-neutral-500',
+  pill: 'min-h-[42px] px-4 rounded-full border border-neutral-200/70 bg-white text-sm font-medium text-neutral-600 cursor-pointer transition-colors hover:bg-neutral-50',
+  pillActive: 'min-h-[42px] px-4 rounded-full border border-[#35403A]/20 bg-[#eef0ec] text-sm font-semibold text-neutral-900 cursor-pointer transition-colors',
+  tab: 'inline-flex items-center gap-2 min-h-[42px] px-4 rounded-full border border-neutral-200/70 bg-white text-sm font-medium text-neutral-600 cursor-pointer transition-colors hover:bg-neutral-50',
+  tabActive: 'inline-flex items-center gap-2 min-h-[42px] px-4 rounded-full border border-[#35403A]/20 bg-[#eef0ec] text-sm font-semibold text-neutral-900 cursor-pointer transition-colors',
+  statCard: 'bg-white rounded-xl border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-5 text-center',
+  statVal: 'text-2xl font-bold font-heading text-neutral-900',
+  statLabel: 'mt-1 text-[10px] font-bold text-neutral-400 uppercase tracking-[0.12em]',
+};
+
 function StatusDot({ status }) {
   const color = status === 'ok' ? '#10B981' : status === 'error' ? '#EF4444' : '#F59E0B';
-  return <span className="status-dot" style={{ background: color }} />;
+  return <span className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ background: color }} />;
 }
 
 export default function Settings() {
@@ -172,7 +191,8 @@ export default function Settings() {
     <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16">
       <main className="w-full mt-2 lg:mt-4">
         <div className="page-content settings-page">
-          <div className="settings-tabs">
+          {/* ── Tabs ── */}
+          <div className="flex gap-2.5 flex-wrap mb-6">
           {[
             ['essential', 'Essencial', <GridIcon key="essential" size={16} />],
             ['ai', 'IA', <SparkIcon key="ai" size={16} />],
@@ -183,48 +203,49 @@ export default function Settings() {
               key={key}
               type="button"
               onClick={() => setTab(key)}
-              className={`settings-tab${tab === key ? ' active' : ''}`}
+              className={tab === key ? cls.tabActive : cls.tab}
             >
-              <span className="settings-tab-icon">{icon}</span>
+              <span className="w-4 h-4 inline-grid place-items-center">{icon}</span>
               <span>{label}</span>
             </button>
           ))}
         </div>
 
         {banner ? (
-          <div className={`alert ${banner.type === 'success' ? 'alert-success' : banner.type === 'error' ? 'alert-error' : 'alert-info'} mb-lg`}>
+          <div className={`rounded-xl px-4 py-3 text-sm mb-6 ${banner.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : banner.type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-[#eef0ec] text-neutral-700 border border-neutral-200'}`}>
             {banner.text}
           </div>
         ) : null}
 
+        {/* ── Essential tab ── */}
         {tab === 'essential' ? (
-          <div className="settings-section-grid">
-            <div className="card">
-              <h3 className="settings-section-title">Nivel atual</h3>
-              <div className="settings-pill-row">
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className={cls.card}>
+              <h3 className={cls.sectionTitle}>Nivel atual</h3>
+              <div className="flex gap-2.5 flex-wrap mb-4">
                 {LEVELS.map((levelOption) => (
                   <button
                     key={levelOption}
                     type="button"
                     onClick={() => setConfig({ userLevel: levelOption })}
-                    className={`settings-pill${config.userLevel === levelOption ? ' active' : ''}`}
+                    className={config.userLevel === levelOption ? cls.pillActive : cls.pill}
                   >
                     {levelOption}
                   </button>
                 ))}
               </div>
-              <div className="settings-inline-copy">
+              <div className="text-xs text-neutral-500">
                 Sessao minima: {config.study?.minSessionMinutes ?? 5} min · Cards por dia: {config.srs?.dailyLimit ?? 20}
               </div>
             </div>
 
-            <div className="card">
-              <h3 className="settings-section-title">Controles frequentes</h3>
-              <div className="grid-2" style={{ gap: 16 }}>
+            <div className={cls.card}>
+              <h3 className={cls.sectionTitle}>Controles frequentes</h3>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="input-label">Cards por dia</label>
+                  <label className={cls.inputLabel}>Cards por dia</label>
                   <input
-                    className="input"
+                    className={cls.input}
                     type="number"
                     min={5}
                     max={200}
@@ -233,9 +254,9 @@ export default function Settings() {
                   />
                 </div>
                 <div>
-                  <label className="input-label">Palavras por sessão</label>
+                  <label className={cls.inputLabel}>Palavras por sessao</label>
                   <input
-                    className="input"
+                    className={cls.input}
                     type="number"
                     min={1}
                     max={10}
@@ -244,9 +265,9 @@ export default function Settings() {
                   />
                 </div>
                 <div>
-                  <label className="input-label">Palavras no prompt diário</label>
+                  <label className={cls.inputLabel}>Palavras no prompt diario</label>
                   <input
-                    className="input"
+                    className={cls.input}
                     type="number"
                     min={1}
                     max={10}
@@ -259,17 +280,18 @@ export default function Settings() {
           </div>
         ) : null}
 
+        {/* ── AI tab ── */}
         {tab === 'ai' ? (
           <div>
-            <div className="card mb-lg">
-              <h3 className="settings-section-title">Provedor de IA</h3>
-              <div className="settings-pill-row mb-lg">
+            <div className={`${cls.card} mb-5`}>
+              <h3 className={cls.sectionTitle}>Provedor de IA</h3>
+              <div className="flex gap-2.5 flex-wrap mb-5">
                 {[['openai', 'OpenAI'], ['gemini', 'Gemini'], ['', 'Sem IA']].map(([key, label]) => (
                   <button
                     key={key}
                     type="button"
                     onClick={() => setForm((current) => ({ ...current, provider: key }))}
-                    className={`settings-pill${form.provider === key ? ' active' : ''}`}
+                    className={form.provider === key ? cls.pillActive : cls.pill}
                   >
                     {label}
                   </button>
@@ -277,11 +299,11 @@ export default function Settings() {
               </div>
 
               {form.provider === 'openai' ? (
-                <div className="flex-col gap-md">
+                <div className="flex flex-col gap-4">
                   <div>
-                    <label className="input-label">API key OpenAI</label>
+                    <label className={cls.inputLabel}>API key OpenAI</label>
                     <input
-                      className="input"
+                      className={cls.input}
                       type="password"
                       placeholder="sk-proj-..."
                       value={form.openaiKey}
@@ -289,9 +311,9 @@ export default function Settings() {
                     />
                   </div>
                   <div>
-                    <label className="input-label">Modelo</label>
+                    <label className={cls.inputLabel}>Modelo</label>
                     <select
-                      className="input"
+                      className={cls.input}
                       value={form.openaiModel}
                       onChange={(event) => setForm((current) => ({ ...current, openaiModel: event.target.value }))}
                     >
@@ -302,11 +324,11 @@ export default function Settings() {
               ) : null}
 
               {form.provider === 'gemini' ? (
-                <div className="flex-col gap-md">
+                <div className="flex flex-col gap-4">
                   <div>
-                    <label className="input-label">API key Gemini</label>
+                    <label className={cls.inputLabel}>API key Gemini</label>
                     <input
-                      className="input"
+                      className={cls.input}
                       type="password"
                       placeholder="AIza..."
                       value={form.geminiKey}
@@ -314,9 +336,9 @@ export default function Settings() {
                     />
                   </div>
                   <div>
-                    <label className="input-label">Modelo</label>
+                    <label className={cls.inputLabel}>Modelo</label>
                     <select
-                      className="input"
+                      className={cls.input}
                       value={form.geminiModel}
                       onChange={(event) => setForm((current) => ({ ...current, geminiModel: event.target.value }))}
                     >
@@ -327,20 +349,20 @@ export default function Settings() {
               ) : null}
 
               {!form.provider ? (
-                <div className="alert alert-info">Sem IA configurada. Reader e Builder vao usar fallback local.</div>
+                <div className="rounded-xl px-4 py-3 text-sm bg-[#eef0ec] text-neutral-700 border border-neutral-200">Sem IA configurada. Reader e Builder vao usar fallback local.</div>
               ) : null}
 
-              <div className="flex gap-sm mt-lg">
-                <button className="btn btn-primary" onClick={save}>Salvar</button>
+              <div className="flex gap-3 mt-5">
+                <button className={cls.btnPrimary} onClick={save}>Salvar</button>
                 {form.provider ? (
-                  <button className="btn btn-outline" onClick={test} disabled={testStatus === 'testing'}>
+                  <button className={cls.btnOutline} onClick={test} disabled={testStatus === 'testing'}>
                     {testStatus === 'testing' ? 'Testando...' : 'Testar conexao'}
                   </button>
                 ) : null}
               </div>
 
               {testStatus && testStatus !== 'testing' ? (
-                <div className={`alert ${testStatus === 'ok' ? 'alert-success' : 'alert-error'} mt-md`}>
+                <div className={`rounded-xl px-4 py-3 text-sm mt-4 ${testStatus === 'ok' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                   <StatusDot status={testStatus} /> {testMsg}
                 </div>
               ) : null}
@@ -348,15 +370,16 @@ export default function Settings() {
           </div>
         ) : null}
 
+        {/* ── Study tab ── */}
         {tab === 'study' ? (
-          <div>
-            <div className="card mb-lg">
-              <h3 className="settings-section-title">Pratica e SRS</h3>
-              <div className="grid-2" style={{ gap: 16 }}>
+          <div className="flex flex-col gap-5">
+            <div className={cls.card}>
+              <h3 className={cls.sectionTitle}>Pratica e SRS</h3>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="input-label">Variacoes por palavra</label>
+                  <label className={cls.inputLabel}>Variacoes por palavra</label>
                   <input
-                    className="input"
+                    className={cls.input}
                     type="number"
                     min={1}
                     max={3}
@@ -365,9 +388,9 @@ export default function Settings() {
                   />
                 </div>
                 <div>
-                  <label className="input-label">Peso de palavras dificeis (%)</label>
+                  <label className={cls.inputLabel}>Peso de palavras dificeis (%)</label>
                   <input
-                    className="input"
+                    className={cls.input}
                     type="number"
                     min={0}
                     max={100}
@@ -375,56 +398,57 @@ export default function Settings() {
                     onChange={(event) => setConfig({ builder: { ...config.builder, difficultWordsWeight: Number(event.target.value) } })}
                   />
                 </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label className="input-label">Modo Preferido (Builder)</label>
+                <div className="col-span-2">
+                  <label className={cls.inputLabel}>Modo Preferido (Builder)</label>
                   <select
-                     className="input"
+                     className={cls.input}
                      value={config.builder?.preferredMode || 'mixed'}
                      onChange={(event) => setConfig({ builder: { ...config.builder, preferredMode: event.target.value } })}
                   >
                      <option value="mixed">Misto (Montagem, Transform e Cloze)</option>
                      <option value="assembly">Apenas Montagem</option>
-                     <option value="transform">Apenas Transformação</option>
+                     <option value="transform">Apenas Transformacao</option>
                      <option value="cloze">Apenas Lacunas</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            <div className="card mb-lg">
-              <h3 className="settings-section-title">Missoes e ritmo</h3>
-              <div className="flex flex-col gap-md">
+            <div className={cls.card}>
+              <h3 className={cls.sectionTitle}>Missoes e ritmo</h3>
+              <div className="flex flex-col gap-4">
                 {MISSION_META.map(({ key, label, icon }) => (
-                  <div key={key} className="settings-mission-row">
-                    <div className="flex justify-between items-center mb-sm">
-                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--c-heading)' }}>{icon} {label}</div>
-                      <div style={{ fontSize: 12, color: 'var(--c-muted)' }}>
+                  <div key={key}>
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="text-[13px] font-semibold text-neutral-900">{icon} {label}</div>
+                      <div className="text-xs text-neutral-500">
                         hoje: {todayStats[key] || 0} / {config.missions?.[key] ?? DEFAULT_MISSIONS[key]}
                       </div>
                     </div>
-                    <div className="flex items-center gap-sm">
+                    <div className="flex items-center gap-3">
                       <input
                         type="range"
                         min={1}
                         max={key === 'flashcardReviews' ? 30 : 12}
                         value={config.missions?.[key] ?? DEFAULT_MISSIONS[key]}
                         onChange={(event) => setConfig({ missions: { ...config.missions, [key]: Number(event.target.value) } })}
-                        style={{ flex: 1, accentColor: 'var(--c-brand)' }}
+                        className="flex-1"
+                        style={{ accentColor: '#35403A' }}
                       />
-                      <span className="settings-range-value">{config.missions?.[key] ?? DEFAULT_MISSIONS[key]}</span>
+                      <span className="text-sm font-semibold text-neutral-700 w-6 text-right">{config.missions?.[key] ?? DEFAULT_MISSIONS[key]}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="card">
-              <h3 className="settings-section-title">Streak e auto-ajuste</h3>
-              <div className="grid-2" style={{ gap: 16 }}>
+            <div className={cls.card}>
+              <h3 className={cls.sectionTitle}>Streak e auto-ajuste</h3>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="input-label">Sessao minima para contar streak</label>
+                  <label className={cls.inputLabel}>Sessao minima para contar streak</label>
                   <input
-                    className="input"
+                    className={cls.input}
                     type="number"
                     min={1}
                     max={60}
@@ -433,10 +457,10 @@ export default function Settings() {
                   />
                 </div>
                 <div>
-                  <label className="input-label">Auto-ajuste</label>
+                  <label className={cls.inputLabel}>Auto-ajuste</label>
                   <button
                     type="button"
-                    className={`settings-pill${config.autoAdjustDifficulty ? ' active' : ''}`}
+                    className={config.autoAdjustDifficulty ? cls.pillActive : cls.pill}
                     onClick={() => setConfig({ autoAdjustDifficulty: !config.autoAdjustDifficulty })}
                   >
                     {config.autoAdjustDifficulty ? 'Ativado' : 'Desativado'}
@@ -444,56 +468,57 @@ export default function Settings() {
                 </div>
               </div>
 
-              <div className="settings-inline-copy" style={{ marginTop: 12 }}>
+              <div className="text-xs text-neutral-500 mt-3">
                 Ultimo ajuste: {autoAdjustMeta?.toLevel ? `${autoAdjustMeta.fromLevel} -> ${autoAdjustMeta.toLevel}` : 'nenhum ajuste ainda'}
               </div>
             </div>
           </div>
         ) : null}
 
+        {/* ── Data tab ── */}
         {tab === 'data' ? (
           <div>
-            <div className="card mb-lg">
-              <h3 className="settings-section-title">Uso local e progresso</h3>
-              <div style={{ fontSize: 13, color: 'var(--c-muted)', marginBottom: 10 }}>
-                Uso: <strong style={{ color: 'var(--c-heading)' }}>{usageKB} KB</strong> de ~5000 KB ({usagePct}%)
+            <div className={`${cls.card} mb-5`}>
+              <h3 className={cls.sectionTitle}>Uso local e progresso</h3>
+              <div className="text-sm text-neutral-500 mb-2.5">
+                Uso: <strong className="text-neutral-900">{usageKB} KB</strong> de ~5000 KB ({usagePct}%)
               </div>
-              <div className="progress-bar-wrap">
-                <div className="progress-bar" style={{ width: `${Math.min(usagePct, 100)}%`, background: usagePct > 80 ? 'var(--c-error)' : undefined }} />
-              </div>
-
-              <div className="stat-row mt-lg">
-                <div className="stat-card"><div className="stat-val">{level}</div><div className="stat-label">Nivel</div></div>
-                <div className="stat-card"><div className="stat-val">{xp}</div><div className="stat-label">XP</div></div>
-                <div className="stat-card"><div className="stat-val">{streakStats.currentStreak}</div><div className="stat-label">Streak</div></div>
-                <div className="stat-card"><div className="stat-val">{flashcards.length}</div><div className="stat-label">Cards</div></div>
-                <div className="stat-card"><div className="stat-val">{achievements.length}</div><div className="stat-label">Conquistas</div></div>
+              <div className="w-full h-2 rounded-full bg-neutral-100 overflow-hidden">
+                <div className="h-full rounded-full bg-[#35403A] transition-all" style={{ width: `${Math.min(usagePct, 100)}%`, background: usagePct > 80 ? '#EF4444' : undefined }} />
               </div>
 
-              <div className="grid-2 mt-lg" style={{ gap: 16 }}>
-                <div className="card">
-                  <div className="section-label mb-sm">Colecoes</div>
-                  <div className="flex flex-col gap-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mt-5">
+                <div className={cls.statCard}><div className={cls.statVal}>{level}</div><div className={cls.statLabel}>Nivel</div></div>
+                <div className={cls.statCard}><div className={cls.statVal}>{xp}</div><div className={cls.statLabel}>XP</div></div>
+                <div className={cls.statCard}><div className={cls.statVal}>{streakStats.currentStreak}</div><div className={cls.statLabel}>Streak</div></div>
+                <div className={cls.statCard}><div className={cls.statVal}>{flashcards.length}</div><div className={cls.statLabel}>Cards</div></div>
+                <div className={cls.statCard}><div className={cls.statVal}>{achievements.length}</div><div className={cls.statLabel}>Conquistas</div></div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+                <div className={cls.card}>
+                  <div className={`${cls.sectionLabel} mb-3`}>Colecoes</div>
+                  <div className="flex flex-col gap-2.5">
                     {[
                       ['Palavras lidas', totals.readerWords],
                       ['Exercicios builder', totals.builderExercises],
                       ['Cards salvos', totals.savedCards],
                       ['Revisoes', totals.flashcardReviews],
                     ].map(([label, value]) => (
-                      <div key={label} className="settings-data-row">
-                        <span>{label}</span>
-                        <strong>{value}</strong>
+                      <div key={label} className="flex justify-between items-center text-sm">
+                        <span className="text-neutral-600">{label}</span>
+                        <strong className="text-neutral-900">{value}</strong>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="card">
-                  <div className="section-label mb-sm">Backup e reset</div>
-                  <div className="flex gap-sm flex-wrap">
-                    <button className="btn btn-outline btn-sm" onClick={exportBackup}>Exportar backup</button>
-                    <button className="btn btn-outline btn-sm" onClick={() => fileInputRef.current?.click()}>Importar backup</button>
-                    <button className="btn btn-outline btn-sm" onClick={handleResetProgress}>Resetar gamificacao</button>
+                <div className={cls.card}>
+                  <div className={`${cls.sectionLabel} mb-3`}>Backup e reset</div>
+                  <div className="flex gap-2.5 flex-wrap">
+                    <button className={cls.btnOutlineSm} onClick={exportBackup}>Exportar backup</button>
+                    <button className={cls.btnOutlineSm} onClick={() => fileInputRef.current?.click()}>Importar backup</button>
+                    <button className={cls.btnOutlineSm} onClick={handleResetProgress}>Resetar gamificacao</button>
                   </div>
                   <input
                     ref={fileInputRef}

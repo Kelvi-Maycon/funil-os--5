@@ -6,6 +6,7 @@ import { useProgressStore } from '../../store/useProgressStore.js';
 import { generateMicroDialogue, evaluateDialogueResponse } from '../../services/ai.js';
 import { Button } from '../ui/button.jsx';
 import SpeakButton from '../shared/SpeakButton.jsx';
+import { ChatBubbleIcon, RobotIcon, UserCircleIcon } from '../shared/icons.jsx';
 
 const MAX_TURNS = 6; // max user turns before ending
 
@@ -32,7 +33,7 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
 
   const handleStart = useCallback(async () => {
     if (!config?.provider) {
-      setError('Configure uma IA em Settings para usar micro-diálogos.');
+      setError('Configure uma IA em Settings para usar micro-dialogos.');
       return;
     }
 
@@ -60,7 +61,7 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
       });
 
       if (!result?.turns?.length) {
-        setError('Não foi possível gerar o diálogo. Tente novamente.');
+        setError('Nao foi possivel gerar o dialogo. Tente novamente.');
         setPhase('idle');
         return;
       }
@@ -79,7 +80,7 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
       setPhase('playing');
     } catch (err) {
       if (err.name === 'AbortError') return;
-      setError('Erro ao gerar diálogo. Verifique sua chave de API.');
+      setError('Erro ao gerar dialogo. Verifique sua chave de API.');
       setPhase('idle');
     }
   }, [words, config, targetWords, focusCategory]);
@@ -176,15 +177,15 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
   if (phase === 'idle' || phase === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-6 text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-teal-100 text-teal-600 text-3xl">
-          💬
+        <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[#eef0ec] text-[#35403A] text-3xl">
+          <ChatBubbleIcon size={36} strokeWidth={1.8} />
         </div>
         <div>
-          <h2 className="text-2xl font-extrabold text-neutral-900 tracking-tight">
-            Micro-diálogo
+          <h2 className="text-2xl font-semibold font-heading text-neutral-900 tracking-tight">
+            Micro-dialogo
           </h2>
           <p className="mt-2 text-sm text-neutral-500 max-w-xs mx-auto">
-            Converse em inglês! A IA responde naturalmente e corrige seus erros no final.
+            Converse em ingles! A IA responde naturalmente e corrige seus erros no final.
           </p>
         </div>
 
@@ -197,15 +198,15 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
         <Button
           onClick={handleStart}
           disabled={phase === 'loading'}
-          className="rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 font-bold text-base shadow-sm"
+          className="rounded-full bg-[#35403A] hover:bg-[#232625] text-white px-8 py-3 font-semibold text-sm transition-colors"
         >
-          {phase === 'loading' ? 'Gerando cenário…' : 'Iniciar diálogo'}
+          {phase === 'loading' ? 'Gerando cenario...' : 'Iniciar dialogo'}
         </Button>
 
         {!config?.provider && (
           <p className="text-xs text-neutral-400 max-w-xs">
-            Micro-diálogos requerem IA configurada.{' '}
-            <button onClick={() => navigate('/settings')} className="text-violet-500 underline underline-offset-2">
+            Micro-dialogos requerem IA configurada.{' '}
+            <button onClick={() => navigate('/settings')} className="text-[#647568] underline underline-offset-2">
               Configurar IA
             </button>
           </p>
@@ -224,35 +225,35 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Summary header */}
         <div className="text-center py-6">
-          <p className="text-xs font-semibold uppercase tracking-widest text-teal-500 mb-1">
-            {interrupted ? 'Diálogo interrompido' : 'Diálogo completo'}
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400 mb-1">
+            {interrupted ? 'Dialogo interrompido' : 'Dialogo completo'}
           </p>
-          <h2 className="text-2xl font-extrabold text-neutral-900">
+          <h2 className="text-2xl font-semibold font-heading text-neutral-900">
             {perfectTurns}/{userTurns.length} sem erros
           </h2>
-          <p className="mt-1 text-sm text-teal-600 font-semibold">+{xpEarned} XP</p>
+          <p className="mt-1 text-sm text-[#35403A] font-semibold">+{xpEarned} XP</p>
         </div>
 
         {/* Full conversation with annotations */}
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 space-y-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-teal-500 mb-2">
-            Revisão do diálogo
+        <div className="rounded-xl border border-neutral-200/70 bg-white shadow-[0_1px_3px_rgba(20,20,19,0.06)] p-6 md:p-8 space-y-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400 mb-2">
+            Revisao do dialogo
           </p>
-          <div className="bg-teal-50 rounded-xl p-3 border border-teal-200 text-sm text-neutral-700 mb-4">
-            <span className="font-bold text-teal-600">Cenário:</span> {scene}
+          <div className="bg-[#eef0ec] rounded-xl p-3 border border-[#CED1C6] text-sm text-neutral-700 mb-4">
+            <span className="font-bold text-[#35403A]">Cenario:</span> {scene}
           </div>
 
           {conversation.map((turn, idx) => (
             <div key={idx} className={`flex gap-3 ${turn.role === 'user' ? 'justify-end' : ''}`}>
               {turn.role === 'ai' && (
-                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-xs">🤖</div>
+                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#dde2dc] flex items-center justify-center text-xs"><RobotIcon size={14} /></div>
               )}
               <div className={`max-w-[85%] ${turn.role === 'ai' ? '' : 'text-right'}`}>
-                <div className={`rounded-2xl p-3 ${
+                <div className={`rounded-xl p-3 ${
                   turn.role === 'ai'
-                    ? 'bg-neutral-50 border border-neutral-200 rounded-tl-md'
+                    ? 'bg-neutral-50 border border-neutral-200/70 rounded-tl-md'
                     : turn.corrections?.trim()
-                      ? 'bg-orange-50 border border-orange-200 rounded-tr-md'
+                      ? 'bg-[#eef0ec] border border-[#CED1C6] rounded-tr-md'
                       : 'bg-green-50 border border-green-200 rounded-tr-md'
                 }`}>
                   <div className="flex items-center gap-2">
@@ -266,8 +267,8 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
 
                 {/* Show corrections for user turns */}
                 {turn.role === 'user' && turn.corrections?.trim() && (
-                  <div className="mt-1.5 text-left bg-orange-50 rounded-xl p-3 border border-orange-100">
-                    <p className="text-xs text-orange-700">
+                  <div className="mt-1.5 text-left bg-[#eef0ec] rounded-xl p-3 border border-[#CED1C6]">
+                    <p className="text-xs text-[#232625]">
                       <span className="font-bold">Erros:</span> {turn.corrections}
                     </p>
                     {turn.correctedVersion && turn.correctedVersion !== turn.text && (
@@ -278,11 +279,11 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
                   </div>
                 )}
                 {turn.role === 'user' && !turn.corrections?.trim() && (
-                  <p className="text-[10px] text-green-600 font-bold mt-1">✓ Perfeito</p>
+                  <p className="text-[10px] text-green-600 font-bold mt-1">Perfeito</p>
                 )}
               </div>
               {turn.role === 'user' && (
-                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center text-xs">👤</div>
+                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#dde2dc] flex items-center justify-center text-xs"><UserCircleIcon size={14} /></div>
               )}
             </div>
           ))}
@@ -291,10 +292,10 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
         {/* Actions */}
         {!compact && (
           <div className="flex gap-3 justify-center">
-            <Button onClick={() => { setPhase('idle'); setConversation([]); setScene(''); }} className="rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-6 font-bold">
-              Novo diálogo
+            <Button onClick={() => { setPhase('idle'); setConversation([]); setScene(''); }} className="rounded-full bg-[#35403A] hover:bg-[#232625] text-white px-6 py-2.5 text-sm font-semibold transition-colors">
+              Novo dialogo
             </Button>
-            <Button variant="outline" onClick={() => navigate('/')} className="rounded-xl px-6">
+            <Button variant="outline" onClick={() => navigate('/')} className="border border-neutral-300 rounded-full px-5 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
               Dashboard
             </Button>
           </div>
@@ -307,8 +308,8 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       {/* Scene */}
-      <div className="rounded-2xl border border-teal-200 bg-teal-50 p-5 shadow-sm">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-teal-500 mb-2">Cenário</p>
+      <div className="rounded-xl border border-neutral-200/70 bg-[#eef0ec] p-6 shadow-[0_1px_3px_rgba(20,20,19,0.06)]">
+        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400 mb-2">Cenario</p>
         <p className="text-base font-semibold text-neutral-800">{scene}</p>
       </div>
 
@@ -317,7 +318,7 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
         <span className="text-neutral-500">
           Turno <span className="font-semibold text-neutral-700">{turnCount + 1}</span>
         </span>
-        <span className="font-semibold text-teal-600">+{xpEarned} XP</span>
+        <span className="font-semibold text-[#35403A]">+{xpEarned} XP</span>
       </div>
 
       {/* Conversation bubbles */}
@@ -325,12 +326,12 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
         {conversation.map((turn, idx) => (
           <div key={idx} className={`flex gap-3 ${turn.role === 'user' ? 'justify-end' : ''}`}>
             {turn.role === 'ai' && (
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-sm">🤖</div>
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#dde2dc] flex items-center justify-center text-sm"><RobotIcon size={16} /></div>
             )}
-            <div className={`rounded-2xl p-4 max-w-[80%] shadow-sm ${
+            <div className={`rounded-xl p-4 max-w-[80%] ${
               turn.role === 'ai'
-                ? 'bg-white border border-neutral-200 rounded-tl-md'
-                : 'bg-violet-50 border border-violet-200 rounded-tr-md'
+                ? 'bg-white border border-neutral-200/70 shadow-[0_1px_3px_rgba(20,20,19,0.06)] rounded-tl-md'
+                : 'bg-[#eef0ec] border border-[#CED1C6] rounded-tr-md'
             }`}>
               <div className="flex items-center gap-2">
                 <p className="text-base text-neutral-900">{turn.text}</p>
@@ -341,7 +342,7 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
               )}
             </div>
             {turn.role === 'user' && (
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-sm">👤</div>
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#dde2dc] flex items-center justify-center text-sm"><UserCircleIcon size={16} /></div>
             )}
           </div>
         ))}
@@ -349,12 +350,12 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
         {/* Evaluating indicator */}
         {phase === 'evaluating' && (
           <div className="flex gap-3">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-sm">🤖</div>
-            <div className="bg-white border border-neutral-200 rounded-2xl rounded-tl-md p-4 shadow-sm">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#dde2dc] flex items-center justify-center text-sm"><RobotIcon size={16} /></div>
+            <div className="bg-white border border-neutral-200/70 rounded-xl rounded-tl-md p-4 shadow-[0_1px_3px_rgba(20,20,19,0.06)]">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" />
-                <span className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
-                <span className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
+                <span className="w-2 h-2 bg-[#647568] rounded-full animate-bounce" />
+                <span className="w-2 h-2 bg-[#647568] rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+                <span className="w-2 h-2 bg-[#647568] rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
               </div>
             </div>
           </div>
@@ -373,8 +374,8 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
                 handleSubmit();
               }
             }}
-            placeholder="Digite sua resposta em inglês…"
-            className="w-full rounded-xl border border-neutral-200 bg-white p-4 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-100 resize-none shadow-sm"
+            placeholder="Digite sua resposta em ingles..."
+            className="w-full rounded-xl border border-neutral-200 bg-white p-4 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-[#647568] focus:outline-none focus:ring-2 focus:ring-[#35403A]/15 resize-none shadow-[0_1px_3px_rgba(20,20,19,0.06)]"
             rows={2}
             autoFocus
           />
@@ -382,14 +383,14 @@ export default function Dialogue({ targetWords, focusCategory, onComplete, compa
             <Button
               onClick={handleSubmit}
               disabled={!userAnswer.trim()}
-              className="flex-1 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold py-3"
+              className="flex-1 rounded-full bg-[#35403A] hover:bg-[#232625] text-white font-semibold text-sm py-2.5 transition-colors"
             >
               Enviar
             </Button>
             <Button
               onClick={() => { setPhase('done'); }}
               variant="outline"
-              className="rounded-xl px-4 py-3 text-sm"
+              className="border border-neutral-300 rounded-full px-5 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
             >
               Encerrar
             </Button>

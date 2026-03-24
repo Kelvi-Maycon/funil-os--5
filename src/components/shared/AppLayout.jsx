@@ -76,11 +76,11 @@ function SidebarContent({ navItems, onNavigate }) {
     <div className="flex h-full flex-col bg-transparent">
       <div className="border-b border-black/5 px-6 pb-6 pt-7">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary to-violet-500 text-white shadow-[var(--shadow-btn)]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#35403A] to-[#647568] text-white shadow-[var(--shadow-btn)]">
             <BoltIcon size={20} strokeWidth={2.2} />
           </div>
           <div>
-            <div className="text-[1.4rem] font-semibold tracking-[-0.03em] text-foreground">LangFlow</div>
+            <div className="text-[1.4rem] font-heading font-semibold tracking-[-0.03em] text-foreground">LangFlow</div>
             <div className="max-w-[132px] text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
               Study loop system
             </div>
@@ -268,7 +268,7 @@ export default function AppLayout() {
         <SidebarContent navItems={navItems} onNavigate={() => setMobileOpen(false)} />
       </aside>
 
-      <div className="md:ml-[282px]">
+      <div className="md:ml-[282px]" style={{ backgroundColor: '#FFFEF5', backgroundImage: 'linear-gradient(rgba(53,64,58,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(53,64,58,0.04) 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
         <div className="sticky top-0 z-30 border-b border-white/45 bg-white/34 px-4 py-3 backdrop-blur-xl md:hidden">
           <div className="mx-auto flex max-w-[1400px] items-center justify-between">
             <Button variant="outline" size="icon" onClick={() => setMobileOpen(true)}>
@@ -281,35 +281,33 @@ export default function AppLayout() {
         <main className="min-h-[calc(100vh-4rem)]">
           <div className="mx-auto max-w-[1400px] px-4 py-6 md:px-8 md:py-8 xl:px-10">
             {!isDashboard && (
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pt-2 lg:pt-0">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pt-2 lg:pt-0">
                 <div>
-                  <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
-                    {pageMeta.icon && <pageMeta.icon size={28} className="text-violet-600 font-bold" strokeWidth={2.5} />}
+                  <h1 className="text-xl font-semibold font-heading tracking-tight text-neutral-900 flex items-center gap-2.5">
+                    {pageMeta.icon && <pageMeta.icon size={18} className="text-[#35403A]" strokeWidth={1.5} />}
                     {pageMeta.title}
                   </h1>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 mt-0.5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400 mt-0.5">
                     {pageMeta.description}
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="relative hidden sm:block">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-                    <Input className="w-full sm:w-[240px] pl-9 bg-white border-neutral-200 focus:border-violet-500 rounded-xl shadow-sm" placeholder="Buscar..." />
+                    <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                    <Input className="w-full sm:w-[240px] pl-10 pr-4 py-2 bg-white border-neutral-200 focus:border-[#647568] focus:ring-2 focus:ring-[#35403A]/15 rounded-full text-sm shadow-[0_1px_2px_rgba(20,20,19,0.04)] placeholder-neutral-400" placeholder="Buscar..." />
                   </div>
 
                   {pageMeta.action ? (
-                    <Button
-                      variant="default"
-                      size="default"
-                      className="hidden sm:inline-flex rounded-xl font-bold bg-neutral-900 hover:bg-black text-white shadow-sm transition-transform hover:-translate-y-0.5 px-6"
+                    <button
+                      className="hidden sm:inline-flex bg-[#35403A] hover:bg-[#232625] text-white rounded-full px-6 py-2.5 text-sm font-semibold transition-colors items-center gap-2"
                       data-testid="page-primary-action"
                       onClick={() => dispatchPageAction(pageMeta.action.event)}
                     >
                       {pageMeta.action.label}
-                    </Button>
+                    </button>
                   ) : null}
-                  
+
                   <div className="hidden md:block">
                      <NotificationsPopover />
                   </div>
