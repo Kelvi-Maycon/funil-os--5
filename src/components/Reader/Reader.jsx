@@ -6,9 +6,10 @@ import { useUiStore } from '../../store/useUiStore.js';
 import { parseText, getSentenceForToken } from '../../utils/parser.js';
 import { explainWord } from '../../services/ai.js';
 import { fetchYouTubeTranscript } from '../../services/youtube.js';
-import { BookIcon, CheckCircleIcon, PlayIcon, ReloadIcon, SearchIcon, SparkIcon } from '../shared/icons.jsx';
+import { BookIcon, CheckCircleIcon, PlayIcon, ReloadIcon, SearchIcon, SparkIcon, FileIcon, UploadIcon } from '../shared/icons.jsx';
 import SpeakButton from '../shared/SpeakButton.jsx';
 import { Badge } from '../ui/badge.jsx';
+import PdfViewer from './PdfViewer.jsx';
 
 function estimateMinutes(tokens = []) {
   const wordCount = tokens.filter((token) => token.type !== 'space' && token.clean).length;
@@ -36,10 +37,12 @@ export default function Reader({ onPractice }) {
   const [tokens, setTokens] = useState(null);
   const [sessionWords, setSessionWords] = useState([]);
   const [tooltip, setTooltip] = useState(null);
+  const [pdfFile, setPdfFile] = useState(null);
 
   const tooltipRef = useRef(null);
   const textAreaRef = useRef(null);
   const youtubeInputRef = useRef(null);
+  const pdfInputRef = useRef(null);
 
   const bankWords = useMemo(() => new Set(words.map((word) => word.word)), [words]);
   const clickedWords = useMemo(() => new Set(sessionWords.map((word) => word.wordText)), [sessionWords]);
@@ -228,12 +231,24 @@ export default function Reader({ onPractice }) {
     setTooltip(null);
   }, [addWord, getWordByText, markSeenInReader, pushToast, recordReaderWord, sessionWords, tooltip, updateWord]);
 
+  const handlePdfUpload = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      setPdfFile(file);
+    } else {
+      pushToast({ kind: 'warning', source: 'reader', title: 'Arquivo invalido', description: 'Selecione um arquivo PDF.' });
+    }
+    // Reset input to allow re-uploading same file
+    if (pdfInputRef.current) pdfInputRef.current.value = '';
+  }, [pushToast]);
+
   const reset = useCallback(() => {
     setTokens(null);
     setRawText('');
     setSessionWords([]);
     setTooltip(null);
     setYoutubeStatus(null);
+    setPdfFile(null);
   }, []);
 
   useEffect(() => {
@@ -269,8 +284,13 @@ export default function Reader({ onPractice }) {
 
   return (
     <div className="text-neutral-800 antialiased min-h-screen flex flex-col pt-0 lg:pt-0 pb-16" onClick={closeTooltip}>
+      {/* Hidden PDF input */}
+      <input ref={pdfInputRef} type="file" accept="application/pdf" className="hidden" onChange={handlePdfUpload} />
+
       <main className="w-full mt-2 lg:mt-4">
-        {tokens === null ? (
+        {pdfFile ? (
+          <PdfViewer file={pdfFile} onClose={() => setPdfFile(null)} />
+        ) : tokens === null ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* YouTube Entry Card */}
@@ -365,6 +385,28 @@ export default function Reader({ onPractice }) {
                     Nenhuma IA configurada. Fallback local ativo.
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* PDF Upload Card */}
+            <div className="lg:col-span-2">
+              <div
+                className="bg-white rounded-xl p-6 shadow-[0_1px_3px_rgba(20,20,19,0.06)] border-2 border-dashed border-neutral-200 hover:border-[#647568] transition-colors cursor-pointer flex items-center gap-6"
+                onClick={() => pdfInputRef.current?.click()}
+              >
+                <div className="w-14 h-14 bg-[#eef0ec] rounded-2xl flex items-center justify-center text-[#35403A] shrink-0 border border-[#CED1C6]/50">
+                  <FileIcon size={24} />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold font-heading text-neutral-900 mb-1">Importar PDF</h4>
+                  <p className="text-xs text-neutral-500">Abra um livro, artigo ou documento PDF e clique nas palavras para estudar. Suporte a PDFs de qualquer tamanho.</p>
+                </div>
+                <div className="shrink-0">
+                  <div className="bg-[#35403A] text-white px-5 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2">
+                    <UploadIcon size={16} />
+                    Escolher PDF
+                  </div>
+                </div>
               </div>
             </div>
 
